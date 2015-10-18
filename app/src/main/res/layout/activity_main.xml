@@ -53,6 +53,7 @@
         android:layout_height="wrap_content"
         android:text="ANALYZE"
         android:id="@+id/analyze"
+        android:onClick="dispatchFaceDetectActivityIntent"
         android:layout_alignTop="@+id/galButton"
         android:layout_centerHorizontal="true" />
 

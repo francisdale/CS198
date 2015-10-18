@@ -24,6 +24,16 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.media.FaceDetector;
+import android.media.FaceDetector.Face;
+import android.os.Bundle;
+import android.view.View;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,13 +41,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int SELECT_PHOTO = 2;
+    private static final int FACE_DETECT = 3;
 
     private String name;
     private String dir;
     private String selectedImagePath;
     private ImageView imageView;
-
-
+    private Face_Detection_View fd;
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
 
@@ -74,14 +84,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void dispatchTakePictureIntent() {
-
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-
         File file = getFile();
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
         startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-
+    }
+    private void dispatchFaceDetectActivityIntent(){
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath",selectedImagePath);
+        startActivity(faceDetect);
     }
 
 
@@ -127,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
                 new Button.OnClickListener() {
                     public void onClick(View v) {
                        //imageView.setImageDrawable(Drawable.createFromPath("/sdcard/DCIM/samp/sample.jpg"));
-                        imageView.setImageDrawable(null);
+                        //imageView.setImageDrawable(null);
+                        dispatchFaceDetectActivityIntent();
                     }
                 }
         );
@@ -142,15 +154,17 @@ public class MainActivity extends AppCompatActivity {
         if(resultCode == RESULT_OK){
             if(requestCode == REQUEST_TAKE_PHOTO){
                 String path = "sdcard/CS198Photos/"+name;
+
                 imageView.setImageDrawable(Drawable.createFromPath(path));
+                //path = selectedImagePath;
                 galleryAddPic();
+
             }
 
             if(requestCode == SELECT_PHOTO){
                 Uri selectedImageUri = data.getData();
                 selectedImagePath = getPath(selectedImageUri);
                 imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
-
             }
         }
     }
