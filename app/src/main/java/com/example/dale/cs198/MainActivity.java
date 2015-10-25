@@ -154,10 +154,10 @@ public class MainActivity extends AppCompatActivity {
         if(resultCode == RESULT_OK){
             if(requestCode == REQUEST_TAKE_PHOTO){
                 String path = "sdcard/CS198Photos/"+name;
-
+                selectedImagePath="sdcard/CS198Photos/"+name;
                 imageView.setImageDrawable(Drawable.createFromPath(path));
-                //path = selectedImagePath;
                 galleryAddPic();
+
 
             }
 
