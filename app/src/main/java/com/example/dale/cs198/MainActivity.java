@@ -2,42 +2,26 @@ package com.example.dale.cs198;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Environment;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.util.Log;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.Button;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.ImageView;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PointF;
-import android.media.FaceDetector;
-import android.media.FaceDetector.Face;
-import android.os.Bundle;
-import android.view.View;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "testMessage: ";
+    private static final String TAG = "testMessage";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int SELECT_PHOTO = 2;
@@ -47,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private String dir;
     private String selectedImagePath;
     private ImageView imageView;
-    private Face_Detection_View fd;
+    //private Face_Detection_View fd;
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
 
@@ -76,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void dispatchSelectPhotoIntent(){
+        Log.i(TAG, "DispatchSelectPhotoIntent");
         Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
         selectFromGallery.setType("image/*");
         //selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
@@ -90,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
     }
     private void dispatchFaceDetectActivityIntent(){
+        Log.i(TAG, "dispatchFaceDetectActivityIntent");
         Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
         faceDetect.putExtra("filepath",selectedImagePath);
         startActivity(faceDetect);
