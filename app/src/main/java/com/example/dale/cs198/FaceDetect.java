@@ -25,11 +25,11 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.Rect;
-import org.opencv.core.Size;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
@@ -226,14 +226,44 @@ public class FaceDetect extends AppCompatActivity {
         if ( mJavaDetector.empty() )   {  Log.i(TAG, "mJavaDetector is empty"); } else {Log.i(TAG, "mJavaDetector is not empty");}
 
         mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+
         Log.i(TAG, "updateimage mid 2");
         Rect[] facesArray = faces.toArray();
         Log.i(TAG, "updateimage mid 3");
+
+        File folder = new File("sdcard/CS198Crops");
+
+        folder.delete();
+        folder.mkdir();
+
+
+        String dir;
+        Rect rectCrop = null;
+        Mat image_roi = null;
+        /*
+        for (Rect rect : facesArray) {
+            //timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            //imageFileName = JPEG_FILE_PREFIX + timeStamp + JPEG_FILE_SUFFIX;
+            //Imgproc.rectangle(mGray, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+            rectCrop = new Rect(rect.x, rect.y, rect.width, rect.height);
+
+        }
+        */
+        Log.i(TAG, "updateimage mid 4");
+        for(int i = 0; i < facesArray.length; i++) {
+            rectCrop = new Rect(facesArray[i].x, facesArray[i].y, facesArray[i].width, facesArray[i].height);
+            image_roi = mGray.submat(rectCrop);
+            dir = "sdcard/CS198Crops/img"+i+".jpg";
+            Imgcodecs.imwrite(dir, image_roi);
+            Log.i(TAG, "updateimage loop " + i);
+        }
+        //end of cropping
+
         for (int i = 0; i < facesArray.length; i++)
             Imgproc.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
 
         face_count = facesArray.length;
-        Log.i(TAG, "updateimage mid 4");
+        Log.i(TAG, "updateimage mid 5");
 
         // convert to bitmap:
         Bitmap bm = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
