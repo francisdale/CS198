@@ -10,7 +10,10 @@
     <string name="album_name">CS198Photos</string>
     <string name="title_activity_face_detect">FaceDetect</string>
     <string name="numFaceDetected">Number of faces detected:</string>
-    <string name="faceDetectButton">Detect faces</string>
-
+    <string name="faceDetectHaarButton">Haar Detect</string>
+    <string name="faceDetectLBPButton">LBP Detect</string>
+    <string name="faceDetectAndroidButton">Android\nDetect</string>
+    <string name="timeElapsed">Time in seconds:</string>
+    <string name="detectType">Detection Method: </string>
 
 </resources>

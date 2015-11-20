@@ -74,10 +74,28 @@ public class MainActivity extends AppCompatActivity {
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
         startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
     }
-    private void dispatchFaceDetectActivityIntent(){
-        Log.i(TAG, "dispatchFaceDetectActivityIntent");
+
+    public void dispatchFaceDetectHaarActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectHaarActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath", selectedImagePath);
+        faceDetect.putExtra("detectType", 0);
+        startActivity(faceDetect);
+    }
+
+    public void dispatchFaceDetectLBPActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectLBPActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath", selectedImagePath);
+        faceDetect.putExtra("detectType", 1);
+        startActivity(faceDetect);
+    }
+
+    public void dispatchFaceDetectAndroidActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectAndroidActivityIntent");
         Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
         faceDetect.putExtra("filepath",selectedImagePath);
+        faceDetect.putExtra("detectType", 2);
         startActivity(faceDetect);
     }
 
@@ -118,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-
+        /*
         Button analyze = (Button) findViewById(R.id.analyze);
         analyze.setOnClickListener(
                 new Button.OnClickListener() {
@@ -129,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-
+    */
 
 
     }

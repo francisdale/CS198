@@ -26,10 +26,31 @@
         android:textColor="#FFFFFF"
         android:text="@string/numFaceDetected"
         android:id="@+id/numFaceDetected"
+        android:layout_above="@+id/timeElapsed"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:text="@string/timeElapsed"
+        android:id="@+id/timeElapsed"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF"
+        android:text="@string/detectType"
+        android:id="@+id/detectType"
+        android:layout_above="@+id/numFaceDetected"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 
 </RelativeLayout>
