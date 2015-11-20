@@ -19,9 +19,9 @@ import android.view.SurfaceHolder;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -29,7 +29,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
@@ -42,28 +41,20 @@ import java.io.InputStream;
 
 public class FaceDetect extends AppCompatActivity {
 
-    private static final Scalar FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    public static final int        JAVA_DETECTOR       = 0;
-    public static final int        NATIVE_DETECTOR     = 1;
+    String filepath;
+    ImageView faceCanvas;
+    private static final String TAG = "testMessage";
 
-    private MenuItem               mItemFace50;
-    private MenuItem               mItemFace40;
-    private MenuItem               mItemFace30;
-    private MenuItem               mItemFace20;
-    private MenuItem               mItemType;
+    //Variables for Haar face detection:
+    private static final Scalar FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
 
     private Mat mRgba;
     private Mat                    mGray;
     private File mCascadeFile;
     private CascadeClassifier mJavaDetector;
 
-    private int                    mDetectorType       = JAVA_DETECTOR;
-    private String[]               mDetectorName;
-
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
-
-    private CameraBridgeViewBase mOpenCvCameraView;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -123,12 +114,9 @@ public class FaceDetect extends AppCompatActivity {
     };
 
 
-    // Old variables:
+    // Variables for Android FaceDetect:
 
-    ImageView faceCanvas;
 
-    String filepath;
-    private static final String TAG = "testMessage";
 
     /**===========================================================**/
     private static final int MAX_FACES = 100;
@@ -169,18 +157,8 @@ public class FaceDetect extends AppCompatActivity {
             Log.d(TAG, "OpenCV library found inside package. Using it!");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
-        Log.i(TAG, "LoaderCallback done");
         faceCanvas = (ImageView)findViewById(R.id.detected);
-        Log.i(TAG, "about to start updateimage");
-        updateImage(filepath);
-        //draw();
-
-
-        //faceCanvas.setImageDrawable(Drawable.createFromPath(filepath));
-       // Face_Detection_View a = new Face_Detection_View(this,filepath);
-
-       // a = (Face_Detection_View)findViewById(R.id.detected);
-        Log.i(TAG, "onCreate end");
+        detectFacesByHaarCascade(filepath);
     }
 
     @Override
@@ -205,76 +183,62 @@ public class FaceDetect extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void updateImage(String path) {
+    public void detectFacesByHaarCascade(String path) {
         Log.i(TAG, "updateimage now");
 
-        //Loading the image in grayscale:
+        //We load the image in grayscale:
         mGray = Imgcodecs.imread(path, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 
-        //Loading the image in color; need to convert color scheme because imread() uses bga, not rgba:
+        //We load the image in color; we need to convert color scheme to rgba because imread() uses bga.
         Mat mBga = Imgcodecs.imread(path);
         mRgba = new Mat(); //RGBA format
         Imgproc.cvtColor(mBga, mRgba, Imgproc.COLOR_BGR2RGBA);
 
         MatOfRect faces = new MatOfRect();
 
-        Log.i(TAG, "updateimage mid 1");
-        Log.i(TAG, path);
-        // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-
         if ( mGray.empty() )   {  Log.i(TAG, "mGray is empty"); } else {Log.i(TAG, "mGray is not empty");}
         if ( mJavaDetector.empty() )   {  Log.i(TAG, "mJavaDetector is empty"); } else {Log.i(TAG, "mJavaDetector is not empty");}
 
-        mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+        //mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+        mJavaDetector.detectMultiScale(mGray, faces);
 
-        Log.i(TAG, "updateimage mid 2");
         Rect[] facesArray = faces.toArray();
-        Log.i(TAG, "updateimage mid 3");
 
         File folder = new File("sdcard/CS198Crops");
 
-        folder.delete();
+        deleteDirectory(folder);
         folder.mkdir();
 
 
         String dir;
         Rect rectCrop = null;
         Mat image_roi = null;
-        /*
-        for (Rect rect : facesArray) {
-            //timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            //imageFileName = JPEG_FILE_PREFIX + timeStamp + JPEG_FILE_SUFFIX;
-            //Imgproc.rectangle(mGray, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
-            rectCrop = new Rect(rect.x, rect.y, rect.width, rect.height);
 
-        }
-        */
-        Log.i(TAG, "updateimage mid 4");
-        for(int i = 0; i < facesArray.length; i++) {
+        for (int i = 0; i < facesArray.length; i++) {
+            //We draw the bounding boxes on the faces on the mRgba image:
+            Imgproc.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+            //We crop the faces from the mGray image and store them in sdcard/CS198Crops:
             rectCrop = new Rect(facesArray[i].x, facesArray[i].y, facesArray[i].width, facesArray[i].height);
             image_roi = mGray.submat(rectCrop);
-            dir = "sdcard/CS198Crops/img"+i+".jpg";
+            dir = "sdcard/CS198Crops/"+i+".jpg";
             Imgcodecs.imwrite(dir, image_roi);
             Log.i(TAG, "updateimage loop " + i);
         }
-        //end of cropping
-
-        for (int i = 0; i < facesArray.length; i++)
-            Imgproc.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-
         face_count = facesArray.length;
-        Log.i(TAG, "updateimage mid 5");
 
-        // convert to bitmap:
+        // convert Mat to bitmap:
         Bitmap bm = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mRgba, bm);
 
-        // find the imageview and draw it!
         faceCanvas.setImageBitmap(bm);
+
+        TextView tv = (TextView) findViewById(R.id.numFaceDetected);
+        tv.setText("Number of faces detected: " + facesArray.length);
+
         Log.i(TAG, "updateimage done");
     }
 
-    public void updateImageOld(String path) {
+    public void detectFacesByAndroidFaceDetect(String path) {
         // Set internal configuration to RGB_565
         Log.i(TAG, "updateimage na");
         BitmapFactory.Options bitmap_options = new BitmapFactory.Options();
@@ -363,6 +327,18 @@ public class FaceDetect extends AppCompatActivity {
         }
     }
 
-
+    static public boolean deleteDirectory(File path) {
+        if (path.exists()) {
+            File[] files = path.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    deleteDirectory(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+        }
+        return (path.delete());
+    }
 
 }
