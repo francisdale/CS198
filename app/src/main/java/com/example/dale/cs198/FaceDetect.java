@@ -334,6 +334,21 @@ public class FaceDetect extends AppCompatActivity {
                     (int) (2*myEyesDistance * 1.3),
                     (int) (2*myEyesDistance * 1.3)
             );
+
+            //Check if the crop rectangle is outside the bounds of the image
+            if(rectCrop.x < 0){
+                rectCrop.x = 0;
+            }
+            if(rectCrop.y < 0){
+                rectCrop.y = 0;
+            }
+            if (rectCrop.x + rectCrop.width > mGray.width()){
+                rectCrop.width = mGray.width() - rectCrop.x;
+            }
+            if (rectCrop.y + rectCrop.height > mGray.height()){
+                rectCrop.height = mGray.height() - rectCrop.y;
+            }
+
             image_roi = mGray.submat(rectCrop);
             dir = "sdcard/CS198Crops/"+i+".jpg";
             Imgcodecs.imwrite(dir, image_roi);
