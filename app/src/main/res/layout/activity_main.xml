@@ -10,26 +10,6 @@
     TextView android:text="@string/hello_world" android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-
-
-    <Button
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:text="@string/camButton"
-        android:id="@+id/camButton"
-        android:layout_alignTop="@+id/galButton"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:text="@string/galButton"
-        android:id="@+id/galButton"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="375dp"
@@ -41,32 +21,56 @@
         android:layout_alignParentStart="true" />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:background="#0047b3"
+        android:text="@string/camButton"
+        android:id="@+id/camButton"
+        android:layout_alignTop="@+id/galButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/haar20Detect"
+        android:layout_alignRight="@+id/haar20Detect"
+        android:layout_alignEnd="@+id/haar20Detect" />
+
+    <Button
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="@string/galButton"
+        android:id="@+id/galButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/haar20Detect"
+        android:layout_toRightOf="@+id/haar20Detect" />
+
+    <Button
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:background="#C60ED7"
         android:textColor="#ffffff"
         android:text="@string/faceDetectHaarButton"
         android:id="@+id/haarDetect"
         android:onClick="dispatchFaceDetectHaarActivityIntent"
         android:layout_below="@+id/imageView"
-        android:layout_centerHorizontal="true" />
+        android:layout_toLeftOf="@+id/androiddetect"
+        android:layout_toStartOf="@+id/androiddetect" />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
-        android:background="#0047b3"
+        android:background="#0C9C1F"
         android:textColor="#ffffff"
         android:text="@string/faceDetectLBPButton"
         android:id="@+id/lbpdetect"
         android:onClick="dispatchFaceDetectLBPActivityIntent"
         android:layout_below="@+id/imageView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_toLeftOf="@+id/haar20Detect"
+        android:layout_toStartOf="@+id/haar20Detect" />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
-        android:background="#0047b3"
+        android:background="#D70E40"
         android:textColor="#ffffff"
         android:text="@string/faceDetectAndroidButton"
         android:id="@+id/androiddetect"
@@ -74,5 +78,17 @@
         android:layout_below="@+id/imageView"
         android:layout_alignRight="@+id/imageView"
         android:layout_alignEnd="@+id/imageView" />
+
+    <Button
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:background="#0047b3"
+        android:textColor="#ffffff"
+        android:text="@string/haar20Detect"
+        android:id="@+id/haar20Detect"
+        android:onClick="dispatchFaceDetectHaar20ActivityIntent"
+        android:layout_below="@+id/imageView"
+        android:layout_toLeftOf="@+id/haarDetect"
+        android:layout_toStartOf="@+id/haarDetect" />
 
 </RelativeLayout>

@@ -99,6 +99,14 @@ public class MainActivity extends AppCompatActivity {
         startActivity(faceDetect);
     }
 
+    public void dispatchFaceDetectHaar20ActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectHaar20ActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath", selectedImagePath);
+        faceDetect.putExtra("detectType", 3);
+        startActivity(faceDetect);
+    }
+
 
     @Override
     //came from activity template

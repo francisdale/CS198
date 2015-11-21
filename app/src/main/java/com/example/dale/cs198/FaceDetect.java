@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.media.FaceDetector;
@@ -37,10 +36,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class FaceDetect extends AppCompatActivity {
 
     String filepath;
+    String imgName;
+    String cropPath;
+    String cropName;
+    String outputImgPath;
+    String timeStamp;
     int detectType;
     String detectTypeString;
     ImageView faceCanvas;
@@ -49,7 +55,6 @@ public class FaceDetect extends AppCompatActivity {
     long timeStart;
     long timeEnd;
     long timeElapsed;
-    File folder;
 
     //Variables for Haar face detection:
 
@@ -81,8 +86,10 @@ public class FaceDetect extends AppCompatActivity {
                         InputStream is;
                         if(detectType == 0){
                             is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
-                        } else
+                        } else if (detectType == 1) {
                             is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+                        } else
+                            is = getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
 
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
                         mCascadeFile = new File(cascadeDir, mCascadeFileName);
@@ -159,10 +166,46 @@ public class FaceDetect extends AppCompatActivity {
         setContentView(R.layout.activity_face_detect);
         faceCanvas = (ImageView) findViewById(R.id.detected);
 
-        folder = new File("sdcard/CS198Crops");
+        String[] stringArray = filepath.split("/");
+        imgName = stringArray[stringArray.length - 1];
+        imgName = imgName.substring(0, imgName.length() - 4);
+        Log.i(TAG, "filepath: " + filepath);
+        Log.i(TAG, "imgName: " + imgName);
 
-        deleteDirectory(folder);
-        folder.mkdir();
+        if(detectType == 0) {
+            cropName = imgName + "Haar";
+        } else if(detectType == 1) {
+            cropName = imgName + "LBP";
+        } else if(detectType == 2) {
+            cropName = imgName + "Android";
+        } else {
+            cropName = imgName + "Haar20";
+        }
+
+        Log.i(TAG, "Creating folders:");
+        cropPath = "sdcard/CS198Crops";
+        outputImgPath = "sdcard/CS198OutputImgs";
+
+        File folder = new File(cropPath);
+        if(!folder.exists()){
+            Log.i(TAG, cropPath + " does not exist. Creating...");
+            folder.mkdir();
+        }
+
+        folder = new File(outputImgPath);
+        if(!folder.exists()){
+            Log.i(TAG, outputImgPath + " does not exist. Creating...");
+            folder.mkdir();
+        }
+
+        cropPath = "sdcard/CS198Crops/" + cropName;
+
+        folder = new File(cropPath);
+        if(!folder.exists()){
+            Log.i(TAG, cropPath + " does not exist. Creating...");
+            folder.mkdir();
+        }
+
 
         if(detectType == 0) {
             Log.i(TAG, "Detecting with Haar");
@@ -196,6 +239,19 @@ public class FaceDetect extends AppCompatActivity {
             OpenCVLoader.initDebug();
             detectFacesByAndroid(filepath);
             Log.i(TAG, "Detecting with Android end");
+        } else if(detectType == 3){
+            Log.i(TAG, "Detecting with Haar20");
+            detectTypeString = "Haar 20";
+            mCascadeFileName = "haarcascade_frontalface_alt.xml";
+            if (!OpenCVLoader.initDebug()) {
+                Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+            } else {
+                Log.d(TAG, "OpenCV library found inside package. Using it!");
+                mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+            }
+            detectFacesByCascade(filepath);
+            Log.i(TAG, "Detecting with LBP end");
         }
 
         TextView tv = (TextView) findViewById(R.id.detectType);
@@ -237,7 +293,8 @@ public class FaceDetect extends AppCompatActivity {
             //We crop the faces from the mGray image and store them in sdcard/CS198Crops:
             rectCrop = new Rect(facesArray[i].x, facesArray[i].y, facesArray[i].width, facesArray[i].height);
             image_roi = mGray.submat(rectCrop);
-            dir = "sdcard/CS198Crops/"+i+".jpg";
+            //timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            dir = cropPath + "/" + cropName + "_" + (i+1) + ".jpg";
             Imgcodecs.imwrite(dir, image_roi);
         }
         face_count = facesArray.length;
@@ -248,10 +305,14 @@ public class FaceDetect extends AppCompatActivity {
 
         faceCanvas.setImageBitmap(bm);
 
+        Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_RGBA2BGR);
+        Imgcodecs.imwrite(outputImgPath + "/" + cropName + ".jpg", mRgba);
 
         timeEnd = System.currentTimeMillis();
         timeElapsed = timeEnd - timeStart;
     }
+
+
 
     public void detectFacesByAndroid(String path) {
         timeStart = System.currentTimeMillis();
@@ -294,6 +355,7 @@ public class FaceDetect extends AppCompatActivity {
 
     public void draw() {
         Log.i(TAG, "entered on draw");
+        /*
         Bitmap temp = Bitmap.createBitmap(background_image.getWidth(),background_image.getHeight(),Bitmap.Config.RGB_565);
         canvas = new Canvas(temp);
 
@@ -307,33 +369,35 @@ public class FaceDetect extends AppCompatActivity {
         myPaint.setColor(Color.GREEN);
         myPaint.setStyle(Paint.Style.STROKE);
         myPaint.setStrokeWidth(6);
+    */
 
-        Log.i(TAG, "Opening mGray");
         mGray = Imgcodecs.imread(filepath, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-        Log.i(TAG, "mGray opened");
-        Rect rectCrop;
-        Mat image_roi;
+
+        //We load the image in color; we need to convert color scheme to rgba because imread() uses bga.
+        Mat mBga = Imgcodecs.imread(filepath);
+        mRgba = new Mat(); //RGBA format
+        Imgproc.cvtColor(mBga, mRgba, Imgproc.COLOR_BGR2RGBA);
+
+        Rect rectCrop = null;
+        Mat image_roi = null;
         String dir;
+        float myEyesDistance;
         Log.i(TAG, "Starting to crop");
         for (int i = 0; i < face_count; i++) {
             FaceDetector.Face face = faces[i];
             PointF myMidPoint = new PointF();
             face.getMidPoint(myMidPoint);
             myEyesDistance = face.eyesDistance();
-            canvas.drawRect(
-                    (int) (myMidPoint.x - myEyesDistance * 1.3),
-                    (int) (myMidPoint.y - myEyesDistance * 1.3),
-                    (int) (myMidPoint.x + myEyesDistance * 1.3),
-                    (int) (myMidPoint.y + myEyesDistance * 1.3),
-                    myPaint
-            );
-            Log.i(TAG, "Crop loop " + i);
             rectCrop = new Rect(
                     (int) (myMidPoint.x - myEyesDistance * 1.3),
                     (int) (myMidPoint.y - myEyesDistance * 1.3),
                     (int) (2*myEyesDistance * 1.3),
                     (int) (2*myEyesDistance * 1.3)
             );
+            Imgproc.rectangle(mRgba, rectCrop.tl(), rectCrop.br(), FACE_RECT_COLOR, 3);
+
+            Log.i(TAG, "Crop loop " + i);
+
 
             //Check if the crop rectangle is outside the bounds of the image
             if(rectCrop.x < 0){
@@ -350,13 +414,34 @@ public class FaceDetect extends AppCompatActivity {
             }
 
             image_roi = mGray.submat(rectCrop);
-            dir = "sdcard/CS198Crops/"+i+".jpg";
+            timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            dir = cropPath + "/" + cropName + "_" + (i+1) + ".jpg";
             Imgcodecs.imwrite(dir, image_roi);
 
         }
 
-        faceCanvas.setImageBitmap(temp);
+        Bitmap bm = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mRgba, bm);
 
+        faceCanvas.setImageBitmap(bm);
+
+        Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_RGBA2BGR);
+        Imgcodecs.imwrite(outputImgPath + "/" + cropName + ".jpg", mRgba);
+        /*
+        myPaint.setStyle(Paint.Style.FILL);
+        myPaint.setColor(Color.BLACK);
+        canvas.drawRect(0, temp.getWidth(), temp.getHeight(), 200, myPaint);
+
+        FileOutputStream out;
+        try {
+            out = new FileOutputStream(outputImgPath + "/" + cropName);
+            temp.compress(Bitmap.CompressFormat.JPEG, 0, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        */
     }
 
     static public boolean deleteDirectory(File path) {
