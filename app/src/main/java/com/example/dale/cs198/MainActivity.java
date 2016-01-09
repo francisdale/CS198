@@ -107,6 +107,13 @@ public class MainActivity extends AppCompatActivity {
         startActivity(faceDetect);
     }
 
+    public void dispatchFaceRecogTrainActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceRecogTrainActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath", selectedImagePath);
+        faceDetect.putExtra("detectType", 0);
+        startActivity(faceDetect);
+    }
 
     @Override
     //came from activity template

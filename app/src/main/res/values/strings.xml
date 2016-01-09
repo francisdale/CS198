@@ -16,5 +16,10 @@
     <string name="timeElapsed">Time in seconds:</string>
     <string name="detectType">Detection Method: </string>
     <string name="haar20Detect">Haar\n20</string>
+    <string name="title_activity_open_cvface_recognizer">OpenCVFaceRecognizer</string>
+    <string name="train">Train</string>
+    <string name="eigen">Eigen</string>
+    <string name="fisher">Fisher</string>
+    <string name="lbph">LBPH</string>
 
 </resources>
