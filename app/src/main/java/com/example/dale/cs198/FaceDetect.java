@@ -4,153 +4,85 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
-import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_imgcodecs;
+import org.bytedeco.javacpp.opencv_imgproc;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
+import static org.bytedeco.javacpp.opencv_core.CvRect;
+import static org.bytedeco.javacpp.opencv_core.CvScalar;
+import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
+import static org.bytedeco.javacpp.opencv_core.IplImage;
+import static org.bytedeco.javacpp.opencv_core.Mat;
+import static org.bytedeco.javacpp.opencv_core.Rect;
+import static org.bytedeco.javacpp.opencv_core.RectVector;
+import static org.bytedeco.javacpp.opencv_core.Size;
+import static org.bytedeco.javacpp.opencv_core.cvCopy;
+import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
+import static org.bytedeco.javacpp.opencv_core.cvGetSize;
+import static org.bytedeco.javacpp.opencv_core.cvPoint;
+import static org.bytedeco.javacpp.opencv_core.cvResetImageROI;
+import static org.bytedeco.javacpp.opencv_core.cvSetImageROI;
+import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
+import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_AA;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
+import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
+import static org.bytedeco.javacpp.opencv_imgproc.cvRectangle;
+import static org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 
 public class FaceDetect extends AppCompatActivity {
+
+    public static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
+    public static final String haar20CascadeXML = "haarcascade_frontalface_alt.xml";
+    public static final String lbpCascadeXML = "lbpcascade_frontalface.xml";
+    CascadeClassifier cascadeFaceDetector;
+    private static final int SCALE = 2; // scaling factor to reduce size of input image
 
     String filepath;
     String imgName;
     String cropPath;
     String cropName;
     String outputImgPath;
-    String timeStamp;
     int detectType;
     String detectTypeString;
-    ImageView faceCanvas;
+    ImageView imgWindow;
     private static final String TAG = "testMessage";
-    private int face_count;
+    private int faceCount;
     long timeStart;
     long timeEnd;
     long timeElapsed;
+    private static final int MAX_FACES = 100;
 
-    //Variables for Haar face detection:
-
-    /**===========================================================**/
-    private static final Scalar FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-
+    private IplImage imgRgba;
+    private IplImage imgGray;
     private Mat mRgba;
     private Mat mGray;
-    private File mCascadeFile;
-    private String mCascadeFileName;
-    private CascadeClassifier mCascadeFaceDetector;
-
-    private float mRelativeFaceSize   = 0.2f;
-    private int mAbsoluteFaceSize   = 0;
-
-    BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS:
-                {
-                    Log.i(TAG, "OpenCV loaded successfully");
-
-                    // Load native library after(!) OpenCV initialization
-                    //System.loadLibrary("detection_based_tracker");
-
-                    try {
-                        // load cascade file from application resources
-                        InputStream is;
-                        if(detectType == 0){
-                            is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
-                        } else if (detectType == 1) {
-                            is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
-                        } else
-                            is = getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
-
-                        File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, mCascadeFileName);
-                        FileOutputStream os = new FileOutputStream(mCascadeFile);
-
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            os.write(buffer, 0, bytesRead);
-                        }
-                        is.close();
-                        os.close();
-
-                        mCascadeFaceDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-                        if (mCascadeFaceDetector.empty()) {
-                            Log.e(TAG, "Failed to load cascade classifier");
-                            mCascadeFaceDetector = null;
-                        } else
-                            Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
-
-
-
-                        cascadeDir.delete();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
-                    }
-
-                } break;
-                default:
-                {
-                    super.onManagerConnected(status);
-                } break;
-            }
-        }
-    };
-
-    /**===========================================================**/
-
-
+    private int mAbsoluteFaceSize = 30;
 
     // Variables for Android FaceDetect:
 
     /**===========================================================**/
-    private static final int MAX_FACES = 100;
-    private Bitmap background_image;
-    private SurfaceHolder surfaceHolder;
+
     private FaceDetector.Face[] faces;
 
-    // preallocate for onDraw(...)
-    private PointF tmp_point = new PointF();
-    private Paint tmp_paint = new Paint();
-    WindowManager wm;
-    Display display;
-    ImageView iv;
-    String path;
-    int sizeY;
-    int sizeX;
-    LinearLayout mLinearLayout;
-    Canvas canvas;
+
     /**===========================================================**/
 
 
@@ -164,7 +96,7 @@ public class FaceDetect extends AppCompatActivity {
         detectType = intent.getIntExtra("detectType", 0);
 
         setContentView(R.layout.activity_face_detect);
-        faceCanvas = (ImageView) findViewById(R.id.detected);
+        imgWindow = (ImageView) findViewById(R.id.detected);
 
         String[] stringArray = filepath.split("/");
         imgName = stringArray[stringArray.length - 1];
@@ -206,60 +138,70 @@ public class FaceDetect extends AppCompatActivity {
             folder.mkdir();
         }
 
-
-        if(detectType == 0) {
-            Log.i(TAG, "Detecting with Haar");
-            detectTypeString = "Haar Cascade";
-            mCascadeFileName = "haarcascade_frontalface_default.xml";
-            if (!OpenCVLoader.initDebug()) {
-                Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-            } else {
-                Log.d(TAG, "OpenCV library found inside package. Using it!");
-                mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-            }
-            detectFacesByCascade(filepath);
-            Log.i(TAG, "Detecting with Haar end");
-        } else if(detectType == 1){
-            Log.i(TAG, "Detecting with LBP");
-            detectTypeString = "LBP Cascade";
-            mCascadeFileName = "lbpcascade_frontalface.xml";
-            if (!OpenCVLoader.initDebug()) {
-                Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-            } else {
-                Log.d(TAG, "OpenCV library found inside package. Using it!");
-                mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-            }
-            detectFacesByCascade(filepath);
-            Log.i(TAG, "Detecting with LBP end");
-        } else if (detectType == 2){
+        if(detectType == 2) {
             Log.i(TAG, "Detecting with Android");
             detectTypeString = "Android";
-            OpenCVLoader.initDebug();
             detectFacesByAndroid(filepath);
-            Log.i(TAG, "Detecting with Android end");
-        } else if(detectType == 3){
-            Log.i(TAG, "Detecting with Haar20");
-            detectTypeString = "Haar 20";
-            mCascadeFileName = "haarcascade_frontalface_alt.xml";
-            if (!OpenCVLoader.initDebug()) {
-                Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-            } else {
-                Log.d(TAG, "OpenCV library found inside package. Using it!");
-                mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        } else {
+            try {
+                // load cascade file from application resources
+                File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+                InputStream is;
+                File cascadeFile;
+                if (detectType == 0) {
+                    Log.i(TAG, "Detecting with Haar");
+                    detectTypeString = "Haar Cascade";
+                    is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+                    cascadeFile = new File(cascadeDir, haarCascadeXML);
+                } else if (detectType == 1) {
+                    Log.i(TAG, "Detecting with LBP");
+                    detectTypeString = "LBP Cascade";
+                    is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+                    cascadeFile = new File(cascadeDir, lbpCascadeXML);
+                } else {
+                    Log.i(TAG, "Detecting with Haar20");
+                    detectTypeString = "Haar 20 Cascade";
+                    is = getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
+                    cascadeFile = new File(cascadeDir, haar20CascadeXML);
+                }
+
+                FileOutputStream os = new FileOutputStream(cascadeFile);
+
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+                is.close();
+                os.close();
+                Log.i(TAG, "cascadeFile.getAbsolutePath: " + cascadeFile.getAbsolutePath());
+                Log.i(TAG, "Does the file above exist: " + (new File(cascadeFile.getAbsolutePath())).exists());
+
+                cascadeFaceDetector = new CascadeClassifier(cascadeFile.getAbsolutePath());
+                cascadeDir.delete();
+
+                /*
+                if (cascadeFaceDetector.empty()) {
+                    Log.e(TAG, "Failed to load cascade classifier");
+                    cascadeFaceDetector = null;
+                } else {
+                    Log.i(TAG, "Loaded cascade classifier from " + cascadeFile.getAbsolutePath());
+                }
+                */
+                detectFacesByCascade(filepath);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
             }
-            detectFacesByCascade(filepath);
-            Log.i(TAG, "Detecting with LBP end");
         }
 
         TextView tv = (TextView) findViewById(R.id.detectType);
         tv.setText("Detection method: " + detectTypeString);
         tv = (TextView) findViewById(R.id.numFaceDetected);
-        tv.setText("Number of faces detected: " + face_count);
+        tv.setText("Number of faces detected: " + faceCount);
         tv = (TextView) findViewById(R.id.timeElapsed);
-        tv.setText("Time in seconds: " + (float)timeElapsed/1000);
+        tv.setText("Time in seconds: " + (float) timeElapsed /1000);
     }
 
 
@@ -267,46 +209,43 @@ public class FaceDetect extends AppCompatActivity {
     public void detectFacesByCascade(String path) {
         timeStart = System.currentTimeMillis();
 
-        //We load the image in grayscale:
-        mGray = Imgcodecs.imread(path, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+        mGray = imread(path, opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+        imgRgba = cvLoadImage(path);
 
-        //We load the image in color; we need to convert color scheme to rgba because imread() uses bga.
-        Mat mBga = Imgcodecs.imread(path);
-        mRgba = new Mat(); //RGBA format
-        Imgproc.cvtColor(mBga, mRgba, Imgproc.COLOR_BGR2RGBA);
+        RectVector faces = new RectVector();
 
-        MatOfRect faces = new MatOfRect();
-
-        //mCascadeFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        mCascadeFaceDetector.detectMultiScale(mGray, faces);
-
-        Rect[] facesArray = faces.toArray();
+        cascadeFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 
 
-        String dir;
-        Rect rectCrop = null;
-        Mat image_roi = null;
+        // draw thick green rectangles around all the faces
+        faceCount = (int)faces.size();
 
-        for (int i = 0; i < facesArray.length; i++) {
-            //We draw the bounding boxes on the faces on the mRgba image:
-            Imgproc.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-            //We crop the faces from the mGray image and store them in sdcard/CS198Crops:
-            rectCrop = new Rect(facesArray[i].x, facesArray[i].y, facesArray[i].width, facesArray[i].height);
-            image_roi = mGray.submat(rectCrop);
-            //timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            dir = cropPath + "/" + cropName + "_" + (i+1) + ".jpg";
-            Imgcodecs.imwrite(dir, image_roi);
+        Rect roi;
+        Mat crop;
+        for (int i = 0; i < faceCount; i++) {
+            Rect r = faces.get(i);
+            int x = r.x();
+            int y = r.y();
+
+
+            cvRectangle(imgRgba, cvPoint(x, y), cvPoint((r.x() + r.width()), (r.y() + r.height())), CvScalar.GREEN, 6, CV_AA, 0);
+            //undo image scaling when calculating rect coordinates
+
+
+            roi = new Rect(x, y, r.width(), r.height());
+            crop = new Mat(mGray, roi);
+            imwrite(cropPath + "/" + cropName + "_" + (i+1) + ".jpg", crop);
         }
-        face_count = facesArray.length;
 
-        // convert Mat to bitmap:
-        Bitmap bm = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(mRgba, bm);
+        cvSaveImage(outputImgPath + "/" + cropName + ".jpg", imgRgba);
 
-        faceCanvas.setImageBitmap(bm);
+        IplImage temp = IplImage.create(imgRgba.width(), imgRgba.height(), opencv_core.IPL_DEPTH_8U, 4);
+        cvCvtColor(imgRgba, temp, opencv_imgproc.CV_BGR2RGBA);
+        // Now we make an Android Bitmap with matching size ... Nb. at this point we functionally have 3 buffers == image size. Watch your memory usage!
+        Bitmap bm = Bitmap.createBitmap(temp.width(), temp.height(), Bitmap.Config.ARGB_8888);
+        bm.copyPixelsFromBuffer(temp.getByteBuffer());
 
-        Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_RGBA2BGR);
-        Imgcodecs.imwrite(outputImgPath + "/" + cropName + ".jpg", mRgba);
+        imgWindow.setImageBitmap(bm);
 
         timeEnd = System.currentTimeMillis();
         timeElapsed = timeEnd - timeStart;
@@ -317,161 +256,85 @@ public class FaceDetect extends AppCompatActivity {
     public void detectFacesByAndroid(String path) {
         timeStart = System.currentTimeMillis();
         // Set internal configuration to RGB_565
+        Bitmap background_image;
+        FaceDetector.Face[] faces;
+
         BitmapFactory.Options bitmap_options = new BitmapFactory.Options();
         bitmap_options.inPreferredConfig = Bitmap.Config.RGB_565;
         background_image = BitmapFactory.decodeFile(path, bitmap_options);
 
-        /**================================================
-        int scaleToUse=0;
-        Point size = new Point();
-        display.getSize(size);
-
-        if(background_image.getWidth() >= background_image.getHeight()){
-            Log.i(TAG, "MAS MALAKI WIDTH");
-            scaleToUse = 90;
-        }
-
-        if(background_image.getWidth() < background_image.getHeight()){
-            Log.i(TAG, "MAS MALAKI HEIGHT");
-            scaleToUse = 90;
-        }
-
-        sizeY = size.y * scaleToUse / 100;
-        sizeX = background_image.getWidth() * sizeY / background_image.getHeight();
-        //background_image = Bitmap.createScaledBitmap(background_image,sizeX,sizeY,false);
-        /**================================================**/
-
-        //Log.i(TAG, "size " + background_image.getWidth() + "x" + background_image.getHeight());
-
         FaceDetector face_detector = new FaceDetector(background_image.getWidth(), background_image.getHeight(), MAX_FACES);
         faces = new FaceDetector.Face[MAX_FACES];
         // The bitmap must be in 565 format (for now).
-        face_count = face_detector.findFaces(background_image, faces);
+        faceCount = face_detector.findFaces(background_image, faces);
 
-        draw();
-        timeEnd = System.currentTimeMillis();
-        timeElapsed = timeEnd - timeStart;
-    }
-
-    public void draw() {
         Log.i(TAG, "entered on draw");
-        /*
-        Bitmap temp = Bitmap.createBitmap(background_image.getWidth(),background_image.getHeight(),Bitmap.Config.RGB_565);
-        canvas = new Canvas(temp);
 
 
-        Log.i(TAG, "entered on draw2");
-        canvas.drawBitmap(background_image, 0, 0, null);
-        Log.i(TAG, "entered on draw3");
+        imgRgba = cvLoadImage(path);
+        imgGray = IplImage.create(imgRgba.width(),imgRgba.height(), IPL_DEPTH_8U, 1);
+        cvCvtColor(imgRgba, imgGray, CV_BGR2GRAY);
 
-        Paint myPaint = new Paint();
-        float myEyesDistance;
-        myPaint.setColor(Color.GREEN);
-        myPaint.setStyle(Paint.Style.STROKE);
-        myPaint.setStrokeWidth(6);
-    */
 
-        mGray = Imgcodecs.imread(filepath, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-
-        //We load the image in color; we need to convert color scheme to rgba because imread() uses bga.
-        Mat mBga = Imgcodecs.imread(filepath);
-        mRgba = new Mat(); //RGBA format
-        Imgproc.cvtColor(mBga, mRgba, Imgproc.COLOR_BGR2RGBA);
-
-        Rect rectCrop = null;
-        Mat image_roi = null;
+        CvRect rectCrop = null;
+        opencv_core.Mat image_roi = null;
         String dir;
         float myEyesDistance;
         Log.i(TAG, "Starting to crop");
-        for (int i = 0; i < face_count; i++) {
+        for (int i = 0; i < faceCount; i++) {
             FaceDetector.Face face = faces[i];
             PointF myMidPoint = new PointF();
             face.getMidPoint(myMidPoint);
             myEyesDistance = face.eyesDistance();
-            rectCrop = new Rect(
+            rectCrop = new CvRect(
                     (int) (myMidPoint.x - myEyesDistance * 1.3),
                     (int) (myMidPoint.y - myEyesDistance * 1.3),
                     (int) (2*myEyesDistance * 1.3),
                     (int) (2*myEyesDistance * 1.3)
             );
-            Imgproc.rectangle(mRgba, rectCrop.tl(), rectCrop.br(), FACE_RECT_COLOR, 3);
+            cvRectangle(imgRgba, cvPoint(rectCrop.x(), rectCrop.y()), cvPoint(rectCrop.x() + rectCrop.width(), rectCrop.y() + rectCrop.height()), CvScalar.GREEN, 6, CV_AA, 0);
 
             Log.i(TAG, "Crop loop " + i);
 
 
             //Check if the crop rectangle is outside the bounds of the image
-            if(rectCrop.x < 0){
-                rectCrop.x = 0;
+            if(rectCrop.x() < 0){
+                rectCrop.x(0);
             }
-            if(rectCrop.y < 0){
-                rectCrop.y = 0;
+            if(rectCrop.y() < 0){
+                rectCrop.y(0);
             }
-            if (rectCrop.x + rectCrop.width > mGray.width()){
-                rectCrop.width = mGray.width() - rectCrop.x;
+            if (rectCrop.x() + rectCrop.width() > imgGray.width()){
+                rectCrop.width(imgGray.width() - rectCrop.x());
             }
-            if (rectCrop.y + rectCrop.height > mGray.height()){
-                rectCrop.height = mGray.height() - rectCrop.y;
+            if (rectCrop.y() + rectCrop.height() > imgGray.height()){
+                rectCrop.height(imgGray.height() - rectCrop.y());
             }
 
-            image_roi = mGray.submat(rectCrop);
-            timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            dir = cropPath + "/" + cropName + "_" + (i+1) + ".jpg";
-            Imgcodecs.imwrite(dir, image_roi);
-
+            CvRect cropROI = new CvRect(rectCrop.x(), rectCrop.y(), rectCrop.width(), rectCrop.height());
+            //After setting ROI (Region-Of-Interest) all processing will only be done on the ROI
+            cvSetImageROI(imgGray, cropROI);
+            IplImage cropped = cvCreateImage(cvGetSize(imgGray), imgGray.depth(), imgGray.nChannels());
+            //Copy original image (only ROI) to the cropped image
+            cvCopy(imgGray, cropped);
+            cvResetImageROI(imgGray);
+            cvSaveImage(cropPath + "/" + cropName + "_" + (i+1) + ".jpg", cropped);
         }
 
-        Bitmap bm = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(mRgba, bm);
+        cvSaveImage(outputImgPath + "/" + cropName + ".jpg", imgRgba);
 
-        faceCanvas.setImageBitmap(bm);
+        IplImage temp = IplImage.create(imgRgba.width(), imgRgba.height(), opencv_core.IPL_DEPTH_8U, 4);
+        cvCvtColor(imgRgba, temp, opencv_imgproc.CV_BGR2RGBA);
+        // Now we make an Android Bitmap with matching size ... Nb. at this point we functionally have 3 buffers == image size. Watch your memory usage!
+        Bitmap bm = Bitmap.createBitmap(temp.width(), temp.height(), Bitmap.Config.ARGB_8888);
+        bm.copyPixelsFromBuffer(temp.getByteBuffer());
 
-        Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_RGBA2BGR);
-        Imgcodecs.imwrite(outputImgPath + "/" + cropName + ".jpg", mRgba);
-        /*
-        myPaint.setStyle(Paint.Style.FILL);
-        myPaint.setColor(Color.BLACK);
-        canvas.drawRect(0, temp.getWidth(), temp.getHeight(), 200, myPaint);
+        imgWindow.setImageBitmap(bm);
 
-        FileOutputStream out;
-        try {
-            out = new FileOutputStream(outputImgPath + "/" + cropName);
-            temp.compress(Bitmap.CompressFormat.JPEG, 0, out);
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        */
+        timeEnd = System.currentTimeMillis();
+        timeElapsed = timeEnd - timeStart;
     }
 
-    static public boolean deleteDirectory(File path) {
-        if (path.exists()) {
-            File[] files = path.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    deleteDirectory(files[i]);
-                } else {
-                    files[i].delete();
-                }
-            }
-        }
-        return (path.delete());
-    }
-
-    /*
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-        } else {
-            Log.d(TAG, "OpenCV library found inside package. Using it!");
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        }
-    }
-    */
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

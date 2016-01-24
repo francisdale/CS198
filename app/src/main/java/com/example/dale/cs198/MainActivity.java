@@ -14,6 +14,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -37,6 +39,72 @@ public class MainActivity extends AppCompatActivity {
 
     //for debugging lang yung mga may LOG
 
+    FaceRecognizer fr;
+    private static final String trainingDir = "sdcard/CS198/faceDatabase";
+
+    @Override
+    //came from activity template
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Log.i(TAG, "onCreate state na");
+        /*
+        try {
+            fr = createEigenFaceRecognizer();
+            File root = new File(trainingDir);
+
+            FilenameFilter imgFilter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    name = name.toLowerCase();
+                    return name.endsWith(".normal") || name.endsWith(".happy") || name.endsWith(".centerlight");
+                }
+            };
+
+            //File[] imageFiles = root.listFiles();
+            File[] imageFiles = root.listFiles(imgFilter);
+            Log.i(TAG, "imageFiles.length: " + imageFiles.length);
+            opencv_core.MatVector images = new opencv_core.MatVector(imageFiles.length);
+
+            opencv_core.Mat labels = new opencv_core.Mat(imageFiles.length, 1, CV_32SC1);
+            //IntBuffer labelsBuf = labels.getIntBuffer();
+        } catch(Exception e){
+            Log.i(TAG, "Exception found:");
+            e.printStackTrace();
+        }
+        */
+        //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
+        Button camButton = (Button) findViewById(R.id.camButton);
+        imageView = (ImageView) findViewById(R.id.imageView);
+
+        camButton.setOnClickListener(
+                new Button.OnClickListener() {
+                    public void onClick(View v) {
+                        //type the things we want to happen
+                        //TextView someText = (TextView) findViewById(R.id.someText);
+                        //someText.setText("Yeah!");
+                        Log.i(TAG, "CALLING CAMERA INTENT=======================================================");
+                        dispatchTakePictureIntent();
+                        Log.i(TAG, "DONE CAMERA INTENT==========================================================");
+                    }
+                }
+        );
+
+
+        Button galButton = (Button) findViewById(R.id.galButton);
+        galButton.setOnClickListener(
+                new Button.OnClickListener() {
+                    public void onClick(View v) {
+                        //type the things we want to happen
+                        //TextView someText = (TextView) findViewById(R.id.someText);
+                        //someText.setText("Yooooow!");
+                        dispatchSelectPhotoIntent();
+                    }
+                }
+        );
+
+
+
+    }
     private File getFile(){
         File folder = new File("sdcard/CS198Photos");
 
@@ -108,57 +176,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    //came from activity template
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Log.i(TAG, "onCreate state na");
 
-        //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
-        Button camButton = (Button) findViewById(R.id.camButton);
-        imageView = (ImageView) findViewById(R.id.imageView);
-
-        camButton.setOnClickListener(
-                new Button.OnClickListener() {
-                    public void onClick(View v) {
-                        //type the things we want to happen
-                        //TextView someText = (TextView) findViewById(R.id.someText);
-                        //someText.setText("Yeah!");
-                        Log.i(TAG, "CALLING CAMERA INTENT=======================================================");
-                        dispatchTakePictureIntent();
-                        Log.i(TAG, "DONE CAMERA INTENT==========================================================");
-                    }
-                }
-        );
-
-
-        Button galButton = (Button) findViewById(R.id.galButton);
-        galButton.setOnClickListener(
-                new Button.OnClickListener() {
-                    public void onClick(View v) {
-                        //type the things we want to happen
-                        //TextView someText = (TextView) findViewById(R.id.someText);
-                        //someText.setText("Yooooow!");
-                        dispatchSelectPhotoIntent();
-                    }
-                }
-        );
-        /*
-        Button analyze = (Button) findViewById(R.id.analyze);
-        analyze.setOnClickListener(
-                new Button.OnClickListener() {
-                    public void onClick(View v) {
-                       //imageView.setImageDrawable(Drawable.createFromPath("/sdcard/DCIM/samp/sample.jpg"));
-                        //imageView.setImageDrawable(null);
-                        dispatchFaceDetectActivityIntent();
-                    }
-                }
-        );
-    */
-
-
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
