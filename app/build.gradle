@@ -17,23 +17,33 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
-        debug {
+        debug{
             debuggable true
         }
+		
+		packagingOptions {
+			exclude 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml'
+			exclude 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties'
+		}
 
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':openCVLibrary300')
-    compile group: 'org.bytedeco', name: 'javacv', version: '1.1'
-    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.0.1'
+	compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
+    compile files('libs/ffmpeg-android-arm.jar')
+    compile files('libs/ffmpeg-android-x86.jar')
+    compile files('libs/ffmpeg-windows-x86.jar')
+    compile files('libs/ffmpeg-windows-x86_64.jar')
+    compile files('libs/ffmpeg.jar')
+    compile files('libs/javacpp.jar')
+    compile files('libs/javacv.jar')
+    compile files('libs/opencv-android-arm.jar')
+    compile files('libs/opencv-android-x86.jar')
+    compile files('libs/opencv-windows-x86.jar')
+    compile files('libs/opencv-windows-x86_64.jar')
+    compile files('libs/opencv.jar')
 }
-
-
