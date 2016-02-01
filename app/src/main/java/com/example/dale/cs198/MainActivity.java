@@ -2,42 +2,28 @@ package com.example.dale.cs198;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Environment;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.util.Log;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.Button;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.ImageView;
+
+import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PointF;
-import android.media.FaceDetector;
-import android.media.FaceDetector.Face;
-import android.os.Bundle;
-import android.view.View;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "testMessage: ";
+    private static final String TAG = "testMessage";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int SELECT_PHOTO = 2;
@@ -47,54 +33,14 @@ public class MainActivity extends AppCompatActivity {
     private String dir;
     private String selectedImagePath;
     private ImageView imageView;
-    private Face_Detection_View fd;
+    //private Face_Detection_View fd;
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
 
     //for debugging lang yung mga may LOG
 
-    private File getFile(){
-        File folder = new File("sdcard/CS198Photos");
-
-        if(folder.exists()==false){
-            folder.mkdir();
-        }
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = JPEG_FILE_PREFIX + timeStamp + JPEG_FILE_SUFFIX;
-        name = imageFileName;
-        dir = "sdcard/CS198Photos/"+imageFileName;
-        File imageFile = new File(folder,imageFileName);
-        return imageFile;
-    }
-
-    private void galleryAddPic() {
-        Intent mediaScanIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
-        File f = new File(dir);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.sendBroadcast(mediaScanIntent);
-    }
-
-    private void dispatchSelectPhotoIntent(){
-        Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
-        selectFromGallery.setType("image/*");
-        //selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(selectFromGallery, SELECT_PHOTO);
-    }
-
-
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = getFile();
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
-        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
-    }
-    private void dispatchFaceDetectActivityIntent(){
-        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
-        faceDetect.putExtra("filepath",selectedImagePath);
-        startActivity(faceDetect);
-    }
-
+    FaceRecognizer fr;
+    private static final String trainingDir = "sdcard/CS198/faceDatabase";
 
     @Override
     //came from activity template
@@ -102,7 +48,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate state na");
+        /*
+        try {
+            fr = createEigenFaceRecognizer();
+            File root = new File(trainingDir);
 
+            FilenameFilter imgFilter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    name = name.toLowerCase();
+                    return name.endsWith(".normal") || name.endsWith(".happy") || name.endsWith(".centerlight");
+                }
+            };
+
+            //File[] imageFiles = root.listFiles();
+            File[] imageFiles = root.listFiles(imgFilter);
+            Log.i(TAG, "imageFiles.length: " + imageFiles.length);
+            opencv_core.MatVector images = new opencv_core.MatVector(imageFiles.length);
+
+            opencv_core.Mat labels = new opencv_core.Mat(imageFiles.length, 1, CV_32SC1);
+            //IntBuffer labelsBuf = labels.getIntBuffer();
+        } catch(Exception e){
+            Log.i(TAG, "Exception found:");
+            e.printStackTrace();
+        }
+        */
         //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
         Button camButton = (Button) findViewById(R.id.camButton);
         imageView = (ImageView) findViewById(R.id.imageView);
@@ -133,20 +102,81 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
-        Button analyze = (Button) findViewById(R.id.analyze);
-        analyze.setOnClickListener(
-                new Button.OnClickListener() {
-                    public void onClick(View v) {
-                       //imageView.setImageDrawable(Drawable.createFromPath("/sdcard/DCIM/samp/sample.jpg"));
-                        //imageView.setImageDrawable(null);
-                        dispatchFaceDetectActivityIntent();
-                    }
-                }
-        );
-
 
 
     }
+    private File getFile(){
+        File folder = new File("sdcard/CS198Photos");
+
+        if(folder.exists()==false){
+            folder.mkdir();
+        }
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = JPEG_FILE_PREFIX + timeStamp + JPEG_FILE_SUFFIX;
+        name = imageFileName;
+        dir = "sdcard/CS198Photos/"+imageFileName;
+        File imageFile = new File(folder,imageFileName);
+        return imageFile;
+    }
+
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
+        File f = new File(dir);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
+    }
+
+    private void dispatchSelectPhotoIntent(){
+        Log.i(TAG, "DispatchSelectPhotoIntent");
+        Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
+        selectFromGallery.setType("image/*");
+        //selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(selectFromGallery, SELECT_PHOTO);
+    }
+
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File file = getFile();
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
+        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+    }
+
+    public void dispatchFaceDetectHaarActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectHaarActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath", selectedImagePath);
+        faceDetect.putExtra("detectType", 0);
+        startActivity(faceDetect);
+    }
+
+    public void dispatchFaceDetectLBPActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectLBPActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath", selectedImagePath);
+        faceDetect.putExtra("detectType", 1);
+        startActivity(faceDetect);
+    }
+
+    public void dispatchFaceDetectAndroidActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectAndroidActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath",selectedImagePath);
+        faceDetect.putExtra("detectType", 2);
+        startActivity(faceDetect);
+    }
+
+    public void dispatchFaceDetectHaar20ActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceDetectHaar20ActivityIntent");
+        Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
+        faceDetect.putExtra("filepath", selectedImagePath);
+        faceDetect.putExtra("detectType", 3);
+        startActivity(faceDetect);
+    }
+
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
@@ -154,10 +184,10 @@ public class MainActivity extends AppCompatActivity {
         if(resultCode == RESULT_OK){
             if(requestCode == REQUEST_TAKE_PHOTO){
                 String path = "sdcard/CS198Photos/"+name;
-
+                selectedImagePath="sdcard/CS198Photos/"+name;
                 imageView.setImageDrawable(Drawable.createFromPath(path));
-                //path = selectedImagePath;
                 galleryAddPic();
+
 
             }
 

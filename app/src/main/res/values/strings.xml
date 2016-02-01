@@ -9,6 +9,12 @@
     <string name="hello_world">Yow!</string>
     <string name="album_name">CS198Photos</string>
     <string name="title_activity_face_detect">FaceDetect</string>
-
+    <string name="numFaceDetected">Number of faces detected:</string>
+    <string name="faceDetectHaarButton">Haar\nDetect</string>
+    <string name="faceDetectLBPButton">LBP\nDetect</string>
+    <string name="faceDetectAndroidButton">Android\nDetect</string>
+    <string name="timeElapsed">Time in seconds:</string>
+    <string name="detectType">Detection Method: </string>
+    <string name="haar20Detect">Haar\n20</string>
 
 </resources>

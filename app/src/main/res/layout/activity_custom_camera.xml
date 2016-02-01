@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.dale.cs198.CustomCamera">
+
+    <SurfaceView
+        android:layout_width="500dp"
+        android:layout_height="400dp"
+        android:id="@+id/surfaceView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/surfaceView"
+        android:layout_toEndOf="@+id/surfaceView">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="0000"
+            android:id="@+id/detected_textView" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="CAPTURE"
+            android:id="@+id/capture_button"
+            android:layout_marginTop="160dp" />
+    </LinearLayout>
+
+    <!--<TableRow android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@+id/surfaceView"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentStart="true"-->
+        <!--android:layout_alignParentBottom="true">-->
+        <!--<Button android:layout_height="match_parent"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:text="Take Picture"-->
+            <!--android:id="@+id/capture_button"/>-->
+
+        <!--<TextView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_marginTop="15dp"-->
+            <!--android:text="Detected:"-->
+            <!--android:id="@+id/detected_textView"-->
+            <!--android:textSize="25dp"-->
+            <!--android:textStyle="bold"-->
+            <!--android:textAlignment="center" />-->
+
+
+    <!--</TableRow>-->
+
+
+</RelativeLayout>
