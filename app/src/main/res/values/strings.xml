@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CS198</string>
+    <string name="app_name">Present!</string>
 
     <string name="thesis_it">THESIS IT CS198!</string>
     <string name="action_settings">Settings</string>
@@ -21,5 +21,9 @@
     <string name="eigen">Eigen</string>
     <string name="fisher">Fisher</string>
     <string name="lbph">LBPH</string>
+    <string name="title_activity_menu">MenuActivity</string>
+
+
+
 
 </resources>

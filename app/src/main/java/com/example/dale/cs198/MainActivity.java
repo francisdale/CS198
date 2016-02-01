@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(faceDetect);
     }
 
+    /*
     public void dispatchFaceDetectLBPActivityIntent(View view){
         Log.i(TAG, "dispatchFaceDetectLBPActivityIntent");
         Intent faceDetect = new Intent(MainActivity.this,FaceDetect.class);
@@ -114,13 +115,18 @@ public class MainActivity extends AppCompatActivity {
         faceDetect.putExtra("detectType", 0);
         startActivity(faceDetect);
     }
-
+    */
     @Override
     //came from activity template
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate state na");
+
+       // Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+       // File file = getFile();
+       // takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
+       // startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
 
         //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
         Button camButton = (Button) findViewById(R.id.camButton);
@@ -151,19 +157,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-        /*
-        Button analyze = (Button) findViewById(R.id.analyze);
-        analyze.setOnClickListener(
-                new Button.OnClickListener() {
-                    public void onClick(View v) {
-                       //imageView.setImageDrawable(Drawable.createFromPath("/sdcard/DCIM/samp/sample.jpg"));
-                        //imageView.setImageDrawable(null);
-                        dispatchFaceDetectActivityIntent();
-                    }
-                }
-        );
-    */
-
 
     }
 
@@ -176,8 +169,6 @@ public class MainActivity extends AppCompatActivity {
                 selectedImagePath="sdcard/CS198Photos/"+name;
                 imageView.setImageDrawable(Drawable.createFromPath(path));
                 galleryAddPic();
-
-
             }
 
             if(requestCode == SELECT_PHOTO){
@@ -192,8 +183,7 @@ public class MainActivity extends AppCompatActivity {
     public String getPath(Uri uri) {
         String[] projection = { MediaStore.Images.Media.DATA };
         Cursor cursor = managedQuery(uri, projection, null, null, null);
-        if(cursor!=null)
-        {
+        if(cursor!=null) {
             //HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
             //THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);

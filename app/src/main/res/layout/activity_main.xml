@@ -27,56 +27,59 @@
             android:id="@+id/imageView"
             android:visibility="visible" />
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
+        <Button
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:divider="?android:dividerHorizontal"
-            android:showDividers="middle"
-            android:padding="5dp">
+            android:background="#9b0941"
+            android:textColor="#ffffff"
+            android:text="@string/faceDetectHaarButton"
+            android:id="@+id/haarDetect"
+            android:onClick="dispatchFaceDetectHaarActivityIntent"
+            android:layout_weight="0.25" />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#9b0941"
-                android:textColor="#ffffff"
-                android:text="@string/faceDetectLBPButton"
-                android:id="@+id/lbpdetect"
-                android:onClick="dispatchFaceDetectLBPActivityIntent"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="0.25"
-                android:padding="2dp" />
+        <!-- =====================================================================================
+       <LinearLayout
+           android:orientation="horizontal"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:divider="?android:dividerHorizontal"
+           android:showDividers="middle"
+           android:padding="5dp">
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#bd1957"
-                android:textColor="#ffffff"
-                android:text="@string/haar20Detect"
-                android:id="@+id/haar20Detect"
-                android:onClick="dispatchFaceDetectHaar20ActivityIntent"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="0.25" />
+           <Button
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:background="#9b0941"
+               android:textColor="#ffffff"
+               android:text="@string/faceDetectLBPButton"
+               android:id="@+id/lbpdetect"
+               android:onClick="dispatchFaceDetectLBPActivityIntent"
+               android:layout_gravity="center_vertical"
+               android:layout_weight="0.25"
+               android:padding="2dp" />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#9b0941"
-                android:textColor="#ffffff"
-                android:text="@string/faceDetectHaarButton"
-                android:id="@+id/haarDetect"
-                android:onClick="dispatchFaceDetectHaarActivityIntent"
-                android:layout_weight="0.25" />
+           <Button
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:background="#bd1957"
+               android:textColor="#ffffff"
+               android:text="@string/haar20Detect"
+               android:id="@+id/haar20Detect"
+               android:onClick="dispatchFaceDetectHaar20ActivityIntent"
+               android:layout_gravity="center_vertical"
+               android:layout_weight="0.25" />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#bd1957"
-                android:textColor="#ffffff"
-                android:text="@string/faceDetectAndroidButton"
-                android:id="@+id/androiddetect"
-                android:onClick="dispatchFaceDetectAndroidActivityIntent"
-                android:layout_weight="0.25" />
+                <Button
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:background="#bd1957"
+               android:textColor="#ffffff"
+               android:text="@string/faceDetectAndroidButton"
+               android:id="@+id/androiddetect"
+               android:onClick="dispatchFaceDetectAndroidActivityIntent"
+               android:layout_weight="0.25" />
+
+
 
         </LinearLayout>
 
@@ -125,6 +128,8 @@
                 android:id="@+id/lbph"
                 android:layout_weight="0.25" />
         </LinearLayout>
+           ====================================================================================== -->
+
 
         <LinearLayout
             android:orientation="horizontal"

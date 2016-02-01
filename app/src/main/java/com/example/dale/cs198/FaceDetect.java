@@ -109,9 +109,6 @@ public class FaceDetect extends AppCompatActivity {
                             mCascadeFaceDetector = null;
                         } else
                             Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
-
-
-
                         cascadeDir.delete();
 
                     } catch (IOException e) {

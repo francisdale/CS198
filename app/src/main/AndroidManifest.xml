@@ -2,11 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.dale.cs198">
 
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.SET_ALARM"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-feature android:name="android.hardware.camera2"/>
+    <uses-feature android:name="android.hardware.camera2.autofocus"/>
+
 
     <application
         android:allowBackup="true"
@@ -14,23 +18,44 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name">
+
+        <activity android:name=".CardHome">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-                <!-- apps starting point yung launcher -->
             </intent-filter>
         </activity>
+
         <activity
             android:name=".FaceDetect"
-            android:label="@string/title_activity_face_detect"></activity>
+            android:label="@string/title_activity_face_detect" />
         <activity
             android:name=".OpenCVFaceRecognizer"
             android:label="@string/title_activity_open_cvface_recognizer"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
+            android:name=".AddClass"
+            android:label="Add New Class"
+            android:parentActivityName=".CardHome">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".CardHome"></meta-data>
+        </activity>
+        <activity
+            android:name=".ClassList"
+            android:label="List of Students"
+            android:parentActivityName=".CardHome">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".CardHome"></meta-data>
+        </activity>
+
+        <activity android:name=".MainActivity" />
+        <activity android:name=".CustomCamera"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
     </application>
 
 </manifest>
