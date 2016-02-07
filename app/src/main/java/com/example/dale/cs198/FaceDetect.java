@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_imgcodecs;
 import org.bytedeco.javacpp.opencv_imgproc;
 
 import java.io.File;
@@ -23,28 +22,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.bytedeco.javacpp.opencv_core.CV_AA;
 import static org.bytedeco.javacpp.opencv_core.CvRect;
 import static org.bytedeco.javacpp.opencv_core.CvScalar;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
-import static org.bytedeco.javacpp.opencv_core.RectVector;
 import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_core.cvCopy;
 import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
 import static org.bytedeco.javacpp.opencv_core.cvGetSize;
 import static org.bytedeco.javacpp.opencv_core.cvPoint;
+import static org.bytedeco.javacpp.opencv_core.cvRectangle;
 import static org.bytedeco.javacpp.opencv_core.cvResetImageROI;
 import static org.bytedeco.javacpp.opencv_core.cvSetImageROI;
-import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
-import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_AA;
+import static org.bytedeco.javacpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
+import static org.bytedeco.javacpp.opencv_highgui.cvLoadImage;
+import static org.bytedeco.javacpp.opencv_highgui.cvSaveImage;
+import static org.bytedeco.javacpp.opencv_highgui.imread;
+import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvCvtColor;
-import static org.bytedeco.javacpp.opencv_imgproc.cvRectangle;
 import static org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 
 public class FaceDetect extends AppCompatActivity {
@@ -209,21 +208,20 @@ public class FaceDetect extends AppCompatActivity {
     public void detectFacesByCascade(String path) {
         timeStart = System.currentTimeMillis();
 
-        mGray = imread(path, opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
+        mGray = imread(path, CV_LOAD_IMAGE_GRAYSCALE);
         imgRgba = cvLoadImage(path);
 
-        RectVector faces = new RectVector();
+        Rect faces = new Rect();
 
         cascadeFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 
-
         // draw thick green rectangles around all the faces
-        faceCount = (int)faces.size();
+        faceCount = faces.capacity();
 
         Rect roi;
         Mat crop;
         for (int i = 0; i < faceCount; i++) {
-            Rect r = faces.get(i);
+            Rect r = faces.position(i);
             int x = r.x();
             int y = r.y();
 
@@ -276,7 +274,7 @@ public class FaceDetect extends AppCompatActivity {
         cvCvtColor(imgRgba, imgGray, CV_BGR2GRAY);
 
 
-        CvRect rectCrop = null;
+        Rect rectCrop = null;
         opencv_core.Mat image_roi = null;
         String dir;
         float myEyesDistance;
@@ -286,12 +284,13 @@ public class FaceDetect extends AppCompatActivity {
             PointF myMidPoint = new PointF();
             face.getMidPoint(myMidPoint);
             myEyesDistance = face.eyesDistance();
-            rectCrop = new CvRect(
+            rectCrop = new Rect(
                     (int) (myMidPoint.x - myEyesDistance * 1.3),
                     (int) (myMidPoint.y - myEyesDistance * 1.3),
                     (int) (2*myEyesDistance * 1.3),
                     (int) (2*myEyesDistance * 1.3)
             );
+
             cvRectangle(imgRgba, cvPoint(rectCrop.x(), rectCrop.y()), cvPoint(rectCrop.x() + rectCrop.width(), rectCrop.y() + rectCrop.height()), CvScalar.GREEN, 6, CV_AA, 0);
 
             Log.i(TAG, "Crop loop " + i);
@@ -311,7 +310,11 @@ public class FaceDetect extends AppCompatActivity {
                 rectCrop.height(imgGray.height() - rectCrop.y());
             }
 
-            CvRect cropROI = new CvRect(rectCrop.x(), rectCrop.y(), rectCrop.width(), rectCrop.height());
+            CvRect cropROI = new CvRect();
+            cropROI.x(rectCrop.x());
+            cropROI.y(rectCrop.y());
+            cropROI.width(rectCrop.width());
+            cropROI.height(rectCrop.height());
             //After setting ROI (Region-Of-Interest) all processing will only be done on the ROI
             cvSetImageROI(imgGray, cropROI);
             IplImage cropped = cvCreateImage(cvGetSize(imgGray), imgGray.depth(), imgGray.nChannels());

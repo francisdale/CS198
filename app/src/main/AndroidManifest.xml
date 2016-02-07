@@ -1,32 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.dale.cs198" >
+    package="com.example.dale.cs198">
 
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
         android:debuggable="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" /> <!-- apps starting point yung launcher -->
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- apps starting point yung launcher -->
             </intent-filter>
         </activity>
         <activity
             android:name=".FaceDetect"
-            android:label="@string/title_activity_face_detect" >
-        </activity>
+            android:label="@string/title_activity_face_detect" />
+        <activity
+            android:name=".JavaCVTrainFaceRecognizerTest"
+            android:label="@string/title_activity_java_cvtrain_face_recognizer_test"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".JavaCVFaceRecognizerTest"
+            android:label="@string/title_activity_java_cvface_recognizer_test"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

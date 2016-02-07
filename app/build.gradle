@@ -32,18 +32,11 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:23.0.1'
-	compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
-    compile files('libs/ffmpeg-android-arm.jar')
-    compile files('libs/ffmpeg-android-x86.jar')
-    compile files('libs/ffmpeg-windows-x86.jar')
-    compile files('libs/ffmpeg-windows-x86_64.jar')
-    compile files('libs/ffmpeg.jar')
     compile files('libs/javacpp.jar')
     compile files('libs/javacv.jar')
     compile files('libs/opencv-android-arm.jar')
     compile files('libs/opencv-android-x86.jar')
-    compile files('libs/opencv-windows-x86.jar')
-    compile files('libs/opencv-windows-x86_64.jar')
     compile files('libs/opencv.jar')
 }

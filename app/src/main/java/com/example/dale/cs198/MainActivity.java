@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -39,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
 
     //for debugging lang yung mga may LOG
 
-    FaceRecognizer fr;
     private static final String trainingDir = "sdcard/CS198/faceDatabase";
 
     @Override
@@ -175,8 +173,47 @@ public class MainActivity extends AppCompatActivity {
         startActivity(faceDetect);
     }
 
+    public void dispatchFaceRecogTrainActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceRecogTrainActivityIntent");
+        Intent faceRecogTrain = new Intent(MainActivity.this,JavaCVTrainFaceRecognizerTest.class);
+        startActivity(faceRecogTrain);
+    }
 
+    public void dispatchFaceRecogActivityIntent(View view){
+        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
+        faceRecog.putExtra("filepath", selectedImagePath);
+        startActivity(faceRecog);
+    }
 
+    /*
+    public void dispatchEigenRecogActivityIntent(View view){
+        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
+        faceRecog.putExtra("filepath", selectedImagePath);
+        faceRecog.putExtra("detectType", 0);
+        startActivity(faceRecog);
+    }
+
+    public void dispatchFisherRecogActivityIntent(View view){
+        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
+        faceRecog.putExtra("filepath", selectedImagePath);
+        faceRecog.putExtra("detectType", 1);
+        startActivity(faceRecog);
+    }
+
+    public void dispatchLBPHRecogActivityIntent(View view){
+        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
+        faceRecog.putExtra("filepath", selectedImagePath);
+        faceRecog.putExtra("detectType", 2);
+        startActivity(faceRecog);
+    }
+
+    public void dispatchSVMRecogActivityIntent(View view){
+        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
+        faceRecog.putExtra("filepath", selectedImagePath);
+        faceRecog.putExtra("detectType", 3);
+        startActivity(faceRecog);
+    }
+    */
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
