@@ -54,6 +54,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
     String svmOutputDirRight = "sdcard/CS198/svmRecog/right";
     String svmOutputDirWrong = "sdcard/CS198/svmRecog/wrong";
 
+    int numTrainingImages = 120;
+
     String filepath;
     String imgName;
     String cropPath;
@@ -163,6 +165,9 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         params = params.svm_type(CvSVM.C_SVC);
         params = params.kernel_type(CvSVM.LINEAR);
         params = params.gamma(3);
+        //params = params.C(1);
+        //params = params.gamma(0.000000001);
+        //params = params.degree(3);
         CvSVM sfr = new CvSVM();
 
         Log.i(TAG, "Does " + modelDir + "/" + eigenModelYML + " exist = " + (new File(modelDir + "/" + eigenModelYML)).exists());
@@ -177,8 +182,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         String rootz = trainingDir + "/att_faces";
         Mat trainingMat = new Mat();
-        opencv_core.MatVector images = new opencv_core.MatVector(120);
-        Mat labels = new Mat(120, 1, CV_32SC1);
+        opencv_core.MatVector images = new opencv_core.MatVector(numTrainingImages);
+        Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
         IntBuffer labelsBuf = labels.getIntBuffer();
         String currrSPath;
         int counter = 0;
@@ -197,14 +202,13 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         trainingMat.convertTo(trainingMat, CV_32FC1);
         Log.i(TAG, "Number of images loaded for SVM: " + trainingMat.rows());
 
-        //int nEigens = trainingMat.rows()*2;
         int nEigens = trainingMat.rows() - 1; //Number of Eigen Vectors.
 
         PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, nEigens);
 
         Mat data = new Mat();
-        for(int i = 0; i < 120; i++) {
-            Mat projectedMat = new Mat(1, 120, CV_32FC1);
+        for(int i = 0; i < numTrainingImages; i++) {
+            Mat projectedMat = new Mat(1, nEigens, CV_32FC1);
             Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
             pca.project(trainingMat.row(i), projectedMat);
             Mat temp = pca.project(trainingMat.row(i));
@@ -212,16 +216,16 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
             Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
 
             Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
-            //projectedMat.reshape(1,1).convertTo(projectedMat, CV_32FC1);
-            //data.push_back(temp);
+
             data.push_back(projectedMat);
-            //projectedMat.row(0).copyTo(data.row(i));
 
         }
 
         data.convertTo(data, CV_32FC1);
 
         sfr.train(data, labels, new Mat(), new Mat(), params);
+
+
         /*
         Log.i(TAG, "SVM model loaded");
         FileStorage fs = new FileStorage(modelDir + "/pca.xml", FileStorage.READ);
@@ -357,6 +361,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         TextView svmTime = (TextView) findViewById(R.id.svmTime);
         TextView svmAccuracy = (TextView) findViewById(R.id.svmAccuracy);
 
+        Log.i(TAG, "Setting up the text fields");
         notification.setText("Recognition complete.");
         numImgView.setText("Number of Training Images: " + numImg);
 
@@ -369,10 +374,6 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         svmTime.setText("SVM time average= " + svmAvgTime + "ms");
         svmAccuracy.setText("SVM accuracy = " + (int)svmNumRight + "/" + (int)numImg + " = " + svmPercentAcc + "%");
 
-
-
-
-
-
+        Log.i(TAG, "Finique");
     }
 }

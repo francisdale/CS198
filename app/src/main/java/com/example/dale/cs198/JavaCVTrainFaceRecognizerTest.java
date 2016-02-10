@@ -33,6 +33,8 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String trainingDir = "sdcard/CS198/faceDatabase";
     private static final String modelDir = "sdcard/CS198/recognizerModels";
 
+    int numTrainingImages = 120;
+
     long timeStart;
     long timeEnd;
     long timeElapsed;
@@ -50,14 +52,14 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         //for AT&T face database:
         String root = trainingDir + "/att_faces";
         String currSPath;
-        MatVector images = new MatVector(120);
-        Mat labels = new Mat(120, 1, CV_32SC1);
+        MatVector images = new MatVector(numTrainingImages);
+        Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
         IntBuffer labelsBuf = labels.getIntBuffer();
         int counter = 0;
 
         (new File(modelDir)).mkdir();
 
-        //92x112
+        //Image resolution92x112
         Mat trainingMat = new Mat();
         int ii = 0; // Current column in training_mat
         for(int s = 1; s <= 40; s++){
@@ -68,38 +70,29 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
                 images.put(counter, img);
                 labelsBuf.put(counter, s);
                 Log.i(TAG, "s" + s + " i" + i);
-                //Mat temp = new Mat(1,10304,CV_32FC1);
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
                 trainingMat.push_back(img);
-                //labelsFloatBuf.put(counter, s);
 
             }
         }
         trainingMat.convertTo(trainingMat, CV_32FC1);
         Log.i(TAG, "Number of images loaded: " + images.size());
 
-        //int nEigens = (int)images.size()*2;
-        int nEigens = (int)images.size() - 1; //Number of Eigen Vectors.
+        int nEigens = trainingMat.rows() - 1; //Number of Eigen Vectors.
 
         Mat data = new Mat();
-        //Mat data = new Mat(trainingMat.rows(), nEigens, CV_32FC1); //This Mat will contain all the Eigenfaces that will be used later with SVM for detection
 
         PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, nEigens);
 
-        for(int i = 0; i < 120; i++) {
-            Mat projectedMat = new Mat(1, 120, CV_32FC1);
+        for(int i = 0; i < numTrainingImages; i++) {
+            Mat projectedMat = new Mat(1, nEigens, CV_32FC1);
             Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
             pca.project(trainingMat.row(i), projectedMat);
             Mat temp = pca.project(trainingMat.row(i));
 
             Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
-
             Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
-            //projectedMat.reshape(1,1).convertTo(projectedMat, CV_32FC1);
-            //data.push_back(temp);
             data.push_back(projectedMat);
-            //projectedMat.row(0).copyTo(data.row(i));
-
         }
 
         data.convertTo(data, CV_32FC1);
