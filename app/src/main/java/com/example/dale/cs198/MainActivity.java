@@ -46,30 +46,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate state na");
-        /*
-        try {
-            fr = createEigenFaceRecognizer();
-            File root = new File(trainingDir);
 
-            FilenameFilter imgFilter = new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    name = name.toLowerCase();
-                    return name.endsWith(".normal") || name.endsWith(".happy") || name.endsWith(".centerlight");
-                }
-            };
-
-            //File[] imageFiles = root.listFiles();
-            File[] imageFiles = root.listFiles(imgFilter);
-            Log.i(TAG, "imageFiles.length: " + imageFiles.length);
-            opencv_core.MatVector images = new opencv_core.MatVector(imageFiles.length);
-
-            opencv_core.Mat labels = new opencv_core.Mat(imageFiles.length, 1, CV_32SC1);
-            //IntBuffer labelsBuf = labels.getIntBuffer();
-        } catch(Exception e){
-            Log.i(TAG, "Exception found:");
-            e.printStackTrace();
-        }
-        */
         //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
         Button camButton = (Button) findViewById(R.id.camButton);
         imageView = (ImageView) findViewById(R.id.imageView);
@@ -103,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
     private File getFile(){
         File folder = new File("sdcard/CS198Photos");
 
@@ -185,36 +163,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(faceRecog);
     }
 
-    /*
-    public void dispatchEigenRecogActivityIntent(View view){
-        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
-        faceRecog.putExtra("filepath", selectedImagePath);
-        faceRecog.putExtra("detectType", 0);
-        startActivity(faceRecog);
-    }
-
-    public void dispatchFisherRecogActivityIntent(View view){
-        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
-        faceRecog.putExtra("filepath", selectedImagePath);
-        faceRecog.putExtra("detectType", 1);
-        startActivity(faceRecog);
-    }
-
-    public void dispatchLBPHRecogActivityIntent(View view){
-        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
-        faceRecog.putExtra("filepath", selectedImagePath);
-        faceRecog.putExtra("detectType", 2);
-        startActivity(faceRecog);
-    }
-
-    public void dispatchSVMRecogActivityIntent(View view){
-        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
-        faceRecog.putExtra("filepath", selectedImagePath);
-        faceRecog.putExtra("detectType", 3);
-        startActivity(faceRecog);
-    }
-    */
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
 
@@ -224,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
                 selectedImagePath="sdcard/CS198Photos/"+name;
                 imageView.setImageDrawable(Drawable.createFromPath(path));
                 galleryAddPic();
-
 
             }
 
