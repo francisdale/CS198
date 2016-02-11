@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:showDividers="beginning|end"
+    android:scrollIndicators="bottom|top">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardview_student"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <RelativeLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/student_face"
+                android:src="@mipmap/ic_launcher"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SAMPLESAMPLE"
+                android:textSize="20dp"
+                android:textStyle="bold"
+                android:id="@+id/studNum"
+                android:gravity="center_vertical"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/student_face"
+                android:layout_toEndOf="@+id/student_face" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SAMPLE"
+                android:textSize="20dp"
+                android:id="@+id/studName"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_vertical"
+                android:layout_below="@+id/studNum"
+                android:layout_toRightOf="@+id/student_face"
+                android:layout_toEndOf="@+id/student_face" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+
+</LinearLayout>

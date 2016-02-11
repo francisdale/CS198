@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/delete_list_id"
+        android:title="Delete Class"
+        app:showAsAction="never">
+    </item>
+    <item
+        android:id="@+id/report_id"
+        android:title="Make Attendance Report"
+        app:showAsAction="always">
+    </item>
+
+    <item
+        android:id="@+id/edit_student_id"
+        android:title="Edit Students"
+        app:showAsAction="never">
+    </item>
+
+
+</menu>

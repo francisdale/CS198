@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardview_train_crops"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="145"
+
+        >
+        <RelativeLayout
+            android:layout_width="385dp"
+            android:layout_height="100dp"
+            android:padding="10dp"
+            >
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:id="@+id/crop_image_2" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:hint="Name"
+                android:ems="10"
+                android:id="@+id/editText_crop_name"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@+id/crop_image_2"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:editable="false"
+                android:focusableInTouchMode="true" />
+
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+
+
+</LinearLayout>
