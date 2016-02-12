@@ -14,10 +14,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static org.bytedeco.javacpp.opencv_highgui.imread;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -35,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
     //private Face_Detection_View fd;
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
+
+    TaskData td = new TaskData();
+    FaceDetectTask fd = new FaceDetectTask(td,this,FaceDetectTask.TRAIN_USAGE);
 
     //for debugging lang yung mga may LOG
 
@@ -78,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         );
 
 
-
+        fd.execute();
     }
 
     private File getFile(){
@@ -172,13 +176,14 @@ public class MainActivity extends AppCompatActivity {
                 selectedImagePath="sdcard/CS198Photos/"+name;
                 imageView.setImageDrawable(Drawable.createFromPath(path));
                 galleryAddPic();
-
+                td.detectQueue.add(imread(selectedImagePath));
             }
 
             if(requestCode == SELECT_PHOTO){
                 Uri selectedImageUri = data.getData();
                 selectedImagePath = getPath(selectedImageUri);
                 imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
+                td.detectQueue.add(imread(selectedImagePath));
             }
         }
     }

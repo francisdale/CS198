@@ -8,7 +8,7 @@ import static org.bytedeco.javacpp.opencv_core.Mat;
 public class TaskData {
 
     public static final String detectOutputDir = "cs198/detectedFaces";
-    GenQueue<String> detectQueue = new GenQueue<String>();
+    GenQueue<Mat> detectQueue = new GenQueue<Mat>();
     GenQueue<Mat> recogQueue = new GenQueue<Mat>();
     private boolean isMainThreadOpened = true;
 
