@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 
 import java.io.File;
@@ -14,6 +13,7 @@ import java.io.InputStream;
 
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
+import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
@@ -25,13 +25,17 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "testMessage";
 
-    private static final String trainImgColorDir = "sdcard/cs198/unlabeledCrops";
-    private static final String trainImgGrayDir = "sdcard/cs198/unlabeledCrops/grayscale";
+    private static final String untrainedUnlabeledCropsDir = "sdcard/cs198/faceDatabase/untrainedUnlabeledCrops";
     private static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
     private int mAbsoluteFaceSize = 30;
-    private static final int SCALE = 2; // scaling factor to reduce size of input image
+
     static final int ATTENDANCE_USAGE = 0;
     static final int TRAIN_USAGE = 1;
+
+    int faceCount;
+    long timeStart;
+    long timeEnd;
+    long timeElapsed;
 
     TaskData td;
     Context c;
@@ -69,30 +73,30 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
             GenQueue<Mat> detectQueue = td.detectQueue;
             Mat mColor;
-            Mat mGray = null;
+            Mat mGray;
+            Mat crop;
             Rect faces;
             Rect r;
-            Mat cropColor;
-            Mat cropGray;
             Rect roi;
-            int faceCount;
             int x;
             int y;
 
 
             if (usageType == ATTENDANCE_USAGE){
-
+                Log.i(TAG, "Now in Attendance Usage ");
                 GenQueue<Mat> recogQueue = td.recogQueue;
                 while(td.isUIOpened()){
                     //wait();
-                    while(detectQueue.hasItems()){
+                    while(detectQueue.isQueueEmpty()){
+                        Log.i(TAG, "Attendance usage: Size of detectQueue is now " + detectQueue.size() + ". Detecting faces...");
                         mColor = detectQueue.poll();
+                        mGray = mColor;
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
 
                         faces = new Rect();
 
                         //Detect faces:
-                        faceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new opencv_core.Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new opencv_core.Size());
+                        faceDetector.detectMultiScale(mGray, faces, 1.2, 3, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 
                         //Crop faces:
                         faceCount = faces.capacity();
@@ -104,59 +108,68 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                             roi = new Rect(x, y, r.width(), r.height());
                             recogQueue.add(new Mat(mColor, roi));
                         }
+                        publishProgress();
                     }
+
                 }
             } else if(usageType == TRAIN_USAGE){
-
-                File folder = new File(trainImgColorDir);
+                Log.i(TAG, "Now in Train Usage ");
+                File folder = new File(untrainedUnlabeledCropsDir);
                 if(folder.exists()==false){
                     folder.mkdir();
-                    (new File(trainImgGrayDir)).mkdir();
                 }
 
-                int numTrainImgInFolder = folder.listFiles().length;
-                Log.i(TAG, "numFiles: " + numTrainImgInFolder);
+                Log.i(TAG, "numFiles: " + folder.listFiles().length);
 
                 while(td.isUIOpened()){
-                    //wait();
-                    while(detectQueue.hasItems()){
 
                         mColor = detectQueue.poll();
+                        if(mColor == null){
+                            continue;
+                        }
+                    Log.i(TAG, "Train usage: Size of detectQueue is now " + detectQueue.size() + ". Detecting faces...");
+                        mGray = mColor;
+                        Log.i(TAG, "Train usage: image polled");
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
-
+                        Log.i(TAG, "Train usage: image converted to grayscale");
                         faces = new Rect();
-
+                        Log.i(TAG, "Image Mats loaded");
                         //Detect faces:
-                        faceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new opencv_core.Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new opencv_core.Size());
 
+                        timeStart = System.currentTimeMillis();
+                        faceDetector.detectMultiScale(mGray, faces, 1.2, 3, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                        timeEnd = System.currentTimeMillis();
+                        timeElapsed = timeEnd - timeStart;
+
+
+                        Log.i(TAG, "Detection complete. Cropping...");
                         //Crop faces:
                         faceCount = faces.capacity();
-                        for (int i = 0; i < faceCount; i++, numTrainImgInFolder++) {
+                        for (int i = 0; i < faceCount; i++) {
                             r = faces.position(i);
                             x = r.x();
                             y = r.y();
 
                             roi = new Rect(x, y, r.width(), r.height());
-                            cropColor = new Mat(mColor, roi);
-                            cropGray = new Mat(mGray, roi);
-                            imwrite(trainImgColorDir + "/" + numTrainImgInFolder + ".jpg", cropColor);
-                            imwrite(trainImgGrayDir + "/" + numTrainImgInFolder + ".jpg", cropColor);
+                            crop = new Mat(mColor, roi);
+                            imwrite(untrainedUnlabeledCropsDir + "/" + System.currentTimeMillis() + ".jpg", crop);
                         }
-                    }
+                        publishProgress();
+                        Log.i(TAG, "Progress published.");
+                    //}
+
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+            Log.e(TAG, "Exception thrown: " + e);
         }
         return null;
     }
 
     @Override
     protected void onProgressUpdate(Void... progress){
-        TextView tv;
-        tv = (TextView) findViewById(R.id.detectNotification);
-        tv.setText("Detection method: " + detectTypeString);
-
+        TextView tv = (TextView)((MainActivity)c).findViewById(R.id.detectNotification);
+        tv.setText("Detected " + faceCount + " faces in " + (float) timeElapsed/1000 + "s." );
     }
 }

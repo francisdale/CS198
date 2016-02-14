@@ -213,6 +213,7 @@ public class FaceDetect extends AppCompatActivity {
 
         Rect faces = new Rect();
 
+        //cascadeFaceDetector.detectMultiScale(mGray, faces, 1.2, 3, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
         cascadeFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 
         // draw thick green rectangles around all the faces

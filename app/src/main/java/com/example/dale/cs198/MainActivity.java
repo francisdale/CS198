@@ -177,14 +177,19 @@ public class MainActivity extends AppCompatActivity {
                 imageView.setImageDrawable(Drawable.createFromPath(path));
                 galleryAddPic();
                 td.detectQueue.add(imread(selectedImagePath));
+                Log.i(TAG, "MainActivity, Request Take Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
             }
 
             if(requestCode == SELECT_PHOTO){
+                Log.i(TAG, "MainActivity: now in Select Photo");
                 Uri selectedImageUri = data.getData();
                 selectedImagePath = getPath(selectedImageUri);
                 imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
+                Log.i(TAG, "MainActivity: about to add to detectQueue");
                 td.detectQueue.add(imread(selectedImagePath));
+                Log.i(TAG, "MainActivity, Select Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
             }
+
         }
     }
 
@@ -255,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "onStop");
+        //notifyAll();
     }
 
 
