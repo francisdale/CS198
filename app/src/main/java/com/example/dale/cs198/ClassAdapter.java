@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
@@ -33,6 +34,7 @@ import android.support.v7.app.AppCompatActivity;
  * Created by DALE on 1/21/2016.
  */
 public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHolder> {
+
 
     ArrayList<ClassItem> classes = new ArrayList<ClassItem>();
     private static final String TAG = "testMessage";
@@ -88,6 +90,9 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
                 public void onClick(View v){
                     Intent picture = new Intent(context, CustomCamera.class);
                     context.startActivity(picture);
+                    //pass a mode na activity usage integer = 0;
+                    //call FaceDetectTask.ATTENDANCE_USAGE
+
                 }
             });
         }
@@ -96,7 +101,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
         public void onClick(View v) {
 
             Log.i(TAG, "CALLING FRAGMENT MANAGER");
-
+            //v.setBackgroundColor(Color.LTGRAY);
             Intent cardIntent = new Intent(context,ClassList.class);
             cardIntent.putExtra("name",className.getText());
             cardIntent.putExtra("start",startTime.getText());

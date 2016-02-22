@@ -3,6 +3,10 @@ package com.example.dale.cs198;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Camera;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -33,17 +37,25 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
 
+
     Camera camera;
     Camera.PictureCallback jpegCallback;
     Camera.ShutterCallback shutterCallback;
 
+    Sensor accelerometer;
+    SensorManager sensorManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         setContentView(R.layout.activity_custom_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        //accept mode from either train or classAdapter
+
 
         info = (TextView)findViewById(R.id.detected_textView);
         capture = (Button)findViewById(R.id.capture_button);
@@ -75,6 +87,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 String fileName = imageFile.getAbsolutePath()+"/"+photoFormat;
                 File image = new File(fileName);
                 try{
+                    //THIS IS WHERE IMAGES SAVED ON DCIM/PRESENTDATA
                     fileOutputStream = new FileOutputStream(image);
                     fileOutputStream.write(data);
                     fileOutputStream.close();
@@ -82,7 +95,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 catch(IOException e){}
                 finally {}
 
-                info.setText(photoFormat);
+                //imageFile.getAbsolutePath() --> THIS IS WHERE THE PICTURES ARE GOING
+
+                //info.setText(photoFormat);
                 Toast.makeText(getApplicationContext(),fileName+" saved!", Toast.LENGTH_SHORT).show();
 
                 refreshCamera();
@@ -90,6 +105,13 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
             }
         };
+
+
+//        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+//        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+//        CameraAccelerometer cameraAccelerometer = new CameraAccelerometer(accelerometer,sensorManager);
+        //START THE THREADS HERE!!!
+
     }
 
     public void refreshGallery(File file){
@@ -163,5 +185,38 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         camera = null;
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////SENSOR CLASS//////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+    public class CameraAccelerometer implements SensorEventListener {
+
+        //Sensor accelerometer;
+        //SensorManager sensorManager;
+
+        public CameraAccelerometer(Sensor accelerometer,SensorManager sensorManager) {
+
+            sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
+
+
+
+
+
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            info.setText("X: "+event.values[0]+
+            "\nY: "+event.values[1]+
+            "\nZ: "+event.values[2]);
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    }
+    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////SENSOR CLASS//////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
 
 }

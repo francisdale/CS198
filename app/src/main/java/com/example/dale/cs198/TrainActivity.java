@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,9 +42,11 @@ public class TrainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_train);
 
         //POPULATE pathList from the cropped faces files from sdCard/PresentData/faceCrops folder
-
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
+
+        //change the directory to /sdcard/presentdata/facedatabase/untrainedcrops
+
         for (File f : faceCropsDir.listFiles()) {
             if (f.isFile()) {
                 String name = f.getName();
@@ -58,6 +61,8 @@ public class TrainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent cam = new Intent(TrainActivity.this, CustomCamera.class);
                 startActivity(cam);
+
+                //pass FACEDETECTTASK.TRAIN
             }
         });
 
@@ -76,11 +81,12 @@ public class TrainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         // Setup ItemTouchHelper
-        ItemTouchHelper.Callback callback = new CropImageTouchHelper(adapter);
+        ItemTouchHelper.Callback callback = new CropImageTouchHelper(recyclerView,adapter);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(recyclerView);
 
-
+        Toast toast = Toast.makeText(this, "Face Crop Number = " + pathList.size(), Toast.LENGTH_SHORT);
+        toast.show();
     }
 
 

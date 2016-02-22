@@ -10,8 +10,10 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.Image;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.SharedElementCallback;
@@ -52,11 +54,15 @@ import android.support.v7.app.AppCompatActivity;
 public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.CropImageViewHolder> {
 
     ArrayList<CropImageItem> faceCrops = new ArrayList<CropImageItem>();
+    ArrayList<Integer> ids = new ArrayList<>();
+    ArrayList<String> names = new ArrayList<String>();
+
+    CropImageItem temp;
     private static final String TAG = "testMessage";
     private Context context;
 
     ListView namesList = null;
-    ArrayList<String> names = new ArrayList<String>();
+
     AlertDialog nameDialog;
     TextView dialogName;
     String label;
@@ -68,11 +74,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
     public CropImageAdapter(Context context,ArrayList<CropImageItem> faceCrops){
         this.faceCrops = faceCrops;
         this.context = context;
-
         labelArr = new String[faceCrops.size()];
-
-//
-
     }
 
     @Override
@@ -105,10 +107,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
     class CropImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         TextView cropName;
-
-
         ImageView cropImage;
-        //EditText cropName;
         CustomEtListener customEtListener;
 
 
@@ -117,27 +116,8 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             view.setOnClickListener(this);
             cropName = (TextView)view.findViewById(R.id.crop_label);
             cropImage = (ImageView)view.findViewById(R.id.crop_image);
-
             customEtListener = etListener;
             cropName.addTextChangedListener(customEtListener);
-
-//            cropName.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//
-//                }
-//            });
-
-            //cropName.setText(label);
-
-//            rename = (Button)view.findViewById(R.id.rename_button);
-//            rename.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//
-//                    showNamesDialogList();
-//                }
-//            });
 
         }
 
@@ -154,13 +134,26 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ViewGroup viewGroup = (ViewGroup) view;
                 dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
-                label = dialogName.getText().toString();
+                //label is the name of the crop
+                String idAndName[] =  dialogName.getText().toString().split("-");
+                label = idAndName[1];
+                int idNum = Integer.parseInt(idAndName[0]);
+
+                //search sa Masterlist kung ano ID ni label
+                String fileNameOfLabeled = faceCrops.get(position).getFileName();
+                String filePathOfLabeled = faceCrops.get(position).getPath();
+
+
+                //RENAME CROP WITH CHOSEN IDNUM
+                //CHECK IF MAY EXISTING NA CROP SA TRAINED
+
+
+
                 cropName.setText(label);
+                //code that sets the label
                 nameDialog.dismiss();
                 notifyItemChanged(pos);
                 //cropName.setText(labelArr[pos]);
-
-
                 }
             });
 
@@ -171,7 +164,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             nameDialog = builder.create();
             nameDialog.show();
         }
-
 
     }
 
@@ -196,20 +188,37 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             // Change the value of array according to the position
             labelArr[position] = charSequence.toString();
-
-
         }
 
 
         @Override
         public void afterTextChanged(Editable editable) {
+
         }
     }
 
-
-    public void remove(int position) {
+    public void remove(final int position,final RecyclerView recyclerView) {
+        temp = faceCrops.get(position);
         faceCrops.remove(position);
         notifyItemRemoved(position);
+        recyclerView.scrollToPosition(position);
+        Snackbar snackbar = Snackbar
+                .make(recyclerView, "FACE CROP REMOVED", Snackbar.LENGTH_LONG)
+                .setAction("UNDO", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        faceCrops.add(position, temp);
+                        notifyItemInserted(position);
+                        recyclerView.scrollToPosition(position);
+                        Toast toast = Toast.makeText(context, "Face Crop Number = " + faceCrops.size(), Toast.LENGTH_SHORT);
+                        toast.show(); 
+                    }
+                });
+        snackbar.show();
+
+        Toast toast = Toast.makeText(context, "Face Crop Number = " + faceCrops.size(), Toast.LENGTH_SHORT);
+        toast.show();
+
     }
 
     public void swap(int firstPosition, int secondPosition){
@@ -217,21 +226,14 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         notifyItemMoved(firstPosition, secondPosition);
     }
 
-    public void showNamesDialogList(){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setCancelable(true);
-        builder.setView(namesList);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-
-            }
-        });
-        nameDialog = builder.create();
-        nameDialog.show();
-
-
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        Collections.swap(faceCrops, fromPosition, toPosition);
+        notifyItemMoved(fromPosition, toPosition);
+        return true;
     }
+
+
+
 
 
     public void readMasterList(){
@@ -245,7 +247,8 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             String[] details;
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
-                names.add(details[1]+" "+details[2]);
+                names.add(details[0]+"-"+details[2]+" "+details[3]);
+                //lagay yung mga mapping if ids
             }
             br.close();
         } catch (IOException e) {

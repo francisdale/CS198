@@ -3,6 +3,7 @@ package com.example.dale.cs198;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -73,7 +74,7 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
 
 
             Log.i(TAG, "CALLING FRAGMENT");
-
+            //v.setBackgroundColor(Color.LTGRAY);
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(v.getContext(), "Selected " + studentName.getText().toString(), duration);
             toast.show();

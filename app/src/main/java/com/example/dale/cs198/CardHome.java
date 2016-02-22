@@ -70,6 +70,29 @@ public class CardHome extends AppCompatActivity{
             folder.mkdir();
         }
 
+        File classFolder = new File("sdcard/PresentData/Classes");
+        if(!folder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            classFolder.mkdir();
+        }
+
+        File faceFolder = new File("sdcard/PresentData/faceDatabase");
+        if(!folder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            faceFolder.mkdir();
+        }
+
+        File trainedFaceFolder = new File("sdcard/PresentData/faceDatabase/trainedCrops");
+        if(!folder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            trainedFaceFolder.mkdir();
+        }
+
+        File untrainedFaceFolder = new File("sdcard/PresentData/faceDatabase/untrainedCrops");
+        if(!folder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            untrainedFaceFolder.mkdir();
+        }
 
         ////////////////////////////////////////////////
         SharedPreferences sharedPreferences = getSharedPreferences("ClassData", Context.MODE_PRIVATE);
@@ -212,10 +235,11 @@ public class CardHome extends AppCompatActivity{
                 BufferedReader br = new BufferedReader(new FileReader(file));
                 String line;
                 String[] details;
-
+                int ctr = 1;
                 while ((line = br.readLine()) != null) {
                     details = line.split(",");
-                    writer.append(details[0]+","+details[1]+","+details[2]+"\n");
+                    writer.append(ctr+","+details[0]+","+details[1]+","+details[2]+"\n");
+                    ctr++;
                 }
                 br.close();
                 writer.flush();
