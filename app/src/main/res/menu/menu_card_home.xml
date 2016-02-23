@@ -10,6 +10,11 @@
     </item>
 
     <item
+        android:title="Add Student To Master List"
+        android:id="@+id/add_student"
+        app:showAsAction="never"></item>
+
+    <item
         android:title="Help"
         android:id="@+id/help_home"
         app:showAsAction="never"></item>
@@ -18,5 +23,7 @@
         android:title="About Us"
         android:id="@+id/about_home"
         app:showAsAction="never"></item>
+
+
 
 </menu>

@@ -337,7 +337,7 @@ public class AddClass extends AppCompatActivity {
 
     int generateClassFile(String fileName) {
         try {
-            String dataPath = "sdcard/PresentData";
+            String dataPath = "sdcard/PresentData/Classes";
             File classFile = new File(dataPath, fileName + ".txt");
             FileWriter writer = new FileWriter(classFile);
 

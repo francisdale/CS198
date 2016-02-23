@@ -53,6 +53,7 @@ import android.support.v7.app.AppCompatActivity;
  */
 public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.CropImageViewHolder> {
 
+
     ArrayList<CropImageItem> faceCrops = new ArrayList<CropImageItem>();
     ArrayList<Integer> ids = new ArrayList<>();
     ArrayList<String> names = new ArrayList<String>();
@@ -123,7 +124,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
         @Override
         public void onClick(View v) {
-                //Toast.makeText(context.getApplicationContext(), "Tapped on " + cropName.getText().toString(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(context.getApplicationContext(), "Tapped on " + cropName.getText().toString(), Toast.LENGTH_LONG).show();
 
             readMasterList();
             namesList = new ListView(context.getApplicationContext());
@@ -142,12 +143,11 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                 //search sa Masterlist kung ano ID ni label
                 String fileNameOfLabeled = faceCrops.get(position).getFileName();
                 String filePathOfLabeled = faceCrops.get(position).getPath();
-
+                Log.i(TAG,"New File Name is:  "+label);
+                Log.i(TAG,fileNameOfLabeled+"\n"+filePathOfLabeled);
 
                 //RENAME CROP WITH CHOSEN IDNUM
                 //CHECK IF MAY EXISTING NA CROP SA TRAINED
-
-
 
                 cropName.setText(label);
                 //code that sets the label

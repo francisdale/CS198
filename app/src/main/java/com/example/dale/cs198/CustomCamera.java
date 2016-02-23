@@ -31,6 +31,7 @@ import java.util.Date;
 public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = "testMessage";
+    private int MODE;
 
     TextView info;
     Button capture;
@@ -48,12 +49,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-
         setContentView(R.layout.activity_custom_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
+        
         //accept mode from either train or classAdapter
 
 

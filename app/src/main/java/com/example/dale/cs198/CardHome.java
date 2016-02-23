@@ -56,43 +56,9 @@ public class CardHome extends AppCompatActivity{
         setContentView(R.layout.activity_card_home);
 
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
-        //MODIFY THIS TO GET DYNAMIC CLASSES
-        //MIGHT NEED TO MAKE NEW ACTIVITY TO GET CLASS INFO FROM USER INPUT
 
-        //classNames = getResources().getStringArray(R.array.classNames);
-        //classDescriptions = getResources().getStringArray(R.array.classDescriptions);
 
-        String dataPath="sdcard/PresentData";
-
-        File folder = new File(dataPath);
-        if(!folder.exists()){
-            Log.i(TAG, dataPath + " does not exist. Creating...");
-            folder.mkdir();
-        }
-
-        File classFolder = new File("sdcard/PresentData/Classes");
-        if(!folder.exists()){
-            Log.i(TAG, dataPath + " does not exist. Creating...");
-            classFolder.mkdir();
-        }
-
-        File faceFolder = new File("sdcard/PresentData/faceDatabase");
-        if(!folder.exists()){
-            Log.i(TAG, dataPath + " does not exist. Creating...");
-            faceFolder.mkdir();
-        }
-
-        File trainedFaceFolder = new File("sdcard/PresentData/faceDatabase/trainedCrops");
-        if(!folder.exists()){
-            Log.i(TAG, dataPath + " does not exist. Creating...");
-            trainedFaceFolder.mkdir();
-        }
-
-        File untrainedFaceFolder = new File("sdcard/PresentData/faceDatabase/untrainedCrops");
-        if(!folder.exists()){
-            Log.i(TAG, dataPath + " does not exist. Creating...");
-            untrainedFaceFolder.mkdir();
-        }
+        generateFolders();
 
         ////////////////////////////////////////////////
         SharedPreferences sharedPreferences = getSharedPreferences("ClassData", Context.MODE_PRIVATE);
@@ -142,18 +108,13 @@ public class CardHome extends AppCompatActivity{
             }
         });
 
-
-
+        //DEFINING THE RECYCLERVIEW AND ASSIGNING THE adapter and passing classlist
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
-
         adapter=new ClassAdapter(this,classList);
-
         recyclerView.setAdapter(adapter);
-
-
     }
 
 
@@ -172,13 +133,16 @@ public class CardHome extends AppCompatActivity{
                 //call saveToSP method
                 Intent intent = new Intent(this, FilePickerActivity.class);
                 startActivityForResult(intent, 1);
-
                 return true;
             case R.id.help_home:
                 //show help
                 return true;
             case R.id.about_home:
                 //show about
+                return true;
+            case R.id.add_student:
+
+                //just show a dialog box with edit text fields
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -252,7 +216,43 @@ public class CardHome extends AppCompatActivity{
         }
     }
 
+    public void generateFolders(){
 
+        String dataPath="sdcard/PresentData";
+        File folder = new File(dataPath);
+        if(!folder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            folder.mkdir();
+        }
+
+        File classFolder = new File(dataPath+"/Classes");
+        if(!classFolder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            classFolder.mkdir();
+        }
+
+        File faceFolder = new File(dataPath+"/faceDatabase");
+        if(!faceFolder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            faceFolder.mkdir();
+        }
+
+        File trainedFaceFolder = new File(dataPath+"/faceDatabase/trainedCrops");
+        if(!trainedFaceFolder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            trainedFaceFolder.mkdir();
+        }
+
+        File untrainedFaceFolder = new File(dataPath+"/faceDatabase/untrainedCrops");
+        if(!untrainedFaceFolder.exists()){
+            Log.i(TAG, dataPath + " does not exist. Creating...");
+            untrainedFaceFolder.mkdir();
+        }
+
+
+
+
+    }
 
 
 
