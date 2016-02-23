@@ -103,6 +103,9 @@ public class AddClass extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_class);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
+
+
         etName = (EditText) findViewById(R.id.editName);
 
         setStart = (Button) findViewById(R.id.start_time_button);
@@ -123,13 +126,6 @@ public class AddClass extends AppCompatActivity {
                 }
         );
 
-        etName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showEditTextDialog();
-
-            }
-        });
         displayMasterList();
 
 
@@ -140,11 +136,8 @@ public class AddClass extends AppCompatActivity {
         //POPULATE ARRAYLIST OF STUDENTS FROM MASTERLIST
         //READ Master List.txt
         ArrayList<StudentItem> studentItems = new ArrayList<StudentItem>();
-
         String dataPath = "sdcard/PresentData/";
-
         File file = new File(dataPath, "Master List.txt");
-
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
@@ -274,30 +267,30 @@ public class AddClass extends AppCompatActivity {
         }
     }
 
-    public void showEditTextDialog() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = this.getLayoutInflater();
-        final View dialogView = inflater.inflate(R.layout.edit_text_dialog_layout, null);
-        dialogBuilder.setView(dialogView);
-
-        final EditText edt = (EditText) dialogView.findViewById(R.id.class_name_edit);
-
-        dialogBuilder.setTitle("Class Name");
-        dialogBuilder.setMessage("Enter name below:");
-        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                //do something with edt.getText().toString();
-                etName.setText(edt.getText().toString());
-            }
-        });
-        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                dialog.cancel();
-            }
-        });
-        AlertDialog b = dialogBuilder.create();
-        b.show();
-    }
+//    public void showEditTextDialog() {
+//        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+//        LayoutInflater inflater = this.getLayoutInflater();
+//        final View dialogView = inflater.inflate(R.layout.edit_text_dialog_layout, null);
+//        dialogBuilder.setView(dialogView);
+//
+//        final EditText edt = (EditText) dialogView.findViewById(R.id.class_name_edit);
+//
+//        dialogBuilder.setTitle("Class Name");
+//        dialogBuilder.setMessage("Enter name below:");
+//        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//                //do something with edt.getText().toString();
+//                etName.setText(edt.getText().toString());
+//            }
+//        });
+//        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//                dialog.cancel();
+//            }
+//        });
+//        AlertDialog b = dialogBuilder.create();
+//        b.show();
+//    }
 
     public void saveToSp(String nameToSave, String startTime, String endTime) {
 

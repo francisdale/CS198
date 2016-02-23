@@ -118,7 +118,7 @@ public class EditClassList extends AppCompatActivity {
             String[] details;
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
-                StudentItem si = new StudentItem(details[0], details[1], details[2]);
+                StudentItem si = new StudentItem(details[1], details[2], details[3]);
                 students.add(si);
             }
             br.close();
@@ -128,7 +128,7 @@ public class EditClassList extends AppCompatActivity {
     }
 
     public void readClassList(){
-        String dataPath = "sdcard/PresentData/";
+        String dataPath = "sdcard/PresentData/Classes";
 
         File file = new File(dataPath, name+".txt");
 
@@ -150,7 +150,7 @@ public class EditClassList extends AppCompatActivity {
     public void remakeClassFile(){
         int selected;
         try {
-            String dataPath = "sdcard/PresentData";
+            String dataPath = "sdcard/PresentData/Classes";
             File classFile = new File(dataPath, name + ".txt");
 
 

@@ -15,12 +15,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
@@ -141,7 +143,7 @@ public class CardHome extends AppCompatActivity{
                 //show about
                 return true;
             case R.id.add_student:
-
+                showAddStudentDialog();
                 //just show a dialog box with edit text fields
                 return true;
             default:
@@ -160,6 +162,86 @@ public class CardHome extends AppCompatActivity{
             //Log.i(TAG,"MASTER AFTER INTENT--> "+masterFilePath);
         }
     }
+
+
+    public void showAddStudentDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.add_student_to_master_dialog, null);
+        dialogBuilder.setView(dialogView);
+
+        final EditText studNum = (EditText) dialogView.findViewById(R.id.toAdd_student_number);
+        final EditText studSurname = (EditText) dialogView.findViewById(R.id.toAdd_student_surname);
+        final EditText studFirstname = (EditText) dialogView.findViewById(R.id.toAdd_student_firstname);
+
+        dialogBuilder.setTitle("Add New Student to Master List");
+        dialogBuilder.setMessage("Enter the following details:");
+        dialogBuilder.setPositiveButton("Add New Student", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+                String newStudNum = studNum.getText().toString();
+                String newStudSurname = studSurname.getText().toString();
+                String newStudFirstname = studFirstname.getText().toString();
+
+                if(!newStudNum.isEmpty() && !newStudSurname.isEmpty() && !newStudFirstname.isEmpty()){
+                    addStudentToMasterList(newStudNum,newStudSurname,newStudFirstname);
+                }
+                else{
+                    Toast.makeText(getApplicationContext(),"Please fill out all the field details",Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
+
+    public void addStudentToMasterList(String newStudNum,String newStudSurname,String newStudFirstname){
+        try {
+            final String dataPath = "sdcard/PresentData/";
+            final File masterFile = new File(dataPath,"Master List.txt");
+            if(!masterFile.exists()){
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                AlertDialog.Builder builder = alertBuilder.setMessage("You have not yet uploaded a MASTER LIST of your students. Please make sure to upload one.")
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = alertBuilder.create();
+                alert.setTitle("Uh oh!");
+                alert.show();
+            }
+            else{
+
+                FileWriter writer = new FileWriter(masterFile,true);
+                int studCtr =0;
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(masterFile));
+                    while (br.readLine() != null) {
+                        studCtr++;
+                    }
+                    studCtr++;
+                    writer.write(studCtr + "," + newStudNum + "," + newStudSurname + "," + newStudFirstname + "\n");
+                    writer.close();
+                    br.close();
+                    Toast.makeText(getApplicationContext(),"Added "+newStudNum+" "+newStudSurname+","+newStudFirstname+" to Master List." ,Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void generateMasterList(String filePath) {
         try {
@@ -248,14 +330,5 @@ public class CardHome extends AppCompatActivity{
             Log.i(TAG, dataPath + " does not exist. Creating...");
             untrainedFaceFolder.mkdir();
         }
-
-
-
-
     }
-
-
-
-
-
 }
