@@ -137,7 +137,8 @@ public class CardHome extends AppCompatActivity{
                 startActivityForResult(intent, 1);
                 return true;
             case R.id.help_home:
-                //show help
+                Intent helpIntent = new Intent(this, HelpActivity.class);
+                startActivity(helpIntent);
                 return true;
             case R.id.about_home:
                 //show about

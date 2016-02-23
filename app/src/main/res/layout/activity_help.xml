@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.dale.cs198.HelpActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#fff"
+        android:padding="10dp">
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/uploadMaster_header"
+            android:text="\u2022 Uploading Master File"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/uploadMaster_content"
+            android:text="INSERT INSTRUCTIONS HERE FOR UPLOADING MASTER"
+            android:layout_below="@+id/uploadMaster_header"/>
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/addStudentToMaster_header"
+            android:text="\u2022 Adding A Student To Master List"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/uploadMaster_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/addStudentToMaster_content"
+            android:text="INSERT INSTRUCTIONS HERE FOR ADDING STUDENT"
+            android:layout_below="@+id/addStudentToMaster_header"/>
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editStudentClass_header"
+            android:text="\u2022 Editing Students in Certain Class"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/addStudentToMaster_header"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editStudentClass_content"
+            android:text="INSERT INSTRUCTIONS HERE FOR editing students"
+            android:layout_below="@+id/editStudentClass_header"/>
+
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/train_header"
+            android:text="\u2022 Training the Recognizer"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/editStudentClass_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/train_content"
+            android:text="INSERT INSTRUCTIONS HERE FOR training the recognizer"
+            android:layout_below="@+id/train_header"/>
+
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/takePicture_header"
+            android:text="\u2022 Taking Attendance Pictures"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/train_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/takePicture_content"
+            android:text="INSERT INSTRUCTIONS HERE FOR taking attendance pictures"
+            android:layout_below="@+id/takePicture_header"/>
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/generateReport_header"
+            android:text="\u2022 Generating Class Attendance Report"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/takePicture_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/generateReport_content"
+            android:text="INSERT INSTRUCTIONS HERE FOR generating report"
+            android:layout_below="@+id/generateReport_header"/>
+    </LinearLayout>
+</ScrollView>

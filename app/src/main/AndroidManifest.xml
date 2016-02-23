@@ -45,23 +45,25 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CardHome" />
         </activity>
+        <activity android:name=".HelpActivity"
+            android:label="Help"
+            android:parentActivityName=".CardHome">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".CardHome" />
+        </activity>
 
         <activity
             android:name=".CustomCamera"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".EditClassList"
-            android:label="Edit Class List">
-        </activity>
-
+            android:label="Edit Class List"></activity>
         <activity
             android:name=".TrainActivity"
-            android:label="Train Face Crops">
-        </activity>
-
+            android:label="Train Face Crops"></activity>
         <activity android:name=".MainActivity" />
+
     </application>
 
 </manifest>
