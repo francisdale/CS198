@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.bytedeco.javacpp.opencv_contrib;
+import org.bytedeco.javacpp.opencv_contrib.FaceRecognizer;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
 
@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.IntBuffer;
 
-import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
+import static org.bytedeco.javacpp.opencv_contrib.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
 import static org.bytedeco.javacpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_highgui.imread;
@@ -24,9 +24,10 @@ import static org.bytedeco.javacpp.opencv_highgui.imread;
 public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "testMessage";
-    private static final String untrainedLabeledCropsDir = "sdcard/CS198/faceDatabase/untrainedLabeledCrops";
+    private static final String untrainedLabeledCropsDir = "sdcard/CS198/faceDatabase/untrainedCrops/labeledCrops";
     private static final String trainedCropsDir = "sdcard/CS198/faceDatabase/trainedCrops";
     private static final String modelDir = "sdcard/CS198/recognizerModels";
+    private static final String modelFileName = "eigenModel.xml";
 
     long timeStart;
     long timeEnd;
@@ -44,7 +45,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
 
         //Load training images from trainingDir and
-        File trainingFolder = new File(trainingDir);
+        File trainingFolder = new File(untrainedLabeledCropsDir);
 
         FilenameFilter imgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -69,20 +70,21 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
         IntBuffer labelsBuf = labels.getIntBuffer();
         int label;
 
+
         for(int i = 0; i <= imageFiles.length; i++){
-                img = imread(imageFiles[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+            img = imread(imageFiles[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
 
-                label = Integer.parseInt(image.getName().split("\\-")[0]);
-
-                images.put(i, img);
-                labelsBuf.put(i, s);
-                Log.i(TAG, "i" + i);
-            }
+            images.put(i, img);
+            //Image name syntax: <id number>.<format>
+            label = Integer.parseInt(imageFiles[i].getName().split(".")[0]);
+            images.put(i, img);
+            labelsBuf.put(i, label);
+            Log.i(TAG, "i" + i);
         }
-        trainingMat.convertTo(trainingMat, CV_32FC1);
+
         Log.i(TAG, "Number of images loaded: " + images.size());
 
-        opencv_contrib.FaceRecognizer faceRecognizer;
+        FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
 
         File folder = new File(modelDir);
         if(!folder.exists()){
@@ -90,24 +92,15 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
             folder.mkdir();
         }
 
-        TextView eigenTime = (TextView) findViewById(R.id.eigenTime);
 
-        //Eigen Recog:
-        faceRecognizer = createEigenFaceRecognizer();
-        Log.i(TAG, "okz4.1");
-        notification.setText("Training Eigenface...");
-        timeStart = System.currentTimeMillis();
         Log.i(TAG, "Training Eigenface...");
+        timeStart = System.currentTimeMillis();
         faceRecognizer.train(images, labels);
-        Log.i(TAG, "okz4.2");
         timeEnd = System.currentTimeMillis();
         timeElapsed = timeEnd - timeStart;
-        eigenTime.setText("Eigen Time = " + timeElapsed + "ms");
-        faceRecognizer.save(modelDir + "/eigenModel.xml");
-        Log.i(TAG, "okz4.3");
+        Log.i(TAG, "Training complete.");
+        faceRecognizer.save(modelDir + "/" + modelFileName);
 
-        notification.setText("Training complete.");
-        Log.i(TAG, "okz5");
         return null;
     }
 

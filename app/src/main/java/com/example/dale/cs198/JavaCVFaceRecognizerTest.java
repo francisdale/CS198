@@ -54,7 +54,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
     String svmOutputDirRight = "sdcard/CS198/svmRecog/right";
     String svmOutputDirWrong = "sdcard/CS198/svmRecog/wrong";
 
-    int numTrainingImages = 120;
+    int numTrainingImages = 160;
 
     String filepath;
     String imgName;
@@ -163,11 +163,11 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         CvSVMParams params = new CvSVMParams();
         params = params.svm_type(CvSVM.C_SVC);
-        params = params.kernel_type(CvSVM.LINEAR);
+        params = params.kernel_type(CvSVM.POLY);
         params = params.gamma(3);
         //params = params.C(1);
-        //params = params.gamma(0.000000001);
-        //params = params.degree(3);
+        //params = params.gamma(0.001);
+        params = params.degree(3);
         CvSVM sfr = new CvSVM();
 
         Log.i(TAG, "Does " + modelDir + "/" + eigenModelYML + " exist = " + (new File(modelDir + "/" + eigenModelYML)).exists());
@@ -190,7 +190,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         for(int s = 1; s <= 40; s++){
             currrSPath = rootz + "/s" + s;
-            for(int i = 1; i <= 3; i++, counter++){
+            for(int i = 1; i <= 4; i++, counter++){
                 Mat img = imread(currrSPath + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
 
                 images.put(counter, img);
@@ -281,7 +281,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         Log.i(TAG, "recog initialization complete");
         for(int s = 1; s <= 40; s++) {
             currSPath = root + "/s" + s;
-            for (int i = 4; i <= 10; i++, numImg++) {
+            for (int i = 5; i <= 10; i++, numImg++) {
 
                 Log.i(TAG, "s" + s + " i" + i);
 

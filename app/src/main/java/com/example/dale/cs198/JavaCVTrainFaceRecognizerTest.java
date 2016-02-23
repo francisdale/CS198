@@ -33,7 +33,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String trainingDir = "sdcard/CS198/faceDatabase";
     private static final String modelDir = "sdcard/CS198/recognizerModels";
 
-    int numTrainingImages = 120;
+    int numTrainingImages = 160;
 
     long timeStart;
     long timeEnd;
@@ -64,7 +64,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         int ii = 0; // Current column in training_mat
         for(int s = 1; s <= 40; s++){
             currSPath = root + "/s" + s;
-            for(int i = 1; i <= 3; i++, counter++){
+            for(int i = 1; i <= 4; i++, counter++){
                 Mat img = imread(currSPath + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
 
                 images.put(counter, img);
