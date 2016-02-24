@@ -14,11 +14,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static org.bytedeco.javacpp.opencv_highgui.imread;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -37,9 +37,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
 
+    TaskData td = new TaskData();
+    FaceDetectTask fd = new FaceDetectTask(td,this,FaceDetectTask.TRAIN_USAGE);
+
     //for debugging lang yung mga may LOG
 
-    FaceRecognizer fr;
     private static final String trainingDir = "sdcard/CS198/faceDatabase";
 
     @Override
@@ -48,30 +50,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate state na");
-        /*
-        try {
-            fr = createEigenFaceRecognizer();
-            File root = new File(trainingDir);
 
-            FilenameFilter imgFilter = new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    name = name.toLowerCase();
-                    return name.endsWith(".normal") || name.endsWith(".happy") || name.endsWith(".centerlight");
-                }
-            };
-
-            //File[] imageFiles = root.listFiles();
-            File[] imageFiles = root.listFiles(imgFilter);
-            Log.i(TAG, "imageFiles.length: " + imageFiles.length);
-            opencv_core.MatVector images = new opencv_core.MatVector(imageFiles.length);
-
-            opencv_core.Mat labels = new opencv_core.Mat(imageFiles.length, 1, CV_32SC1);
-            //IntBuffer labelsBuf = labels.getIntBuffer();
-        } catch(Exception e){
-            Log.i(TAG, "Exception found:");
-            e.printStackTrace();
-        }
-        */
         //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
         Button camButton = (Button) findViewById(R.id.camButton);
         imageView = (ImageView) findViewById(R.id.imageView);
@@ -103,8 +82,9 @@ public class MainActivity extends AppCompatActivity {
         );
 
 
-
+        fd.execute();
     }
+
     private File getFile(){
         File folder = new File("sdcard/CS198Photos");
 
@@ -175,8 +155,17 @@ public class MainActivity extends AppCompatActivity {
         startActivity(faceDetect);
     }
 
+    public void dispatchFaceRecogTrainActivityIntent(View view){
+        Log.i(TAG, "dispatchFaceRecogTrainActivityIntent");
+        Intent faceRecogTrain = new Intent(MainActivity.this,JavaCVTrainFaceRecognizerTest.class);
+        startActivity(faceRecogTrain);
+    }
 
-
+    public void dispatchFaceRecogActivityIntent(View view){
+        Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
+        faceRecog.putExtra("filepath", selectedImagePath);
+        startActivity(faceRecog);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
@@ -187,15 +176,20 @@ public class MainActivity extends AppCompatActivity {
                 selectedImagePath="sdcard/CS198Photos/"+name;
                 imageView.setImageDrawable(Drawable.createFromPath(path));
                 galleryAddPic();
-
-
+                td.detectQueue.add(imread(selectedImagePath));
+                Log.i(TAG, "MainActivity, Request Take Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
             }
 
             if(requestCode == SELECT_PHOTO){
+                Log.i(TAG, "MainActivity: now in Select Photo");
                 Uri selectedImageUri = data.getData();
                 selectedImagePath = getPath(selectedImageUri);
                 imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
+                Log.i(TAG, "MainActivity: about to add to detectQueue");
+                td.detectQueue.add(imread(selectedImagePath));
+                Log.i(TAG, "MainActivity, Select Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
             }
+
         }
     }
 
@@ -266,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "onStop");
+        //notifyAll();
     }
 
 
