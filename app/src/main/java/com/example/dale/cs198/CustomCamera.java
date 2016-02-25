@@ -1,12 +1,15 @@
 package com.example.dale.cs198;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -14,6 +17,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,10 +28,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
     private static final String TAG = "testMessage";
     private final String tempImgDir = "sdcard/PresentData/temp.jpg";
+    private static final int SELECT_PHOTO = 2;
     private int MODE;
 
     TextView status;
     ImageButton capture;
+    ImageButton gallery;
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
 
@@ -56,6 +62,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
         status = (TextView)findViewById(R.id.customCameraStatus);
         capture = (ImageButton)findViewById(R.id.captureButton);
+        gallery = (ImageButton)findViewById(R.id.galleryButton);
 
         Intent intent = getIntent();
         detectUsage = intent.getIntExtra("detectUsage", 1);
@@ -81,7 +88,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             }
         });
 
-
+        gallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchSelectPhotoIntent();
+            }
+        });
 
         jpegCallback=new Camera.PictureCallback() {
             @Override
@@ -103,7 +115,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 Bitmap bmp= BitmapFactory.decodeByteArray(data, 0, data.length);
                 Mat m = new Mat(bmp.getHeight(), bmp.getWidth(), CV_8U);
                 bmp.copyPixelsToBuffer(m.getByteBuffer());
-
                 td.detectQueue.add(m);
                 */
                 /*
@@ -118,7 +129,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 String photoFormat = "PresentData_" + date + ".jpg";
                 String fileName = imageFile.getAbsolutePath() + "/" + photoFormat;
                 File image = new File(fileName);
-
                 try {
                     //THIS IS WHERE IMAGES SAVED ON DCIM/PRESENTDATA
                     fileOutputStream = new FileOutputStream(image);
@@ -128,16 +138,11 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 } catch (IOException e) {
                 } finally {
                 }
-
-
                 //imageFile.getAbsolutePath() --> THIS IS WHERE THE PICTURES ARE GOING
-
                 //info.setText(photoFormat);
                 Toast.makeText(getApplicationContext(), fileName + " saved!", Toast.LENGTH_SHORT).show();
-
                 refreshCamera();
                 refreshGallery(image);
-
                 */
             }
         };
@@ -180,6 +185,53 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
     public void captureImage(){
         camera.takePicture(null, null, jpegCallback);
+    }
+
+    private void dispatchSelectPhotoIntent(){
+        Log.i(TAG, "DispatchSelectPhotoIntent");
+        Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
+        selectFromGallery.setType("image/*");
+        selectFromGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
+        //startActivityForResult(selectFromGallery, SELECT_PHOTO);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode == RESULT_OK){
+            if(requestCode == SELECT_PHOTO){
+                ClipData clipData = data.getClipData();
+                if(clipData == null){
+                    Log.i(TAG, "SELECTED NOTHING");
+                }else{
+                    for(int i=0; i<clipData.getItemCount(); i++){
+                        ClipData.Item item = clipData.getItemAt(i);
+                        Uri uri = item.getUri();
+                        Log.i(TAG, "Selected URI: "+getPath(uri));
+
+                        //pass the getPath(uri) to the thread
+
+                    }
+                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyze.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    public String getPath(Uri uri) {
+        String[] projection = {MediaStore.Images.Media.DATA};
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        if (cursor != null) {
+            //HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
+            //THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        }
+        else{
+            return null;
+        }
     }
 
     @Override
@@ -256,31 +308,19 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     /////////////////////////////////////////////////////////////////////////////////////
     /*
     public class CameraAccelerometer implements SensorEventListener {
-
         //Sensor accelerometer;
         //SensorManager sensorManager;
-
         public CameraAccelerometer(Sensor accelerometer,SensorManager sensorManager) {
-
             sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
-
-
-
-
-
         }
-
-
         @Override
         public void onSensorChanged(SensorEvent event) {
 //            //info.setText("X: "+event.values[0]+
 //            "\nY: "+event.values[1]+
 //            "\nZ: "+event.values[2]);
         }
-
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
         }
     }
     //////////////////////////////////////////////////////////////////////////////////////
