@@ -12,9 +12,9 @@
         android:id="@+id/surfaceView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/capture_button"
-        android:layout_alignRight="@+id/capture_button"
-        android:layout_alignEnd="@+id/capture_button"
+        android:layout_toStartOf="@+id/captureButton"
+        android:layout_alignRight="@+id/captureButton"
+        android:layout_alignEnd="@+id/captureButton"
         android:layout_above="@+id/custom_camera_status"
         android:layout_below="@+id/topTextView" />
         android:layout_above="@+id/custom_camera_status" />
@@ -29,6 +29,15 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:id="@+id/galleryButton"
+        android:background="@drawable/gallery_button"
+        android:layout_alignBottom="@+id/surfaceView"
+        android:layout_alignRight="@+id/captureButton"
+        android:layout_alignEnd="@+id/captureButton" />
+
 
     <TextView
         android:layout_width="wrap_content"
@@ -38,7 +47,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/custom_camera_status"
+        android:id="@+id/customCameraStatus"
         android:textColor="#212121" />
 
     <TextView
@@ -50,7 +59,7 @@
         android:textColor="#0836cd"
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/customCameraStatus"
-        android:layout_toEndOf="@+id/custom_camera_status"
+        android:layout_toEndOf="@+id/customCameraStatus"
         android:layout_marginLeft="116dp"
         android:layout_marginStart="116dp" />
 
@@ -62,8 +71,8 @@
         android:id="@+id/detectionCounter"
         android:textColor="#212121"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/capture_button"
-        android:layout_toStartOf="@+id/capture_button" />
+        android:layout_toLeftOf="@+id/captureButton"
+        android:layout_toStartOf="@+id/captureButton" />
 
     <!--</TableRow>-->
 
