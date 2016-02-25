@@ -4,7 +4,6 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -21,29 +20,23 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 
 import static org.bytedeco.javacpp.opencv_highgui.imread;
 
-import static org.bytedeco.javacpp.opencv_highgui.imread;
-
 public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = "testMessage";
-<<<<<<< HEAD
-    private static final int SELECT_PHOTO = 2;
-    private String selectedImagePath;
-=======
     private final String tempImgDir = "sdcard/PresentData/temp.jpg";
->>>>>>> 721209c9c45738bd7edb5559d65e73329a94aa0b
+    private static final int SELECT_PHOTO = 2;
     private int MODE;
 
     TextView status;
     ImageButton capture;
     ImageButton gallery;
-
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
 
@@ -91,7 +84,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             }
         });
 
-
+        gallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchSelectPhotoIntent();
+            }
+        });
 
         jpegCallback=new Camera.PictureCallback() {
             @Override
@@ -113,7 +111,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 Bitmap bmp= BitmapFactory.decodeByteArray(data, 0, data.length);
                 Mat m = new Mat(bmp.getHeight(), bmp.getWidth(), CV_8U);
                 bmp.copyPixelsToBuffer(m.getByteBuffer());
-
                 td.detectQueue.add(m);
                 */
                 /*
@@ -128,47 +125,23 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 String photoFormat = "PresentData_" + date + ".jpg";
                 String fileName = imageFile.getAbsolutePath() + "/" + photoFormat;
                 File image = new File(fileName);
-
                 try {
                     //THIS IS WHERE IMAGES SAVED ON DCIM/PRESENTDATA
                     fileOutputStream = new FileOutputStream(image);
                     fileOutputStream.write(data);
                     fileOutputStream.close();
-<<<<<<< HEAD
-                }catch(FileNotFoundException e){}
-                catch(IOException e){}
-                finally {}
-=======
                 } catch (FileNotFoundException e) {
                 } catch (IOException e) {
                 } finally {
                 }
-
-
->>>>>>> 721209c9c45738bd7edb5559d65e73329a94aa0b
                 //imageFile.getAbsolutePath() --> THIS IS WHERE THE PICTURES ARE GOING
                 //info.setText(photoFormat);
-<<<<<<< HEAD
-                Toast.makeText(getApplicationContext(),fileName+" saved!", Toast.LENGTH_SHORT).show();
-                refreshCamera();
-                refreshGallery(image);
-=======
                 Toast.makeText(getApplicationContext(), fileName + " saved!", Toast.LENGTH_SHORT).show();
-
                 refreshCamera();
                 refreshGallery(image);
-
                 */
->>>>>>> 721209c9c45738bd7edb5559d65e73329a94aa0b
             }
         };
-
-        gallery.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dispatchSelectPhotoIntent();
-            }
-        });
 
 
 //        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -206,6 +179,10 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         return new File(dir,"PresentData");
     }
 
+    public void captureImage(){
+        camera.takePicture(null, null, jpegCallback);
+    }
+
     private void dispatchSelectPhotoIntent(){
         Log.i(TAG, "DispatchSelectPhotoIntent");
         Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
@@ -216,9 +193,41 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         //startActivityForResult(selectFromGallery, SELECT_PHOTO);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode == RESULT_OK){
+            if(requestCode == SELECT_PHOTO){
+                ClipData clipData = data.getClipData();
+                if(clipData == null){
+                    Log.i(TAG, "SELECTED NOTHING");
+                }else{
+                    for(int i=0; i<clipData.getItemCount(); i++){
+                        ClipData.Item item = clipData.getItemAt(i);
+                        Uri uri = item.getUri();
+                        Log.i(TAG, "Selected URI: "+getPath(uri));
 
-    public void captureImage(){
-        camera.takePicture(null, null, jpegCallback);
+                        //pass the getPath(uri) to the thread
+
+                    }
+                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyze.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+    public String getPath(Uri uri) {
+        String[] projection = {MediaStore.Images.Media.DATA};
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        if (cursor != null) {
+            //HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
+            //THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        }
+        else{
+            return null;
+        }
     }
 
     @Override
@@ -243,6 +252,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         }catch (Exception e){
             Log.i(TAG, "Error drawing the camera sa surfaceholder");
         }
+
+
     }
 
     @Override
@@ -258,40 +269,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     @Override
-<<<<<<< HEAD
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(resultCode == RESULT_OK){
-            if(requestCode == SELECT_PHOTO){
-                ClipData clipData = data.getClipData();
-                if(clipData == null){
-                    Log.i(TAG, "SELECTED NOTHING");
-                }else{
-                    for(int i=0; i<clipData.getItemCount(); i++){
-                        ClipData.Item item = clipData.getItemAt(i);
-                        Uri uri = item.getUri();
-                        Log.i(TAG, "Selected URI: "+getPath(uri));
-
-                        //pass the getPath(uri) to the thread
-
-                    }
-                    Toast.makeText(getApplicationContext(),"The images you selected are now being analyze.", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-    }
-
-    public String getPath(Uri uri) {
-        String[] projection = { MediaStore.Images.Media.DATA };
-        Cursor cursor = managedQuery(uri, projection, null, null, null);
-        if(cursor!=null) {
-            //HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
-            //THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
-        }
-        else return null;
-=======
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "CustomCamera onStart");
@@ -317,7 +294,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         super.onDestroy();
         Log.i(TAG, "CustomCamera onDestroy");
         td.setIsUIOpenedToFalse();
->>>>>>> 721209c9c45738bd7edb5559d65e73329a94aa0b
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -325,31 +301,19 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     /////////////////////////////////////////////////////////////////////////////////////
     /*
     public class CameraAccelerometer implements SensorEventListener {
-
         //Sensor accelerometer;
         //SensorManager sensorManager;
-
         public CameraAccelerometer(Sensor accelerometer,SensorManager sensorManager) {
-
             sensorManager.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
-
-
-
-
-
         }
-
-
         @Override
         public void onSensorChanged(SensorEvent event) {
 //            //info.setText("X: "+event.values[0]+
 //            "\nY: "+event.values[1]+
 //            "\nZ: "+event.values[2]);
         }
-
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
         }
     }
     //////////////////////////////////////////////////////////////////////////////////////
