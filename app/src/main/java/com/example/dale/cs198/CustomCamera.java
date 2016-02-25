@@ -15,6 +15,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.io.File;
@@ -28,8 +29,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     private final String tempImgDir = "sdcard/PresentData/temp.jpg";
     private int MODE;
 
-    TextView info;
-    Button capture;
+    TextView status;
+    ImageButton capture;
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
 
@@ -58,8 +59,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         detectUsage = intent.getIntExtra("detectUsage", 1);
         //accept mode from either train or classAdapter
 
-        info = (TextView)findViewById(R.id.detected_textView);
-        capture = (Button)findViewById(R.id.capture_button);
+        status = (TextView)findViewById(R.id.custom_camera_status);
+        capture = (ImageButton)findViewById(R.id.capture_button);
 
         surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
         surfaceHolder = surfaceView.getHolder();
@@ -265,9 +266,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
         @Override
         public void onSensorChanged(SensorEvent event) {
-            info.setText("X: "+event.values[0]+
-            "\nY: "+event.values[1]+
-            "\nZ: "+event.values[2]);
+//            //info.setText("X: "+event.values[0]+
+//            "\nY: "+event.values[1]+
+//            "\nZ: "+event.values[2]);
         }
 
         @Override

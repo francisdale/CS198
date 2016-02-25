@@ -186,6 +186,7 @@ public class CardHome extends AppCompatActivity{
 
                 if(!newStudNum.isEmpty() && !newStudSurname.isEmpty() && !newStudFirstname.isEmpty()){
                     addStudentToMasterList(newStudNum,newStudSurname,newStudFirstname);
+
                 }
                 else{
                     Toast.makeText(getApplicationContext(),"Please fill out all the field details",Toast.LENGTH_SHORT).show();

@@ -174,7 +174,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onProgressUpdate(Void... progress){
         if(td.isUIOpened()) {
-            TextView tv = (TextView) ((CustomCamera) c).findViewById(R.id.detected_textView);
+            TextView tv = (TextView) ((CustomCamera) c).findViewById(R.id.custom_camera_status);
             tv.setText("Detected " + faceCount + " faces from " + imgCount + " photos.");
             //tv.setText("Time elapsed: " + (float) timeElapsed/1000 + "s. Detected a total of " + faceCount + " faces from " + imgCount + " photos.");
         }

@@ -65,7 +65,7 @@ public class ClassList extends AppCompatActivity {
             String[] details;
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
-                StudentItem si = new StudentItem(details[0],details[1],details[2]);
+                StudentItem si = new StudentItem(Integer.parseInt(details[0]),details[1],details[2],details[3]);
                 students.add(si);
             }
             br.close();

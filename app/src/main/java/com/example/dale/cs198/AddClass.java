@@ -5,18 +5,13 @@ import android.app.Dialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Environment;
-import android.support.annotation.NonNull;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,10 +30,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-
-import org.bytedeco.javacpp.tools.Parser;
-import org.bytedeco.javacpp.tools.ParserException;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -47,13 +38,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 public class AddClass extends AppCompatActivity {
 
@@ -87,6 +73,8 @@ public class AddClass extends AppCompatActivity {
     String end;
     String name;
 
+
+
     NotificationManager notificationManager;
     boolean isActive = false;
     int notifID = 29;
@@ -105,8 +93,13 @@ public class AddClass extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
-
         etName = (EditText) findViewById(R.id.editName);
+        etName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEditTextDialog();
+            }
+        });
 
         setStart = (Button) findViewById(R.id.start_time_button);
         setStart.setOnClickListener(
@@ -117,6 +110,7 @@ public class AddClass extends AppCompatActivity {
                     }
                 }
         );
+
         setEnd = (Button) findViewById(R.id.end_time_button);
         setEnd.setOnClickListener(
                 new Button.OnClickListener() {
@@ -127,8 +121,6 @@ public class AddClass extends AppCompatActivity {
         );
 
         displayMasterList();
-
-
 
     }
 
@@ -144,7 +136,7 @@ public class AddClass extends AppCompatActivity {
             String[] details;
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
-                StudentItem si = new StudentItem(details[1], details[2], details[3]);
+                StudentItem si = new StudentItem(Integer.parseInt(details[0]),details[1], details[2], details[3]);
                 studentItems.add(si);
             }
             br.close();
@@ -267,30 +259,30 @@ public class AddClass extends AppCompatActivity {
         }
     }
 
-//    public void showEditTextDialog() {
-//        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-//        LayoutInflater inflater = this.getLayoutInflater();
-//        final View dialogView = inflater.inflate(R.layout.edit_text_dialog_layout, null);
-//        dialogBuilder.setView(dialogView);
-//
-//        final EditText edt = (EditText) dialogView.findViewById(R.id.class_name_edit);
-//
-//        dialogBuilder.setTitle("Class Name");
-//        dialogBuilder.setMessage("Enter name below:");
-//        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//                //do something with edt.getText().toString();
-//                etName.setText(edt.getText().toString());
-//            }
-//        });
-//        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialog, int whichButton) {
-//                dialog.cancel();
-//            }
-//        });
-//        AlertDialog b = dialogBuilder.create();
-//        b.show();
-//    }
+    public void showEditTextDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.edit_text_dialog_layout, null);
+        dialogBuilder.setView(dialogView);
+
+        final EditText edt = (EditText) dialogView.findViewById(R.id.class_name_edit);
+
+        dialogBuilder.setTitle("Class Name");
+        dialogBuilder.setMessage("Enter name below:");
+        dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+                etName.setText(edt.getText().toString());
+            }
+        });
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
 
     public void saveToSp(String nameToSave, String startTime, String endTime) {
 
@@ -338,7 +330,7 @@ public class AddClass extends AppCompatActivity {
             for (int i = 0; i < studentList.size(); i++) {
                 StudentItem s = studentList.get(i);
                 if (s.isSelected()) {
-                    writer.append(s.getStudentNumber() + "," + s.getLastName() + "," + s.getFirstName() + "\n");
+                    writer.append(s.getId()+","+s.getStudentNumber() + "," + s.getLastName() + "," + s.getFirstName() + "\n");
                     selected++;
                 }
 

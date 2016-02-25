@@ -9,18 +9,22 @@ public class StudentItem {
     private  String lastName;
     private  String firstName;
     private int abscences;
-
-
+    private int id;
 
     private boolean selected;
 
-    public StudentItem(String studentNumber,String lastName,String firstName){
+    public StudentItem(int id,String studentNumber,String lastName,String firstName){
         this.setStudentNumber(studentNumber);
         this.setLastName(lastName);
         this.setFirstName(firstName);
         this.setAbscences(0);
         this.setSelected(false);
+        this.setId(id);
     }
+
+    public int getId() {return id;}
+
+    public void setId(int id) {this.id = id;}
 
     public boolean isSelected() {
         return selected;
@@ -61,4 +65,5 @@ public class StudentItem {
     public void setAbscences(int abscences) {
         this.abscences = abscences;
     }
+
 }
