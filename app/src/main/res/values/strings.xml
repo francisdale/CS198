@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Present!</string>
+    <string name="app_name">CS198</string>
 
     <string name="thesis_it">THESIS IT CS198!</string>
     <string name="action_settings">Settings</string>
@@ -16,6 +16,16 @@
     <string name="timeElapsed">Time in seconds:</string>
     <string name="detectType">Detection Method: </string>
     <string name="haar20Detect">Haar\n20</string>
-    <string name="title_activity_edit_students">EditStudents</string>
+    <string name="title_activity_java_cvtrain_face_recognizer_test">OpenCVFaceRecognizer</string>
+    <string name="train">Train</string>
+    <string name="eigen">Eigen</string>
+    <string name="fisher">Fisher</string>
+    <string name="lbph">LBPH</string>
+    <string name="title_activity_open_cvtrain_face_recognizer">OpenCVTrainFaceRecognizer</string>
+    <string name="trainn">Train:</string>
+    <string name="eigenface">Eigenface</string>
+    <string name="fisherface">Fisherface</string>
+    <string name="trainAlgorithms">Train Algorithm</string>
+    <string name="title_activity_java_cvface_recognizer_test">JavaCVFaceRecognizerTest</string>
 
 </resources>
