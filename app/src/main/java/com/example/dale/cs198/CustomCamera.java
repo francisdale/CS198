@@ -3,8 +3,6 @@ package com.example.dale.cs198;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Camera;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,7 +12,6 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -35,6 +32,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     SurfaceHolder surfaceHolder;
 
     int detectUsage;
+    String className;
 
     Camera camera;
     Camera.PictureCallback jpegCallback;
@@ -43,11 +41,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     File capturedImage = new File(tempImgDir);
     FileOutputStream fileOutputStream;
 
-    Sensor accelerometer;
-    SensorManager sensorManager;
+    //Sensor accelerometer;
+    //SensorManager sensorManager;
 
     TaskData td;
     FaceDetectTask fd;
+    FaceRecogTask fr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,20 +54,25 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         setContentView(R.layout.activity_custom_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
+        status = (TextView)findViewById(R.id.customCameraStatus);
+        capture = (ImageButton)findViewById(R.id.captureButton);
+
         Intent intent = getIntent();
         detectUsage = intent.getIntExtra("detectUsage", 1);
-        //accept mode from either train or classAdapter
 
-        status = (TextView)findViewById(R.id.custom_camera_status);
-        capture = (ImageButton)findViewById(R.id.capture_button);
+        td = new TaskData();
+        fd = new FaceDetectTask(td,this,detectUsage);
+
+        if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
+            className = intent.getStringExtra("classNameString");
+            status.setText(className);
+            fr = new FaceRecogTask(td,this,className);
+        }
 
         surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-        td = new TaskData();
-        fd = new FaceDetectTask(td,this,detectUsage);
 
         capture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -221,6 +225,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         super.onStart();
         Log.i(TAG, "CustomCamera onStart");
         fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
+            fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     @Override

@@ -35,14 +35,16 @@ public class TrainActivity extends AppCompatActivity {
 
         //POPULATE pathList from the cropped faces files from sdCard/PresentData/faceCrops folder
         File sdCardRoot = Environment.getExternalStorageDirectory();
-        File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
+        File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
+        //File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
 
         //change the directory to /sdcard/presentdata/facedatabase/untrainedcrops
 
         for (File f : faceCropsDir.listFiles()) {
             if (f.isFile()) {
                 String name = f.getName();
-                CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
+                CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
+                //CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
                 pathList.add(c);
             }
         }

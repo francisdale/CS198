@@ -5,8 +5,9 @@
     android:layout_height="match_parent"
     tools:context="com.example.dale.cs198.CustomCamera">
 
+
     <SurfaceView
-        android:layout_width="560dp"
+        android:layout_width="fill_parent"
         android:layout_height="match_parent"
         android:id="@+id/surfaceView"
         android:layout_alignParentLeft="true"
@@ -14,13 +15,14 @@
         android:layout_toStartOf="@+id/capture_button"
         android:layout_alignRight="@+id/capture_button"
         android:layout_alignEnd="@+id/capture_button"
-        android:layout_above="@+id/custom_camera_status" />
+        android:layout_above="@+id/custom_camera_status"
+        android:layout_below="@+id/topTextView" />
         android:layout_above="@+id/custom_camera_status" />
 
     <ImageButton
         android:layout_width="65dp"
         android:layout_height="65dp"
-        android:id="@+id/capture_button"
+        android:id="@+id/captureButton"
         android:src="@drawable/camera_button_custom"
         android:background="@drawable/capture_button"
         android:layout_centerVertical="true"
@@ -29,15 +31,40 @@
 
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Capturing Images for (Training/ClassX/ClassY) Can also serve as status bar."
+        android:text="customCameraStatus"
         android:textSize="15sp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/custom_camera_status"
         android:textColor="#212121" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:text="attendanceCounter"
+        android:id="@+id/attendanceCounter"
+        android:textColor="#0836cd"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/customCameraStatus"
+        android:layout_toEndOf="@+id/custom_camera_status"
+        android:layout_marginLeft="116dp"
+        android:layout_marginStart="116dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:text="detectionCounter"
+        android:id="@+id/detectionCounter"
+        android:textColor="#212121"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/capture_button"
+        android:layout_toStartOf="@+id/capture_button" />
+
     <!--</TableRow>-->
 
 

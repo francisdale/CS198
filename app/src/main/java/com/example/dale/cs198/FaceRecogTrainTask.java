@@ -100,6 +100,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
             images.put(i, img);
             labelsBuf.put(i, label);
             Log.i(TAG, "trainedCrops i" + i);
+            untrainedCrops[i].renameTo(new File(trainedCropsDir + "/" + untrainedCrops[i].getName()));
         }
 
         Log.i(TAG, "Number of images loaded: " + images.size());

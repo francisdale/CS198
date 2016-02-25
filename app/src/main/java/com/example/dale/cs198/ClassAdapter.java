@@ -1,35 +1,16 @@
 package com.example.dale.cs198;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.app.SharedElementCallback;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import android.support.v7.app.AppCompatActivity;
 /**
  * Created by DALE on 1/21/2016.
  */
@@ -39,6 +20,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
     ArrayList<ClassItem> classes = new ArrayList<ClassItem>();
     private static final String TAG = "testMessage";
     private Context context;
+    private String classNameString;
 
     public ClassAdapter(Context context,ArrayList<ClassItem> classes){
         this.classes = classes;
@@ -48,7 +30,8 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
     @Override
     public void onBindViewHolder(ClassViewHolder holder, int position) {
         ClassItem c = classes.get(position);
-        holder.className.setText(c.getName());
+        classNameString = c.getName();
+        holder.className.setText(classNameString);
         holder.startTime.setText(c.getStartTime());
         holder.endTime.setText(c.getEndTime());
     }
@@ -88,8 +71,10 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
             takePic.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v){
-                    Intent picture = new Intent(context, CustomCamera.class);
-                    context.startActivity(picture);
+                    Intent cam = new Intent(context, CustomCamera.class);
+                    cam.putExtra("detectUsage", FaceDetectTask.ATTENDANCE_USAGE);
+                    cam.putExtra("classNameString", classNameString);
+                    context.startActivity(cam);
                     //pass a mode na activity usage integer = 0;
                     //call FaceDetectTask.ATTENDANCE_USAGE
 

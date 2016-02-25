@@ -95,7 +95,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                         //Detect faces:
                         timeStart = System.currentTimeMillis();
-                        faceDetector.detectMultiScale(mGray, faces, 1.2, 3, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                        faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
                         timeEnd = System.currentTimeMillis();
                         timeElapsed = timeEnd - timeStart;
 
@@ -136,7 +136,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                         //Detect faces:
                         timeStart = System.currentTimeMillis();
-                        faceDetector.detectMultiScale(mGray, faces, 1.2, 3, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                        faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
                         timeEnd = System.currentTimeMillis();
                         timeElapsed = timeEnd - timeStart;
 
