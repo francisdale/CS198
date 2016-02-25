@@ -89,12 +89,10 @@ public class EditClassList extends AppCompatActivity {
 
         }
 
-
         //create an ArrayAdaptar from the String Array
         dataAdapter = new EditClassAdapter(this, R.layout.add_student_layout, students);
         ListView listView = (ListView) findViewById(R.id.edit_class_list_view);
         listView.setAdapter(dataAdapter);
-
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
@@ -118,7 +116,7 @@ public class EditClassList extends AppCompatActivity {
             String[] details;
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
-                StudentItem si = new StudentItem(details[1], details[2], details[3]);
+                StudentItem si = new StudentItem(Integer.parseInt(details[0]),details[1], details[2], details[3]);
                 students.add(si);
             }
             br.close();
@@ -138,7 +136,7 @@ public class EditClassList extends AppCompatActivity {
             String[] details;
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
-                StudentItem student = new StudentItem(details[0], details[1], details[2]);
+                StudentItem student = new StudentItem(Integer.parseInt(details[0]),details[1], details[2], details[3]);
                 studentsInClass.add(student);
             }
             br.close();
@@ -162,10 +160,9 @@ public class EditClassList extends AppCompatActivity {
                 for (int i = 0; i < students.size(); i++) {
                     StudentItem s = students.get(i);
                     if (s.isSelected()) {
-                        writer.append(s.getStudentNumber() + "," + s.getLastName() + "," + s.getFirstName() + "\n");
+                        writer.append(s.getId()+","+s.getStudentNumber() + "," + s.getLastName() + "," + s.getFirstName() + "\n");
                         selected++;
                     }
-
                 }
                 if (selected == 0) {
                     Toast.makeText(this, "Please select students!", Toast.LENGTH_SHORT).show();
