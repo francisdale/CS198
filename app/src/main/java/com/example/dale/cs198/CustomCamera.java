@@ -2,6 +2,8 @@ package com.example.dale.cs198;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -9,6 +11,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,13 +32,19 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static org.bytedeco.javacpp.opencv_highgui.imread;
+
 public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = "testMessage";
+    private static final int SELECT_PHOTO = 2;
+    private String selectedImagePath;
     private int MODE;
 
     TextView status;
     ImageButton capture;
+    ImageButton gallery;
+
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
 
@@ -58,6 +67,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
         status = (TextView)findViewById(R.id.custom_camera_status);
         capture = (ImageButton)findViewById(R.id.capture_button);
+        gallery = (ImageButton)findViewById(R.id.gallery_button);
 
         surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
         surfaceHolder = surfaceView.getHolder();
@@ -93,17 +103,20 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 }catch(FileNotFoundException e){}
                 catch(IOException e){}
                 finally {}
-
                 //imageFile.getAbsolutePath() --> THIS IS WHERE THE PICTURES ARE GOING
-
                 //info.setText(photoFormat);
                 Toast.makeText(getApplicationContext(),fileName+" saved!", Toast.LENGTH_SHORT).show();
-
                 refreshCamera();
                 refreshGallery(image);
-
             }
         };
+
+        gallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchSelectPhotoIntent();
+            }
+        });
 
 
 //        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -141,8 +154,17 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         return new File(dir,"PresentData");
     }
 
+    private void dispatchSelectPhotoIntent(){
+        Log.i(TAG, "DispatchSelectPhotoIntent");
+        Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
+        selectFromGallery.setType("image/*");
+        //selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(selectFromGallery, SELECT_PHOTO);
+    }
+
+
     public void captureImage(){
-        camera.takePicture(null,null,jpegCallback);
+        camera.takePicture(null, null, jpegCallback);
     }
 
     @Override
@@ -168,8 +190,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         }catch (Exception e){
             Log.i(TAG, "Error drawing the camera sa surfaceholder");
         }
-
-
     }
 
     @Override
@@ -182,6 +202,39 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         camera.stopPreview();
         camera.release();
         camera = null;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode == RESULT_OK){
+            if(requestCode == SELECT_PHOTO){
+                Log.i(TAG, "MainActivity: now in Select Photo");
+                Uri selectedImageUri = data.getData();
+                selectedImagePath = getPath(selectedImageUri);
+                //imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
+                Toast.makeText(getApplicationContext(),"You selected: "+selectedImagePath+" .It is now being analyze.", Toast.LENGTH_LONG).show();
+                //PASS selectedimage path to the thread
+
+
+                //Log.i(TAG, "MainActivity: about to add to detectQueue");
+                //td.detectQueue.add(imread(selectedImagePath));
+                //Log.i(TAG, "MainActivity, Select Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
+            }
+
+        }
+    }
+
+    public String getPath(Uri uri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        if(cursor!=null) {
+            //HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
+            //THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        }
+        else return null;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

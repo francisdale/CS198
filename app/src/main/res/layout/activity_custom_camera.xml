@@ -27,6 +27,15 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
+    <ImageButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:id="@+id/gallery_button"
+        android:background="@drawable/gallery_button"
+        android:layout_alignBottom="@+id/surfaceView"
+        android:layout_alignRight="@+id/capture_button"
+        android:layout_alignEnd="@+id/capture_button" />
+
 
     <TextView
         android:layout_width="match_parent"
