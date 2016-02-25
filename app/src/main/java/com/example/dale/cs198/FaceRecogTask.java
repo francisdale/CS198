@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.TextView;
 
-import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.Mat;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -21,8 +21,8 @@ import static org.bytedeco.javacpp.opencv_contrib.createEigenFaceRecognizer;
 public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     private static final String modelFileDir = "sdcard/CS198/recognizerModels/eigenModel.xml";
-    private static final String classListFileDir = "sdcard/CS198/classes/classList.txt";
-    private static final String recordDir = "sdcard/CS198/classes/attendanceRecords";
+    private static final String classesDir = "sdcard/CS198/Classes";
+    private static final String recordDir = "sdcard/CS198/Classes/CS 32/attendanceRecords";
 
 
     TaskData td;
@@ -68,13 +68,11 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
         efr.load(modelFileDir);
 
 
-
-        GenQueue<opencv_core.Mat> recogQueue = td.recogQueue;
-        opencv_core.Mat mColor;
+        Mat mColor;
 
         while(td.isUIOpened()){
 
-            mColor = recogQueue.poll();
+            mColor = td.recogQueue.poll();
             if(mColor == null){
                 continue; //This if statement ends this thread and is triggered when the UI thread is dead and there ar eno more images waiting to be processed.
             }

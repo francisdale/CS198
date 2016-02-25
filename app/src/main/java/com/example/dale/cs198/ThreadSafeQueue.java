@@ -8,7 +8,7 @@ import java.util.LinkedList;
  * Created by jedpatrickdatu on 2/10/2016.
  * Reference: http://www.tutorialspoint.com/javaexamples/data_queue.htm
  */
-public class GenQueue<E>{
+public class ThreadSafeQueue<E>{
 
     private static final String TAG = "testMessage";
 

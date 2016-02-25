@@ -1,25 +1,17 @@
 package com.example.dale.cs198;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class TrainActivity extends AppCompatActivity {
@@ -60,6 +52,7 @@ public class TrainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent cam = new Intent(TrainActivity.this, CustomCamera.class);
+                cam.putExtra("detectUsage", FaceDetectTask.TRAIN_USAGE);
                 startActivity(cam);
 
                 //pass FACEDETECTTASK.TRAIN
