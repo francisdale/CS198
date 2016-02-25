@@ -1,5 +1,6 @@
 package com.example.dale.cs198;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -158,8 +159,10 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         Log.i(TAG, "DispatchSelectPhotoIntent");
         Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
         selectFromGallery.setType("image/*");
-        //selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(selectFromGallery, SELECT_PHOTO);
+        selectFromGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
+        //startActivityForResult(selectFromGallery, SELECT_PHOTO);
     }
 
 
@@ -208,19 +211,21 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if(resultCode == RESULT_OK){
             if(requestCode == SELECT_PHOTO){
-                Log.i(TAG, "MainActivity: now in Select Photo");
-                Uri selectedImageUri = data.getData();
-                selectedImagePath = getPath(selectedImageUri);
-                //imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
-                Toast.makeText(getApplicationContext(),"You selected: "+selectedImagePath+" .It is now being analyze.", Toast.LENGTH_LONG).show();
-                //PASS selectedimage path to the thread
+                ClipData clipData = data.getClipData();
+                if(clipData == null){
+                    Log.i(TAG, "SELECTED NOTHING");
+                }else{
+                    for(int i=0; i<clipData.getItemCount(); i++){
+                        ClipData.Item item = clipData.getItemAt(i);
+                        Uri uri = item.getUri();
+                        Log.i(TAG, "Selected URI: "+getPath(uri));
 
+                        //pass the getPath(uri) to the thread
 
-                //Log.i(TAG, "MainActivity: about to add to detectQueue");
-                //td.detectQueue.add(imread(selectedImagePath));
-                //Log.i(TAG, "MainActivity, Select Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
+                    }
+                    Toast.makeText(getApplicationContext(),"The images you selected are now being analyze.", Toast.LENGTH_LONG).show();
+                }
             }
-
         }
     }
 
