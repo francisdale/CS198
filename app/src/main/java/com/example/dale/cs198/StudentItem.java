@@ -65,5 +65,5 @@ public class StudentItem {
     public void setAbscences(int abscences) {
         this.abscences = abscences;
     }
-    
+
 }
