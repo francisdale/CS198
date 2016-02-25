@@ -24,10 +24,9 @@ import static org.bytedeco.javacpp.opencv_highgui.imread;
 public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "testMessage";
-    private static final String untrainedLabeledCropsDir = "sdcard/CS198/faceDatabase/untrainedCrops/labeledCrops";
-    private static final String trainedCropsDir = "sdcard/CS198/faceDatabase/trainedCrops";
-    private static final String modelDir = "sdcard/CS198/recognizerModels";
-    private static final String modelFileName = "eigenModel.xml";
+    private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
+    private static final String trainedCropsDir = "sdcard/PresentData/faceDatabase/trainedCrops";
+    private static final String modelDir = "sdcard/PresentData/eigenModel.xml";
 
     long timeStart;
     long timeEnd;
@@ -44,42 +43,63 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
 
-        //Load training images from trainingDir and
-        File trainingFolder = new File(untrainedLabeledCropsDir);
+        //Load training images from trainedCropsDir and untrainedCropsDir
+        File trainedCropsFolder = new File(trainedCropsDir);
+        File untrainedCropsFolder = new File(untrainedCropsDir);
 
-        FilenameFilter imgFilter = new FilenameFilter() {
+        FilenameFilter trainedCropsImgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
-                return name.endsWith(".jpg") || name.endsWith(".pgm") || name.endsWith(".png");
+                return name.endsWith(".jpg");
             }
         };
 
-        File[] imageFiles = trainingFolder.listFiles(imgFilter);
+        FilenameFilter untrainedCropsImgFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return name.endsWith(".jpg") && !name.startsWith("unlabeled");
+            }
+        };
+
+        File[] trainedCrops = trainedCropsFolder.listFiles(trainedCropsImgFilter);
+        File[] untrainedCrops = untrainedCropsFolder.listFiles(untrainedCropsImgFilter);
 
 
-        if(imageFiles.length == 0){
+        if(trainedCrops.length == 0 && untrainedCrops.length == 0){
             Log.i(TAG, "No training images found.");
             return null;
         }
 
+        int numTotalCrops = trainedCrops.length + untrainedCrops.length;
         String currSPath;
 
-        MatVector images = new MatVector(imageFiles.length);
-        Mat labels = new Mat(imageFiles.length, 1, CV_32SC1);
+        MatVector images = new MatVector(numTotalCrops);
+        Mat labels = new Mat(numTotalCrops, 1, CV_32SC1);
         Mat img;
         IntBuffer labelsBuf = labels.getIntBuffer();
         int label;
 
 
-        for(int i = 0; i <= imageFiles.length; i++){
-            img = imread(imageFiles[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+        for(int i = 0; i <= trainedCrops.length; i++){
+            img = imread(trainedCrops[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
 
             images.put(i, img);
-            //Image name syntax: <id number>.<format>
-            label = Integer.parseInt(imageFiles[i].getName().split(".")[0]);
+            //Image name syntax: <id number>_<img num>.<format>
+            label = Integer.parseInt(trainedCrops[i].getName().split("_")[0]);
             images.put(i, img);
             labelsBuf.put(i, label);
-            Log.i(TAG, "i" + i);
+            Log.i(TAG, "trainedCrops i" + i);
+        }
+
+        for(int i = 0; i <= untrainedCrops.length; i++){
+            img = imread(untrainedCrops[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+
+            images.put(i, img);
+            //Image name syntax: <id number>_<img num>.<format>
+            label = Integer.parseInt(untrainedCrops[i].getName().split("_")[0]);
+            images.put(i, img);
+            labelsBuf.put(i, label);
+            Log.i(TAG, "trainedCrops i" + i);
         }
 
         Log.i(TAG, "Number of images loaded: " + images.size());
@@ -99,7 +119,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
         timeEnd = System.currentTimeMillis();
         timeElapsed = timeEnd - timeStart;
         Log.i(TAG, "Training complete.");
-        faceRecognizer.save(modelDir + "/" + modelFileName);
+        faceRecognizer.save(modelDir);
 
         return null;
     }
