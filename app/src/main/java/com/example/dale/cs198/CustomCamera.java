@@ -57,6 +57,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "CustomCamera onCreate");
         setContentView(R.layout.activity_custom_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -152,7 +153,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 //        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 //        CameraAccelerometer cameraAccelerometer = new CameraAccelerometer(accelerometer,sensorManager);
         //START THE THREADS HERE!!!
-
+        Log.i(TAG, "CustomCamera onCreate done");
     }
 
     public void refreshGallery(File file){
@@ -211,9 +212,10 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                         Log.i(TAG, "Selected URI: "+getPath(uri));
 
                         //pass the getPath(uri) to the thread
-
+                        td.detectQueue.add(imread(uri.getPath()));
+                        Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. Its size is now " + td.detectQueue.size());
                     }
-                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyze.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -278,8 +280,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         Log.i(TAG, "CustomCamera onStart");
         fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
-            fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
+        Log.i(TAG, "CustomCamera onStart End");
     }
 
     @Override

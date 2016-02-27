@@ -39,40 +39,55 @@
         android:layout_alignEnd="@+id/captureButton" />
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="customCameraStatus"
-        android:textSize="15sp"
-        android:layout_alignParentBottom="true"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/customCameraStatus"
-        android:textColor="#212121" />
+        android:id="@+id/notificationLayout"
+        android:weightSum="1">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="15sp"
-        android:text="attendanceCounter"
-        android:id="@+id/attendanceCounter"
-        android:textColor="#0836cd"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/customCameraStatus"
-        android:layout_toEndOf="@+id/customCameraStatus"
-        android:layout_marginLeft="116dp"
-        android:layout_marginStart="116dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="customCameraStatus"
+            android:textSize="15sp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/customCameraStatus"
+            android:textColor="#05acfa"
+            android:layout_gravity="bottom"
+            android:layout_weight="0.33" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="15sp"
-        android:text="detectionCounter"
-        android:id="@+id/detectionCounter"
-        android:textColor="#212121"
-        android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/captureButton"
-        android:layout_toStartOf="@+id/captureButton" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:text="attendanceCounter"
+            android:id="@+id/attendanceCounter"
+            android:textColor="#1cdc06"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@+id/customCameraStatus"
+            android:layout_toEndOf="@+id/customCameraStatus"
+            android:layout_gravity="bottom"
+            android:layout_weight="0.33" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:text="detectionCounter"
+            android:id="@+id/detectionCounter"
+            android:textColor="#fafa05"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/captureButton"
+            android:layout_toStartOf="@+id/captureButton"
+            android:layout_gravity="bottom" />
+
+    </LinearLayout>
 
     <!--</TableRow>-->
 

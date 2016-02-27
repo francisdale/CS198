@@ -79,8 +79,6 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             Rect faces;
             Rect r;
             Rect roi;
-            int x;
-            int y;
             int numFaces;
 
 
@@ -102,18 +100,18 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                         Log.i(TAG, "Detection complete. Cropping...");
                         //Crop faces:
-                        faceCount += faces.capacity();
-                        for (int i = 0; i < faceCount; i++) {
+                        numFaces = faces.capacity();
+                        faceCount += numFaces;
+                        for (int i = 0; i < numFaces; i++) {
                             r = faces.position(i);
-                            x = r.x();
-                            y = r.y();
 
-                            roi = new Rect(x, y, r.width(), r.height());
+                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
                             td.recogQueue.add(new Mat(mColor, roi));
                         }
                         publishProgress();
                     }
                 }
+                Log.i(TAG, "Attendance  camera UI closed. Goodbye!");
             } else if(usageType == TRAIN_USAGE){
                 Log.i(TAG, "Now in Train Usage ");
                 File folder = new File(untrainedCropsDir);
@@ -148,11 +146,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         for (int i = 0; i < numFaces; i++) {
                             Log.i(TAG, "Start cropping face " + i);
                             r = faces.position(i);
-                            x = r.x();
-                            y = r.y();
 
                             Log.i(TAG, "Mid cropping face " + i);
-                            roi = new Rect(x, y, r.width(), r.height());
+                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
                             crop = new Mat(mColor, roi);
                             imwrite(untrainedCropsDir + "/" + "unlabeled_" + System.currentTimeMillis() + ".jpg", crop);
                             Log.i(TAG, "End cropping face " + i);
@@ -162,7 +158,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         Log.i(TAG, "Progress published.");
                     }
                 }
-                Log.i(TAG, "UI closed. Goodbye!");
+                Log.i(TAG, "Train camera UI closed. Goodbye!");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -174,8 +170,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onProgressUpdate(Void... progress){
         if(td.isUIOpened()) {
-            TextView tv = (TextView) ((CustomCamera) c).findViewById(R.id.custom_camera_status);
-            tv.setText("Detected " + faceCount + " faces from " + imgCount + " photos.");
+            TextView tv = (TextView) ((CustomCamera) c).findViewById(R.id.detectionCounter);
+
+            tv.setText("f" + faceCount + "i" + imgCount);
             //tv.setText("Time elapsed: " + (float) timeElapsed/1000 + "s. Detected a total of " + faceCount + " faces from " + imgCount + " photos.");
         }
 
