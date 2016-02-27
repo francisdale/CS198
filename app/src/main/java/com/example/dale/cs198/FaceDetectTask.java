@@ -14,9 +14,9 @@ import java.io.InputStream;
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
 import static org.bytedeco.javacpp.opencv_core.Size;
+import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 
 /**
  * Created by jedpatrickdatu on 2/10/2016.
@@ -51,7 +51,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
-
+        Log.i(TAG, "FaceDetectTask doInBackground start with context " + c.toString());
         try {
             //Initialize face detector:
             File cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
@@ -87,8 +87,10 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 while(td.isUIOpened()) {
                     while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and is triggered when the UI thread is dead and there are no more images queued up for detecting.
                         imgCount++;
+                        Log.i(TAG, "FaceDetectTask is mColor null = " + mColor.isNull());
                         mGray = mColor;
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
+                        Log.i(TAG, "Attendance Color conversion completed.");
                         faces = new Rect();
 
                         //Detect faces:
@@ -162,6 +164,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Log.i(TAG, "Exception at FaceDetectTask:");
             Log.e(TAG, "Exception thrown: " + e);
         }
         return null;
@@ -173,6 +176,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             TextView tv = (TextView) ((CustomCamera) c).findViewById(R.id.detectionCounter);
 
             tv.setText("f" + faceCount + "i" + imgCount);
+
             //tv.setText("Time elapsed: " + (float) timeElapsed/1000 + "s. Detected a total of " + faceCount + " faces from " + imgCount + " photos.");
         }
 

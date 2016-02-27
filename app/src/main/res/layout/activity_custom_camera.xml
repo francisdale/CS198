@@ -5,18 +5,17 @@
     android:layout_height="match_parent"
     tools:context="com.example.dale.cs198.CustomCamera">
 
-
     <SurfaceView
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/surfaceView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/captureButton"
+        android:layout_toStartOf="@+id/galleryButton"
+        android:layout_below="@+id/topTextView"
+        android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/captureButton"
-        android:layout_alignEnd="@+id/captureButton"
-        android:layout_above="@+id/custom_camera_status"
-        android:layout_below="@+id/topTextView" />
+        android:layout_alignEnd="@+id/captureButton" />
         android:layout_above="@+id/custom_camera_status" />
 
     <ImageButton
@@ -30,20 +29,19 @@
         android:layout_alignParentEnd="true" />
 
     <ImageButton
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
         android:id="@+id/galleryButton"
+        android:src="@drawable/gallery_button_custom"
         android:background="@drawable/gallery_button"
-        android:layout_alignBottom="@+id/surfaceView"
-        android:layout_alignRight="@+id/captureButton"
-        android:layout_alignEnd="@+id/captureButton" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/notificationLayout"
@@ -88,6 +86,7 @@
             android:layout_gravity="bottom" />
 
     </LinearLayout>
+
 
     <!--</TableRow>-->
 

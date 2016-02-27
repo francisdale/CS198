@@ -21,8 +21,10 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 
 import static org.bytedeco.javacpp.opencv_highgui.imread;
+import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 
 public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Callback {
 
@@ -195,6 +197,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         selectFromGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
+        Toast.makeText(getApplicationContext(), "Select and hold the photos to be analyze.", Toast.LENGTH_SHORT).show();
         //startActivityForResult(selectFromGallery, SELECT_PHOTO);
     }
 
@@ -212,9 +215,14 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                         Log.i(TAG, "Selected URI: "+getPath(uri));
 
                         //pass the getPath(uri) to the thread
+                        Log.i(TAG, "CustomCamera is mColor null = " + imread(uri.getPath()).isNull());
+                        Log.i(TAG, "Writing image...");
+                        imwrite("sdcard/PresentData", imread(uri.getPath()));
+                        Log.i(TAG, "Image written.");
                         td.detectQueue.add(imread(uri.getPath()));
-                        Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. Its size is now " + td.detectQueue.size());
+                        Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. i = " + (i+1));
                     }
+                    Log.i(TAG, "CustomCamera Gallery: Done filling queue with gallery pics.");
                     Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
                 }
             }
@@ -248,7 +256,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         parameters = camera.getParameters();
         //modifying the camera's parameters
         parameters.setPreviewFrameRate(20);
-        parameters.setPreviewSize(1000,250);
+        parameters.setPreviewSize(960,540);
         camera.setParameters(parameters);
         //camera.setDisplayOrientation(180);
         try {
@@ -264,7 +272,34 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        Camera.Parameters myParameters = camera.getParameters();
+        Camera.Size myBestSize = getBestPreviewSize(width, height, myParameters);
+
+        if(myBestSize != null){
+            myParameters.setPreviewSize(myBestSize.width, myBestSize.height);
+            Toast.makeText(getApplicationContext(),
+                    "Best Size:\n" +
+                            String.valueOf(myBestSize.width) + " : " + String.valueOf(myBestSize.height),
+                    Toast.LENGTH_LONG).show();
+        }
+        camera.setParameters(myParameters);
         refreshCamera();
+    }
+
+    private Camera.Size getBestPreviewSize(int width, int height, Camera.Parameters parameters){
+        Camera.Size bestSize = null;
+        List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
+
+        bestSize = sizeList.get(0);
+
+        for(int i = 1; i < sizeList.size(); i++){
+            if((sizeList.get(i).width * sizeList.get(i).height) >
+                    (bestSize.width * bestSize.height)){
+                bestSize = sizeList.get(i);
+            }
+        }
+
+        return bestSize;
     }
 
     @Override
@@ -281,6 +316,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
             //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
         }
         Log.i(TAG, "CustomCamera onStart End");
     }
