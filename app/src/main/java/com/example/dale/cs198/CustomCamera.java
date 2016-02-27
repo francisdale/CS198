@@ -51,8 +51,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     //SensorManager sensorManager;
 
     TaskData td;
-    FaceDetectTask fd;
-    FaceRecogTask fr;
+    //FaceDetectTask fd;
+    //FaceRecogTask fr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,12 +68,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         detectUsage = intent.getIntExtra("detectUsage", 1);
 
         td = new TaskData();
-        fd = new FaceDetectTask(td,this,detectUsage);
+        //fd = new FaceDetectTask(td,this,detectUsage);
 
         if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
             className = intent.getStringExtra("classNameString");
             status.setText(className);
-            fr = new FaceRecogTask(td,this,className);
+            //fr = new FaceRecogTask(td,this,className);
         }
 
         surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
@@ -276,9 +276,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "CustomCamera onStart");
-        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        //td.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
-            fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            //td.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 
