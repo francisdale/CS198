@@ -54,7 +54,7 @@ public class ClassList extends AppCompatActivity {
         end = intent.getStringExtra("end");
         //read the txt file of student names then populate students ArrayList
 
-        String dataPath="sdcard/PresentData/Classes";
+        String dataPath="sdcard/PresentData/Classes/"+name;
 
         File file = new File(dataPath,name+".txt");
         StringBuilder text = new StringBuilder();

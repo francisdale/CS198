@@ -1,5 +1,6 @@
 package com.example.dale.cs198;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -11,16 +12,27 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static org.bytedeco.javacpp.opencv_highgui.imread;
@@ -63,23 +75,34 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         setContentView(R.layout.activity_custom_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        status = (TextView)findViewById(R.id.customCameraStatus);
-        capture = (ImageButton)findViewById(R.id.captureButton);
-        gallery = (ImageButton)findViewById(R.id.galleryButton);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int height = 0;
+        int width = 0;
+
+        width = metrics.widthPixels;
+        height = metrics.widthPixels;
+
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+
+        status = (TextView) findViewById(R.id.customCameraStatus);
+        capture = (ImageButton) findViewById(R.id.captureButton);
+        gallery = (ImageButton) findViewById(R.id.galleryButton);
 
         Intent intent = getIntent();
         detectUsage = intent.getIntExtra("detectUsage", 1);
 
         td = new TaskData();
-        fd = new FaceDetectTask(td,this,detectUsage);
+        fd = new FaceDetectTask(td, this, detectUsage);
 
-        if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
+        if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
             className = intent.getStringExtra("classNameString");
             status.setText(className);
-            fr = new FaceRecogTask(td,this,className);
+            fr = new FaceRecogTask(td, this, className);
         }
 
-        surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
+        surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -98,7 +121,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             }
         });
 
-        jpegCallback=new Camera.PictureCallback() {
+        jpegCallback = new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 try {
@@ -110,9 +133,10 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                     td.detectQueue.add(imread(tempImgDir));
                     capturedImage.delete();
                     Log.i(TAG, "CustomCamera: Added image to detectQueue. Its size is now " + td.detectQueue.size());
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
 
-                refreshCamera();
+                //refreshCamera();
 
                 /*
                 Bitmap bmp= BitmapFactory.decodeByteArray(data, 0, data.length);
@@ -120,11 +144,11 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 bmp.copyPixelsToBuffer(m.getByteBuffer());
                 td.detectQueue.add(m);
                 */
-                /*
-                FileOutputStream fileOutputStream=null;
+
+                FileOutputStream fileOutputStream = null;
                 File imageFile = getDirectory();
-                if(!imageFile.exists() && !imageFile.mkdirs()){
-                    Toast.makeText(getApplicationContext(),"Can't create directory to save image", Toast.LENGTH_SHORT).show();
+                if (!imageFile.exists() && !imageFile.mkdirs()) {
+                    Toast.makeText(getApplicationContext(), "Can't create directory to save image", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyymmddhhss");
@@ -146,9 +170,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 Toast.makeText(getApplicationContext(), fileName + " saved!", Toast.LENGTH_SHORT).show();
                 refreshCamera();
                 refreshGallery(image);
-                */
+
             }
         };
+
+
+        //surfaceView.setLayoutParams(layoutParams);
 
 
 //        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -158,61 +185,41 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         Log.i(TAG, "CustomCamera onCreate done");
     }
 
-    public void refreshGallery(File file){
+    public void refreshGallery(File file) {
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         intent.setData(Uri.fromFile(file));
         sendBroadcast(intent);
     }
 
-    public void refreshCamera(){
-        if(surfaceHolder.getSurface() == null){
+    public void refreshCamera() {
+        if (surfaceHolder.getSurface() == null) {
             return;
         }
-
-        try{
+        try {
             camera.stopPreview();
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
 
-        try{
+        try {
             camera.setPreviewDisplay(surfaceHolder);
             camera.startPreview();
-        }catch (Exception e){}
-
-
+        } catch (Exception e) {
+        }
     }
 
-    private File getDirectory(){
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        return new File(dir,"PresentData");
-    }
-
-    public void captureImage(){
-        camera.takePicture(null, null, jpegCallback);
-    }
-
-    private void dispatchSelectPhotoIntent(){
-        Log.i(TAG, "DispatchSelectPhotoIntent");
-        Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
-        selectFromGallery.setType("image/*");
-        selectFromGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
-        Toast.makeText(getApplicationContext(), "Select and hold the photos to be analyze.", Toast.LENGTH_SHORT).show();
-        //startActivityForResult(selectFromGallery, SELECT_PHOTO);
-    }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(resultCode == RESULT_OK){
-            if(requestCode == SELECT_PHOTO){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SELECT_PHOTO) {
                 ClipData clipData = data.getClipData();
-                if(clipData == null){
+                if (clipData == null) {
                     Log.i(TAG, "SELECTED NOTHING");
-                }else{
-                    for(int i=0; i<clipData.getItemCount(); i++){
+                } else {
+                    for (int i = 0; i < clipData.getItemCount(); i++) {
                         ClipData.Item item = clipData.getItemAt(i);
                         Uri uri = item.getUri();
-                        Log.i(TAG, "Selected URI: "+getPath(uri));
+                        Log.i(TAG, "Selected URI: " + getPath(uri));
 
                         //pass the getPath(uri) to the thread
                         Log.i(TAG, "CustomCamera is mColor null = " + imread(uri.getPath()).isNull());
@@ -220,7 +227,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                         imwrite("sdcard/PresentData", imread(uri.getPath()));
                         Log.i(TAG, "Image written.");
                         td.detectQueue.add(imread(uri.getPath()));
-                        Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. i = " + (i+1));
+                        Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. i = " + (i + 1));
                     }
                     Log.i(TAG, "CustomCamera Gallery: Done filling queue with gallery pics.");
                     Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
@@ -238,8 +245,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
             return cursor.getString(column_index);
-        }
-        else{
+        } else {
             return null;
         }
     }
@@ -247,59 +253,109 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         //open the camera
-        try{
+        try {
             camera = Camera.open();
-        }catch (RuntimeException ex){
+        } catch (RuntimeException ex) {
             Log.i(TAG, "Error opening the camera");
         }
         Camera.Parameters parameters;
         parameters = camera.getParameters();
         //modifying the camera's parameters
         parameters.setPreviewFrameRate(20);
-        parameters.setPreviewSize(960,540);
+        //parameters.setPictureSize(surfaceView.getWidth(),surfaceView.getHeight());
+        Log.i(TAG,"Preview Size default: " + parameters.getPreviewSize().width + " x " + parameters.getPreviewSize().height);
+        //parameters.setPreviewSize(426,320);
+
         camera.setParameters(parameters);
         //camera.setDisplayOrientation(180);
         try {
             //drawing the camera sa surace view
             camera.setPreviewDisplay(surfaceHolder);
             camera.startPreview();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.i(TAG, "Error drawing the camera sa surfaceholder");
         }
-
-
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Camera.Parameters myParameters = camera.getParameters();
-        Camera.Size myBestSize = getBestPreviewSize(width, height, myParameters);
+//        Camera.Parameters myParameters = camera.getParameters();
+//        Camera.Size myBestSize = getBestPreviewSize(width, height, myParameters);
+//
+//        if (myBestSize != null) {
+//            myParameters.setPreviewSize(myBestSize.width, myBestSize.height);
+//            Toast.makeText(getApplicationContext(),
+//                    "Best Size:\n" +
+//                            String.valueOf(myBestSize.width) + " : " + String.valueOf(myBestSize.height),
+//                    Toast.LENGTH_LONG).show();
+//            //setMyPreviewSize(width, height);
+//        }
+//        camera.setParameters(myParameters);
 
-        if(myBestSize != null){
-            myParameters.setPreviewSize(myBestSize.width, myBestSize.height);
-            Toast.makeText(getApplicationContext(),
-                    "Best Size:\n" +
-                            String.valueOf(myBestSize.width) + " : " + String.valueOf(myBestSize.height),
-                    Toast.LENGTH_LONG).show();
-        }
-        camera.setParameters(myParameters);
         refreshCamera();
     }
 
-    private Camera.Size getBestPreviewSize(int width, int height, Camera.Parameters parameters){
+    private Camera.Size getBestPreviewSize(int width, int height, Camera.Parameters parameters) {
         Camera.Size bestSize = null;
         List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();
 
         bestSize = sizeList.get(0);
 
-        for(int i = 1; i < sizeList.size(); i++){
-            if((sizeList.get(i).width * sizeList.get(i).height) >
-                    (bestSize.width * bestSize.height)){
+        for (int i = 1; i < sizeList.size(); i++) {
+            if ((sizeList.get(i).width * sizeList.get(i).height) >
+                    (bestSize.width * bestSize.height)) {
                 bestSize = sizeList.get(i);
             }
         }
 
         return bestSize;
+    }
+
+    private void setMyPreviewSize(int width, int height) {
+        // Get the set dimensions
+        float newProportion = (float) width / (float) height;
+
+        // Get the width of the screen
+        int screenWidth = getWindowManager().getDefaultDisplay().getWidth();
+        int screenHeight = getWindowManager().getDefaultDisplay().getHeight();
+        float screenProportion = (float) screenWidth / (float) screenHeight;
+
+        // Get the SurfaceView layout parameters
+        ViewGroup.LayoutParams lp = surfaceView.getLayoutParams();
+        Log.i(TAG, "Layout Params before change: " + lp.width + " x " + lp.height);
+        if (newProportion > screenProportion) {
+            lp.width = screenWidth;
+            lp.height = (int) ((float) screenWidth / newProportion);
+        } else {
+            lp.width = (int) (newProportion * (float) screenHeight);
+            lp.height = screenHeight;
+        }
+        Log.i(TAG, "Layout Params: " + lp.width + " x " + lp.height);
+        // Commit the layout parameters
+
+
+        //surfaceView.setLayoutParams(lp);
+    }
+
+
+    private File getDirectory() {
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+        return new File(dir, "PresentData");
+    }
+
+    public void captureImage() {
+        camera.takePicture(null, null, jpegCallback);
+    }
+
+    private void dispatchSelectPhotoIntent() {
+        Log.i(TAG, "DispatchSelectPhotoIntent");
+        Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
+        selectFromGallery.setType("image/*");
+        selectFromGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
+        Toast.makeText(getApplicationContext(), "Select and hold the photos to be analyze.", Toast.LENGTH_SHORT).show();
+        //startActivityForResult(selectFromGallery, SELECT_PHOTO);
     }
 
     @Override
@@ -312,13 +368,15 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     protected void onStart() {
         super.onStart();
+
         Log.i(TAG, "CustomCamera onStart");
         fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        if(detectUsage == FaceDetectTask.ATTENDANCE_USAGE){
+        if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
             //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         }
         Log.i(TAG, "CustomCamera onStart End");
+
     }
 
     @Override
@@ -331,8 +389,10 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     protected void onStop() {
         super.onStop();
+
         Log.i(TAG, "CustomCamera onStop");
         td.setIsUIOpenedToFalse();
+
     }
 
     @Override

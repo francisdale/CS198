@@ -5,18 +5,14 @@
     android:layout_height="match_parent"
     tools:context="com.example.dale.cs198.CustomCamera">
 
+
     <SurfaceView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/surfaceView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/galleryButton"
-        android:layout_below="@+id/topTextView"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/captureButton"
-        android:layout_alignEnd="@+id/captureButton" />
-        android:layout_above="@+id/custom_camera_status" />
+        android:layout_toLeftOf="@+id/captureButton"
+        android:layout_toStartOf="@+id/captureButton"
+        android:layout_above="@+id/notificationLayout" />
 
     <ImageButton
         android:layout_width="65dp"
@@ -40,30 +36,33 @@
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/notificationLayout"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentBottom="true">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="customCameraStatus"
-            android:textSize="15sp"
+            android:textSize="18sp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:id="@+id/customCameraStatus"
             android:textColor="#05acfa"
             android:layout_gravity="bottom"
-            android:layout_weight="0.33" />
+            android:layout_weight="0.33"
+            />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="18sp"
             android:text="attendanceCounter"
             android:id="@+id/attendanceCounter"
             android:textColor="#1cdc06"
@@ -71,19 +70,21 @@
             android:layout_toRightOf="@+id/customCameraStatus"
             android:layout_toEndOf="@+id/customCameraStatus"
             android:layout_gravity="bottom"
-            android:layout_weight="0.33" />
+            android:layout_weight="0.33"
+            android:layout_marginLeft="40dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
+            android:textSize="18sp"
             android:text="detectionCounter"
             android:id="@+id/detectionCounter"
             android:textColor="#fafa05"
             android:layout_alignParentBottom="true"
             android:layout_toLeftOf="@+id/captureButton"
             android:layout_toStartOf="@+id/captureButton"
-            android:layout_gravity="bottom" />
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="40dp" />
 
     </LinearLayout>
 
