@@ -26,8 +26,6 @@ public class TrainActivity extends AppCompatActivity {
     Button openCamera;
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

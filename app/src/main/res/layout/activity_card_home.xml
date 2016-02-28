@@ -29,7 +29,7 @@
             android:text="Add Class"
             android:id="@+id/addClass"
             android:layout_marginRight="4dp"
-            android:background="#FF5252"
+            android:background="@drawable/red_button"
             android:textColor="#FFFFFF"
             android:layout_weight="0.33" />
 
@@ -39,7 +39,7 @@
             android:text="Train"
             android:id="@+id/train"
             android:layout_marginRight="4dp"
-            android:background="#FF5252"
+            android:background="@drawable/red_button"
             android:textColor="#FFFFFF"
             android:layout_weight="0.33" />
 

@@ -126,7 +126,7 @@ public class EditClassList extends AppCompatActivity {
     }
 
     public void readClassList(){
-        String dataPath = "sdcard/PresentData/Classes";
+        String dataPath = "sdcard/PresentData/Classes/"+name;
 
         File file = new File(dataPath, name+".txt");
 
@@ -148,7 +148,7 @@ public class EditClassList extends AppCompatActivity {
     public void remakeClassFile(){
         int selected;
         try {
-            String dataPath = "sdcard/PresentData/Classes";
+            String dataPath = "sdcard/PresentData/Classes/"+name;
             File classFile = new File(dataPath, name + ".txt");
 
 
