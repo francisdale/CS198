@@ -16,7 +16,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignRight="@+id/captureButton"
         android:layout_alignEnd="@+id/captureButton" />
-        android:layout_above="@+id/custom_camera_status" />
 
     <ImageButton
         android:layout_width="65dp"

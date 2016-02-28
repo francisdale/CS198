@@ -31,7 +31,7 @@
             android:layout_marginRight="4dp"
             android:background="#FF5252"
             android:textColor="#FFFFFF"
-            android:layout_weight="1" />
+            android:layout_weight="0.33" />
 
         <Button
             android:layout_width="0dp"
@@ -41,7 +41,18 @@
             android:layout_marginRight="4dp"
             android:background="#FF5252"
             android:textColor="#FFFFFF"
-            android:layout_weight="1" />
+            android:layout_weight="0.33" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Test"
+            android:id="@+id/testButton"
+            android:layout_marginRight="4dp"
+            android:background="#FF5252"
+            android:textColor="#FFFFFF"
+            android:layout_weight="0.33"
+            android:onClick="dispatchMainActivityIntent" />
     </TableRow>
 
     <FrameLayout
@@ -49,5 +60,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     </FrameLayout>
+
+    <Button
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Train"
+        android:id="@+id/button"
+        android:background="#FF5252"
+        android:textColor="#FFFFFF"
+        android:layout_weight="1"
+        android:layout_below="@+id/recycler_view"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="273dp"
+        android:layout_marginStart="273dp" />
 
 </RelativeLayout>

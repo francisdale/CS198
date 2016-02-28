@@ -1,25 +1,19 @@
 package com.example.dale.cs198;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Environment;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -257,8 +251,8 @@ public class CardHome extends AppCompatActivity{
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 boolean a = masterFile.delete();
-                                if(a == true){
-                                    Log.i(TAG,"DELETED");
+                                if (a == true) {
+                                    Log.i(TAG, "DELETED");
                                 }
                                 Intent intent = new Intent(CardHome.this, FilePickerActivity.class);
                                 startActivityForResult(intent, 1);
@@ -332,5 +326,11 @@ public class CardHome extends AppCompatActivity{
             Log.i(TAG, dataPath + " does not exist. Creating...");
             untrainedFaceFolder.mkdir();
         }
+    }
+
+    public void dispatchMainActivityIntent(View view){
+        Log.i(TAG, "dispatchMainActivityIntent");
+        Intent faceDetect = new Intent(CardHome.this,MainActivity.class);
+        startActivity(faceDetect);
     }
 }

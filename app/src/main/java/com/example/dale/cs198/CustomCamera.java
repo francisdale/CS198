@@ -212,14 +212,15 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                     for(int i=0; i<clipData.getItemCount(); i++){
                         ClipData.Item item = clipData.getItemAt(i);
                         Uri uri = item.getUri();
-                        Log.i(TAG, "Selected URI: "+getPath(uri));
 
+                        Log.i(TAG, "Selected URI: "+getPath(uri));
+                        Log.i(TAG, "Does file exist: "+ (new File(getPath(uri))).exists() + ", is file a directory: " + (new File(getPath(uri))).isDirectory());
                         //pass the getPath(uri) to the thread
-                        Log.i(TAG, "CustomCamera is mColor null = " + imread(uri.getPath()).isNull());
+                        Log.i(TAG, "CustomCamera is mColor null = " + imread(getPath(uri)).isNull());
                         Log.i(TAG, "Writing image...");
-                        imwrite("sdcard/PresentData", imread(uri.getPath()));
+                        imwrite("sdcard/PresentData", imread(getPath(uri)));
                         Log.i(TAG, "Image written.");
-                        td.detectQueue.add(imread(uri.getPath()));
+                        td.detectQueue.add(imread(getPath(uri)));
                         Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. i = " + (i+1));
                     }
                     Log.i(TAG, "CustomCamera Gallery: Done filling queue with gallery pics.");

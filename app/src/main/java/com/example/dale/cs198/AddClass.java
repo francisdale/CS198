@@ -326,6 +326,8 @@ public class AddClass extends AppCompatActivity {
             File classFile = new File(dataPath, fileName + ".txt");
             FileWriter writer = new FileWriter(classFile);
 
+            (new File(dataPath + "/attendanceReports")).mkdirs();
+
             selected = 0;
             for (int i = 0; i < studentList.size(); i++) {
                 StudentItem s = studentList.get(i);
@@ -333,8 +335,9 @@ public class AddClass extends AppCompatActivity {
                     writer.append(s.getId()+","+s.getStudentNumber() + "," + s.getLastName() + "," + s.getFirstName() + "\n");
                     selected++;
                 }
-
             }
+
+
             if (selected == 0) {
                 return selected;
             } else {
@@ -342,6 +345,8 @@ public class AddClass extends AppCompatActivity {
                 writer.close();
                 return selected;
             }
+
+
 
             //Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {

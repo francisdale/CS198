@@ -167,6 +167,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             Log.i(TAG, "Exception at FaceDetectTask:");
             Log.e(TAG, "Exception thrown: " + e);
         }
+        Log.i(TAG, "Closing FaceDetectTask thread.");
         return null;
     }
 
