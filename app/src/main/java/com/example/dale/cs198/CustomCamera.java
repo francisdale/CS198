@@ -48,6 +48,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     TextView status;
     ImageButton capture;
     ImageButton gallery;
+    ImageButton home;
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
 
@@ -75,23 +76,24 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         setContentView(R.layout.activity_custom_camera);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        int height = 0;
-        int width = 0;
+        Intent intent = getIntent();
+        detectUsage = intent.getIntExtra("detectUsage", 1);
 
-        width = metrics.widthPixels;
-        height = metrics.widthPixels;
+        DisplayMetrics dm = new DisplayMetrics();
+        Activity a = CustomCamera.this;
+        a.getWindowManager().getDefaultDisplay().getMetrics(dm);
 
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+        Log.i(TAG, "Default display:" + dm.widthPixels + " x " + dm.heightPixels);
 
         status = (TextView) findViewById(R.id.customCameraStatus);
         capture = (ImageButton) findViewById(R.id.captureButton);
         gallery = (ImageButton) findViewById(R.id.galleryButton);
+        home = (ImageButton)findViewById(R.id.homeButton);
 
-        Intent intent = getIntent();
-        detectUsage = intent.getIntExtra("detectUsage", 1);
+        surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(this);
+        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         td = new TaskData();
         fd = new FaceDetectTask(td, this, detectUsage);
@@ -101,11 +103,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             status.setText(className);
             fr = new FaceRecogTask(td, this, className);
         }
-
-        surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
-        surfaceHolder = surfaceView.getHolder();
-        surfaceHolder.addCallback(this);
-        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         capture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,6 +115,14 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             @Override
             public void onClick(View v) {
                 dispatchSelectPhotoIntent();
+            }
+        });
+
+        home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent cardHome = new Intent(CustomCamera.this, CardHome.class);
+                startActivity(cardHome);
             }
         });
 
@@ -170,18 +175,10 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 Toast.makeText(getApplicationContext(), fileName + " saved!", Toast.LENGTH_SHORT).show();
                 refreshCamera();
                 refreshGallery(image);
-
             }
         };
 
 
-        //surfaceView.setLayoutParams(layoutParams);
-
-
-//        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-//        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-//        CameraAccelerometer cameraAccelerometer = new CameraAccelerometer(accelerometer,sensorManager);
-        //START THE THREADS HERE!!!
         Log.i(TAG, "CustomCamera onCreate done");
     }
 
@@ -258,13 +255,15 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         } catch (RuntimeException ex) {
             Log.i(TAG, "Error opening the camera");
         }
+
         Camera.Parameters parameters;
         parameters = camera.getParameters();
-        //modifying the camera's parameters
         parameters.setPreviewFrameRate(20);
-        //parameters.setPictureSize(surfaceView.getWidth(),surfaceView.getHeight());
+        parameters.setPreviewSize(1152,864);
+
+        Log.i(TAG,"Surface View Size: " + surfaceView.getWidth() + " x " + surfaceView.getHeight());
         Log.i(TAG,"Preview Size default: " + parameters.getPreviewSize().width + " x " + parameters.getPreviewSize().height);
-        //parameters.setPreviewSize(426,320);
+        Log.i(TAG, "Default picture size " + parameters.getPictureSize().width + " x " + parameters.getPictureSize().height);
 
         camera.setParameters(parameters);
         //camera.setDisplayOrientation(180);
@@ -284,10 +283,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 //
 //        if (myBestSize != null) {
 //            myParameters.setPreviewSize(myBestSize.width, myBestSize.height);
-//            Toast.makeText(getApplicationContext(),
-//                    "Best Size:\n" +
-//                            String.valueOf(myBestSize.width) + " : " + String.valueOf(myBestSize.height),
-//                    Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "Camera Preview Size:\n" + String.valueOf(myBestSize.width) + " : " +
+//                    String.valueOf(myBestSize.height), Toast.LENGTH_LONG).show();
 //            //setMyPreviewSize(width, height);
 //        }
 //        camera.setParameters(myParameters);
