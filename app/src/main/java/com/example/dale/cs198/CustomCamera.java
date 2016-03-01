@@ -218,6 +218,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                         Uri uri = item.getUri();
 
                         Log.i(TAG, "Selected URI: "+getPath(uri));
+
                         Log.i(TAG, "Does file exist: "+ (new File(getPath(uri))).exists() + ", is file a directory: " + (new File(getPath(uri))).isDirectory());
                         //pass the getPath(uri) to the thread
                         Log.i(TAG, "CustomCamera is mColor null = " + imread(getPath(uri)).isNull());
