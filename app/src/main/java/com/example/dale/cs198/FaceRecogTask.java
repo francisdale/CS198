@@ -50,10 +50,13 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
     Context c;
     String className;
 
+    TextView tv;
+
     public FaceRecogTask(TaskData td, Context c, String className){
         this.td = td;
         this.c = c;
         this.className = className;
+        tv = (TextView)((CustomCamera)c).findViewById(R.id.attendanceCounter);
     }
 
     @Override
@@ -105,38 +108,36 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             Mat mGray;
             int predictedLabel;
 
-            while(td.isUIOpened()){
-                while((mColor = td.recogQueue.poll()) == null) {//This loop ends this thread and is triggered when the UI thread is dead and there are no more images waiting to be processed.
-                    Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
-                    mGray = mColor;
-                    cvtColor(mColor, mGray, CV_BGR2GRAY);
-                    Log.i(TAG, "Train usage: image converted to grayscale");
-                    //Recognize faces:
+            while((mColor = td.recogQueue.poll()) == null) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
+                Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
+                mGray = mColor;
+                cvtColor(mColor, mGray, CV_BGR2GRAY);
+                Log.i(TAG, "Train usage: image converted to grayscale");
+                //Recognize faces:
 
 
-                    timeStart = System.currentTimeMillis();
-                    predictedLabel = efr.predict(mGray);
-                    timeEnd = System.currentTimeMillis();
-                    timeElapsed = timeEnd - timeStart;
+                timeStart = System.currentTimeMillis();
+                predictedLabel = efr.predict(mGray);
+                timeEnd = System.currentTimeMillis();
+                timeElapsed = timeEnd - timeStart;
 
-                    Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+                Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
 
-                    if(attendanceRecord.containsKey(predictedLabel)){
-                        Log.i(TAG, "predictedLabel was found in the classlist.");
-                        attendanceRecord.put(predictedLabel, 1);
-                    } else {
-                        Log.i(TAG, "Unrecognized face found.");
-                        numUnrecognizedFaces++;
-                    }
-
-                    publishProgress();
-                    Log.i(TAG, "FaceRecogTask: Progress published.");
-                    //}
-
+                if(attendanceRecord.containsKey(predictedLabel)){
+                    Log.i(TAG, "predictedLabel was found in the classlist.");
+                    attendanceRecord.put(predictedLabel, 1);
+                } else {
+                    Log.i(TAG, "Unrecognized face found.");
+                    numUnrecognizedFaces++;
                 }
 
+                publishProgress();
+                Log.i(TAG, "FaceRecogTask: Progress published.");
+                //}
+
             }
+
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(recordFile));
             Set attendanceSet = attendanceRecord.entrySet();
@@ -166,7 +167,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onProgressUpdate(Void... progress){
-        TextView tv = (TextView)((MainActivity)c).findViewById(R.id.attendanceCounter);
-        tv.setText(numStudentsPresent + "/" + numStudents + ", u" + numUnrecognizedFaces );
+        if(td.isUIOpen()) {
+            tv.setText(numStudentsPresent + "/" + numStudents + ", u" + numUnrecognizedFaces);
+        }
     }
 }

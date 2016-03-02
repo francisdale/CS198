@@ -42,10 +42,13 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     Context c;
     int usageType;
 
+    TextView tv;
+
     public FaceDetectTask(TaskData td, Context c, int usageType){
         this.td = td;
         this.c = c;
         this.usageType = usageType;
+        tv = (TextView) ((CustomCamera) c).findViewById(R.id.detectionCounter);
     }
 
 
@@ -72,7 +75,6 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             CascadeClassifier faceDetector = new CascadeClassifier(cascadeFile.getAbsolutePath());
             cascadeDir.delete();
 
-
             Mat mColor;
             Mat mGray;
             Mat crop;
@@ -84,36 +86,34 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
             if (usageType == ATTENDANCE_USAGE){
                 Log.i(TAG, "Now in Attendance Usage ");
-                while(td.isUIOpened()) {
-                    while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and is triggered when the UI thread is dead and there are no more images queued up for detecting.
-                        imgCount++;
-                        Log.i(TAG, "FaceDetectTask is mColor null = " + mColor.isNull());
-                        mGray = mColor;
-                        cvtColor(mColor, mGray, CV_BGR2GRAY);
-                        Log.i(TAG, "Attendance Color conversion completed.");
-                        faces = new Rect();
+                while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
+                    imgCount++;
+                    mGray = null;
+                    cvtColor(mColor, mGray, CV_BGR2GRAY);
+                    faces = new Rect();
 
-                        //Detect faces:
-                        timeStart = System.currentTimeMillis();
-                        faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-                        timeEnd = System.currentTimeMillis();
-                        timeElapsed = timeEnd - timeStart;
+                    //Detect faces:
+                    Log.i(TAG, "Detecting...");
+                    timeStart = System.currentTimeMillis();
+                    faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                    timeEnd = System.currentTimeMillis();
+                    timeElapsed = timeEnd - timeStart;
 
 
-                        Log.i(TAG, "Detection complete. Cropping...");
-                        //Crop faces:
-                        numFaces = faces.capacity();
-                        faceCount += numFaces;
-                        for (int i = 0; i < numFaces; i++) {
-                            r = faces.position(i);
+                    Log.i(TAG, "Detection complete. Cropping...");
+                    //Crop faces:
+                    numFaces = faces.capacity();
+                    faceCount += numFaces;
+                    for (int i = 0; i < numFaces; i++) {
+                        r = faces.position(i);
 
-                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
-                            td.recogQueue.add(new Mat(mColor, roi));
-                        }
-                        publishProgress();
+                        roi = new Rect(r.x(), r.y(), r.width(), r.height());
+                        td.recogQueue.add(new Mat(mColor, roi));
                     }
+                    Log.i(TAG, "Cropping complete. Publishing progress.");
+                    publishProgress();
                 }
-                Log.i(TAG, "Attendance  camera UI closed. Goodbye!");
+                Log.i(TAG, "Attendance camera UI closed. Goodbye!");
             } else if(usageType == TRAIN_USAGE){
                 Log.i(TAG, "Now in Train Usage ");
                 File folder = new File(untrainedCropsDir);
@@ -121,51 +121,39 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     folder.mkdir();
                 }
 
-                //Log.i(TAG, "numFiles: " + folder.listFiles().length);
+                while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
+                    imgCount++;
+                    mGray = null;
+                    cvtColor(mColor, mGray, CV_BGR2GRAY);
+                    faces = new Rect();
 
-                while(td.isUIOpened()){
-                    while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and is triggered when the UI thread is dead and there are no more images queued up for detecting.
-                        imgCount++;
-                        Log.i(TAG, "Train usage: Size of detectQueue is now " + td.detectQueue.size() + ". Detecting faces...");
-                        mGray = mColor;
-                        Log.i(TAG, "Train usage: image polled");
-                        cvtColor(mColor, mGray, CV_BGR2GRAY);
-                        Log.i(TAG, "Train usage: image converted to grayscale");
-                        faces = new Rect();
-                        Log.i(TAG, "Image Mats loaded");
+                    //Detect faces:
+                    Log.i(TAG, "Detecting...");
+                    timeStart = System.currentTimeMillis();
+                    faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                    timeEnd = System.currentTimeMillis();
+                    timeElapsed = timeEnd - timeStart;
 
-                        //Detect faces:
-                        timeStart = System.currentTimeMillis();
-                        faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-                        timeEnd = System.currentTimeMillis();
-                        timeElapsed = timeEnd - timeStart;
+                    Log.i(TAG, "Detection complete. Cropping...");
+                    //Crop faces:
+                    numFaces = faces.capacity();
+                    faceCount += numFaces;
+                    for (int i = 0; i < numFaces; i++) {
+                        r = faces.position(i);
+                        roi = new Rect(r.x(), r.y(), r.width(), r.height());
 
-
-                        Log.i(TAG, "Detection complete. Cropping...");
-                        //Crop faces:
-                        numFaces = faces.capacity();
-                        faceCount += numFaces;
-                        for (int i = 0; i < numFaces; i++) {
-                            Log.i(TAG, "Start cropping face " + i);
-                            r = faces.position(i);
-
-                            Log.i(TAG, "Mid cropping face " + i);
-                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
-                            crop = new Mat(mColor, roi);
-                            imwrite(untrainedCropsDir + "/" + "unlabeled_" + System.currentTimeMillis() + ".jpg", crop);
-                            Log.i(TAG, "End cropping face " + i);
-                        }
-                        Log.i(TAG, "Publishing progress...");
-                        publishProgress();
-                        Log.i(TAG, "Progress published.");
+                        crop = new Mat(mColor, roi);
+                        imwrite(untrainedCropsDir + "/" + "unlabeled_" + System.currentTimeMillis() + ".jpg", crop);
                     }
+
+                    Log.i(TAG, "Faces cropped. Publishing progress...");
+                    publishProgress();
                 }
                 Log.i(TAG, "Train camera UI closed. Goodbye!");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.i(TAG, "Exception at FaceDetectTask:");
-            Log.e(TAG, "Exception thrown: " + e);
+            Log.e(TAG, "Exception thrown at FaceDetectTask: " + e);
         }
         Log.i(TAG, "Closing FaceDetectTask thread.");
         return null;
@@ -173,9 +161,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onProgressUpdate(Void... progress){
-        if(td.isUIOpened()) {
-            TextView tv = (TextView) ((CustomCamera) c).findViewById(R.id.detectionCounter);
-
+        if(td.isUIOpen()) {
             tv.setText("f" + faceCount + "i" + imgCount);
 
             //tv.setText("Time elapsed: " + (float) timeElapsed/1000 + "s. Detected a total of " + faceCount + " faces from " + imgCount + " photos.");

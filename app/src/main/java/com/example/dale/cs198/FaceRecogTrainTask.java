@@ -32,11 +32,9 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
     long timeEnd;
     long timeElapsed;
 
-    TaskData td;
     Context c;
 
-    public FaceRecogTrainTask(TaskData td, Context c){
-        this.td = td;
+    public FaceRecogTrainTask(Context c){
         this.c = c;
     }
 
@@ -57,7 +55,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
         FilenameFilter untrainedCropsImgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
-                return name.endsWith(".jpg") && !name.startsWith("unlabeled");
+                return name.endsWith(".jpg") && !name.startsWith("unlabeled") && !name.startsWith("delete");
             }
         };
 
@@ -127,7 +125,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onProgressUpdate(Void... progress){
-        TextView tv = (TextView)((MainActivity)c).findViewById(R.id.detectNotification);
+       TextView tv = (TextView)((MainActivity)c).findViewById(R.id.detectNotification);
         //tv.setText("Detected " + faceCount + " faces in " + (float) timeElapsed/1000 + "s." );
     }
 }

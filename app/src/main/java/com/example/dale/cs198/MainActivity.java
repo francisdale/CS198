@@ -184,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "MainActivity: now in Select Photo");
                 Uri selectedImageUri = data.getData();
                 selectedImagePath = getPath(selectedImageUri);
+                Log.i(TAG, "Selected URI: "+selectedImagePath);
                 imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
                 Log.i(TAG, "MainActivity: about to add to detectQueue");
                 td.detectQueue.add(imread(selectedImagePath));

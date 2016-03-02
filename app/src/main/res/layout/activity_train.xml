@@ -53,7 +53,8 @@
             android:layout_marginRight="4dp"
             android:background="@drawable/red_button"
             android:textColor="#FFFFFF"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:onClick="trainRecognizer" />
     </TableRow>
 
 
