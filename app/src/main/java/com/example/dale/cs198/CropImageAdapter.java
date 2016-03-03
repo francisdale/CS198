@@ -1,40 +1,20 @@
 package com.example.dale.cs198;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Path;
-import android.media.Image;
-import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.app.SharedElementCallback;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,19 +22,10 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-
-import android.support.v7.app.AppCompatActivity;
-
-import org.bytedeco.javacpp.opencv_core;
-
-import static org.bytedeco.javacpp.opencv_highgui.cvLoadImage;
-import static org.bytedeco.javacpp.opencv_highgui.cvSaveImage;
 
 /**
  * Created by DALE on 1/21/2016.
@@ -88,6 +59,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
     @Override
     public void onBindViewHolder(final CropImageViewHolder holder, int position) {
+        Log.i(TAG, "onBindViewHolder Recycling...");
         CropImageItem c = faceCrops.get(position);
         //holder.cropName.setText(c.getFileName());
 
@@ -136,57 +108,56 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             ArrayAdapter<String> namesListAdapter = new ArrayAdapter<String>(context.getApplicationContext(),R.layout.names_dialog_layout,R.id.dialogName,names);
             namesList.setAdapter(namesListAdapter);
             namesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ViewGroup viewGroup = (ViewGroup) view;
-                dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
-                //label is the name of the cro
-                Log.i(TAG,"");
-                Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    ViewGroup viewGroup = (ViewGroup) view;
+                    dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
+                    //label is the name of the cro
+                    Log.i(TAG,"");
+                    Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
 
-                String idAndName[] =  dialogName.getText().toString().split("-");
-                label = idAndName[1];
-                int idNum = Integer.parseInt(idAndName[0]);
-                String fileNameOfLabeled = faceCrops.get(pos).getFileName();
-                String filePathOfLabeled = faceCrops.get(pos).getPath();
+                    String idAndName[] =  dialogName.getText().toString().split("-");
+                    label = idAndName[1];
+                    int idNum = Integer.parseInt(idAndName[0]);
+                    String fileNameOfLabeled = faceCrops.get(pos).getFileName();
+                    String filePathOfLabeled = faceCrops.get(pos).getPath();
 
-                Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
+                    Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
 
-                //CHECK IF MAY EXISTING CROP NA SI ID SA TRAINED FOLDER
-                File sdCardRoot = Environment.getExternalStorageDirectory();
-                File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
-                int count=0;
-                for (File f : faceCropsDir.listFiles()) {
-                    if (f.isFile()) {
-                        String name = f.getName();
-                        String nameArr[] = name.split("_");
-                        if(nameArr[0].equals(idAndName[0])){
-                            count++;
+                    //CHECK IF MAY EXISTING CROP NA SI ID SA TRAINED FOLDER
+                    File sdCardRoot = Environment.getExternalStorageDirectory();
+                    File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
+                    int count=0;
+                    for (File f : faceCropsDir.listFiles()) {
+                        if (f.isFile()) {
+                            String name = f.getName();
+                            String nameArr[] = name.split("_");
+                            if(nameArr[0].equals(idAndName[0])){
+                                count++;
+                            }
                         }
                     }
-                }
-                Log.i(TAG,"COUNT = "+count);
+                    Log.i(TAG,"COUNT = "+count);
 
-                //RENAME CROP WITH CHOSEN IDNUM
-                File oldfile =new File(filePathOfLabeled);
-                File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+".jpg");
-                if(oldfile.renameTo(newfile)){
-                    faceCrops.get(pos).setFileName(newfile.getName());
-                    faceCrops.get(pos).setPath(newfile.getAbsolutePath());
-                    Log.i(TAG, "Rename succesful");
-                    Log.i(TAG,"The renamed file is: "+faceCrops.get(pos).getFileName()+"\n"+faceCrops.get(pos).getPath());
-                }
-                else{
-                    Log.i(TAG, "Rename failed");
-                }
+                    //RENAME CROP WITH CHOSEN IDNUM
+                    File oldfile =new File(filePathOfLabeled);
+                    File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+".jpg");
+                    if(oldfile.renameTo(newfile)){
+                        faceCrops.get(pos).setFileName(newfile.getName());
+                        faceCrops.get(pos).setPath(newfile.getAbsolutePath());
+                        Log.i(TAG,"The renamed file is: "+faceCrops.get(pos).getFileName()+"\n"+faceCrops.get(pos).getPath());
+                    }
+                    else{
+                        Log.i(TAG, "Rename failed");
+                    }
 
-                cropName.setText(label);
-                nameDialog.dismiss();
-                notifyItemChanged(pos);
+                    cropName.setText(label);
+                    nameDialog.dismiss();
+                    notifyItemChanged(pos);
 
-                Log.i(TAG, "////////////////////////////////END OF RENAMING PHASE//////////////////////////////");
-                Log.i(TAG,"");
-                }
+                    Log.i(TAG, "////////////////////////////////END OF RENAMING PHASE//////////////////////////////");
+                    Log.i(TAG,"");
+                    }
             });
 
             AlertDialog.Builder builder = new AlertDialog.Builder(context);

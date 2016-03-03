@@ -55,8 +55,6 @@ public class TrainActivity extends AppCompatActivity {
                 Intent cam = new Intent(TrainActivity.this, CustomCamera.class);
                 cam.putExtra("detectUsage", FaceDetectTask.TRAIN_USAGE);
                 startActivity(cam);
-
-                //pass FACEDETECTTASK.TRAIN
             }
         });
 
@@ -83,7 +81,7 @@ public class TrainActivity extends AppCompatActivity {
         toast.show();
     }
 
-    public void trainActivity(View view){
+    public void trainRecognizer(View view){
         FaceRecogTrainTask tt = new FaceRecogTrainTask(this);
         tt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }

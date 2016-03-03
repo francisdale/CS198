@@ -88,7 +88,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 Log.i(TAG, "Now in Attendance Usage ");
                 while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
                     imgCount++;
-                    mGray = null;
+                    mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
                     faces = new Rect();
 
@@ -123,7 +123,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                 while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
                     imgCount++;
-                    mGray = null;
+                    mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
                     faces = new Rect();
 

@@ -231,7 +231,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                     for (int i = 0; i < clipData.getItemCount(); i++) {
                         ClipData.Item item = clipData.getItemAt(i);
                         Uri uri = item.getUri();
-
                         Log.i(TAG, "Selected URI: " + getPath(uri));
                         //pass the getPath(uri) to the thread
                         td.detectQueue.add(imread(getPath(uri)));
