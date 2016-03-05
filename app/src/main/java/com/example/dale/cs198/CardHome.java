@@ -101,6 +101,8 @@ public class CardHome extends AppCompatActivity{
             public void onClick(View v) {
                 Intent train = new Intent(CardHome.this, TrainActivity.class);
                 startActivity(train);
+//                Intent train = new Intent(CardHome.this, TrainListActivity.class);
+//                startActivity(train);
             }
         });
 

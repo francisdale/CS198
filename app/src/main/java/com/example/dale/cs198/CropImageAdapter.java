@@ -55,6 +55,9 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         this.faceCrops = faceCrops;
         this.context = context;
         labelArr = new String[faceCrops.size()];
+        readMasterList();
+
+
     }
 
     @Override
@@ -90,6 +93,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         CustomEtListener customEtListener;
 
 
+
         public CropImageViewHolder(View view,CustomEtListener etListener){
             super(view);
             view.setOnClickListener(this);
@@ -103,7 +107,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         public void onClick(View v) {
             //Toast.makeText(context.getApplicationContext(), "Tapped on " + cropName.getText().toString(), Toast.LENGTH_LONG).show();
 
-            readMasterList();
             namesList = new ListView(context.getApplicationContext());
             ArrayAdapter<String> namesListAdapter = new ArrayAdapter<String>(context.getApplicationContext(),R.layout.names_dialog_layout,R.id.dialogName,names);
             namesList.setAdapter(namesListAdapter);
@@ -200,29 +203,10 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         temp = faceCrops.get(position);
         //rename mo nalang yung file and give an indication na dapat siyang madelete
 
-        File oldfile;
-        File newfile;
-        CropImageItem rename;
-        final String fileNameOfRemoved = temp.getFileName();
+        String fileNameOfRemoved = temp.getFileName();
         String filePathOfRemoved = temp.getPath();
         Log.i(TAG,"TO BE DELETED: "+fileNameOfRemoved+"\n"+filePathOfRemoved);
         //DELETE AND MAKE A COPY OF CROP TO BE REMOVED WITH DIFF FILE NAME IN DIRECTORY
-
-        //RENAME CROP WITH CHOSEN IDNUM
-
-        final File sdCardRoot = Environment.getExternalStorageDirectory();
-        oldfile = new File(filePathOfRemoved);
-        newfile = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+"delete_"+fileNameOfRemoved);
-
-        if(oldfile.renameTo(newfile)){
-            temp.setFileName(newfile.getName());
-            temp.setPath(newfile.getAbsolutePath());
-            Log.i(TAG, "Rename succesful");
-            Log.i(TAG,"The renamed file is: "+temp.getFileName()+"\n"+temp.getPath());
-        }
-        else{
-            Log.i(TAG, "Rename failed");
-        }
 
         faceCrops.remove(position);
         notifyItemRemoved(position);
@@ -233,31 +217,9 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                 .setAction("UNDO", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-
-
                         faceCrops.add(position, temp);
                         notifyItemInserted(position);
                         recyclerView.scrollToPosition(position);
-
-
-                        String filePathOfUndo = faceCrops.get(position).getPath();
-                        String fileNameOfUndo = faceCrops.get(position).getFileName();
-
-                        File old = new File(filePathOfUndo);
-                        File newF = new File(sdCardRoot,"PresentData/faceDatabase/untrainedCrops/"+fileNameOfRemoved);
-
-                        if(old.renameTo(newF)){
-                            faceCrops.get(position).setFileName(newF.getName());
-                            faceCrops.get(position).setPath(newF.getAbsolutePath());
-                            Log.i(TAG,"UNDO SUCCESSFUL");
-                            Log.i(TAG,"UNDO REMOVING : "+faceCrops.get(position).getFileName()+"\n"+faceCrops.get(position).getPath());
-                        }
-                        else{
-                            Log.i(TAG, "Rename failed");
-                        }
-
-
-                        Log.i(TAG,"You just undo and returned: " + temp.getFileName() + "\n"+temp.getPath());
 
                         Toast toast = Toast.makeText(context, "Face Crop Number = " + faceCrops.size(), Toast.LENGTH_SHORT);
                         toast.show();
@@ -282,10 +244,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         notifyItemMoved(fromPosition, toPosition);
         return true;
     }
-
-
-
-
 
     public void readMasterList(){
         String dataPath = "sdcard/PresentData/";
