@@ -30,7 +30,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    private static final String trainingSetDir = "sdcard/att_faces";
+    private static final String trainingSetDir = "sdcard/PresentData/att_faces";
 
     String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
     String targetDir = "sdcard/PresentData/researchMode/recognitionResults";
@@ -56,14 +56,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     long timeStart;
     long timeEnd;
-    long timeElapsed;
 
-
-    private opencv_core.IplImage imgRgba;
-    private opencv_core.IplImage imgGray;
-    private opencv_core.Mat mRgba;
-    private opencv_core.Mat mGray;
-    private int mAbsoluteFaceSize = 30;
 
 
     @Override
@@ -249,13 +242,12 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         //Load and recognize AT&T faces
         int predictedLabel;
-        String root = targetDir + "/att_faces";
         String currSPath;
         Mat img;
 
         Log.i(TAG, "recog initialization complete");
         for(int s = 1; s <= 40; s++) {
-            currSPath = root + "/s" + s;
+            currSPath = trainingSetDir + "/s" + s;
             for (int i = 5; i <= 10; i++, numImg++) {
 
                 Log.i(TAG, "s" + s + " i" + i);

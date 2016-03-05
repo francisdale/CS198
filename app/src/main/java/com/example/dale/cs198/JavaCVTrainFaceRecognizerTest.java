@@ -29,7 +29,7 @@ import static org.bytedeco.javacpp.opencv_highgui.imread;
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String TAG = "testMessage";
-    private static final String trainingDir = "sdcard/PresentData/researchMode/trainingSet";
+    private static final String trainingSetDir = "sdcard/PresentData/att_faces";
     private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
     int numTrainingImages = 160;
@@ -49,7 +49,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
     public void trainAlgorithm() {
         //for AT&T face database:
-        String root = trainingDir + "/att_faces";
+        String root = trainingSetDir;
         String currSPath;
         MatVector images = new MatVector(numTrainingImages);
         Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
