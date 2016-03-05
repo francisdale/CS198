@@ -45,30 +45,33 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CardHome" />
         </activity>
-        <activity android:name=".HelpActivity"
+        <activity
+            android:name=".HelpActivity"
             android:label="Help"
             android:parentActivityName=".CardHome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CardHome" />
         </activity>
-
         <activity
             android:name=".CustomCamera"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".EditClassList"
-            android:label="Edit Class List"></activity>
+            android:label="Edit Class List" />
         <activity
             android:name=".TrainActivity"
-            android:label="Train Face Crops"></activity>
+            android:label="Train Face Crops" />
         <activity android:name=".MainActivity" />
-        <!-- ATTENTION: This was auto-generated to add Google Play services to your project for
-             App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+        <!--
+             ATTENTION: This was auto-generated to add Google Play services to your project for
+             App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
+        -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <activity android:name=".TrainListActivity"></activity>
     </application>
 
 </manifest>
