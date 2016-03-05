@@ -71,9 +71,9 @@ public class CardHome extends AppCompatActivity{
                 String cName = sharedPreferences.getString("name" + i, DEFAULT);
                 String cStart = sharedPreferences.getString("start" + i, DEFAULT);
                 String cEnd = sharedPreferences.getString("end" + i, DEFAULT);
-                Log.i(TAG, "Getting name" + i);
-                Log.i(TAG, "Getting start" + i);
-                Log.i(TAG, "Getting end" + i);
+                //Log.i(TAG, "Getting name" + i);
+                //Log.i(TAG, "Getting start" + i);
+                //Log.i(TAG, "Getting end" + i);
                 if(cName.equals(DEFAULT)){
 
                 }

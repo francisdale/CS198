@@ -19,13 +19,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,7 +32,6 @@ import java.util.Date;
 import java.util.List;
 
 import static org.bytedeco.javacpp.opencv_highgui.imread;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 
 public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Callback {
 
@@ -62,6 +56,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
     File capturedImage = new File(tempImgDir);
     FileOutputStream fileOutputStream;
+
+    boolean isGalleryOpen = false;
 
     //Sensor accelerometer;
     //SensorManager sensorManager;
@@ -179,6 +175,11 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             }
         };
 
+        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
+            //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        }
 
         Log.i(TAG, "CustomCamera onCreate done");
     }
@@ -208,9 +209,24 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //Threads still don't die at activity closing
+        //Gallery won't allow selecting one photo only
+
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PHOTO) {
+                isGalleryOpen = false;
+                /*
+                ArrayList<Uri> fileList = data.getParcelableArrayListExtra(Intent.ACTION_PICK);
+                for(int i=0;i<fileList.size();i++){
+                    Log.i(TAG,"fileList:" + fileList.get(i).toString());
+                    td.detectQueue.add(imread(fileList.get(i).toString()));
+                    //do something
+                }
+                Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
+                */
+                Log.i(TAG, "Getting ClipData...");
                 ClipData clipData = data.getClipData();
+<<<<<<< HEAD
 
                 ArrayList<Uri> fileList = data.getParcelableArrayListExtra(Intent.ACTION_PICK);
                 for(int i=0;i<fileList.size();i++){
@@ -240,6 +256,24 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 //                    Log.i(TAG, "CustomCamera Gallery: Done filling queue with gallery pics.");
 //                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
 //                }
+=======
+                if (clipData == null) {
+                    Log.i(TAG, "SELECTED NOTHING");
+                } else {
+                    for (int i = 0; i < clipData.getItemCount(); i++) {
+                        ClipData.Item item = clipData.getItemAt(i);
+                        Uri uri = item.getUri();
+                        Log.i(TAG, "Selected URI: " + getPath(uri));
+                        //pass the getPath(uri) to the thread
+                        td.detectQueue.add(imread(getPath(uri)));
+                        Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. i = " + (i + 1));
+                    }
+                    Log.i(TAG, "CustomCamera Gallery: Done filling queue with gallery pics.");
+
+                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
+                }
+
+>>>>>>> a091ac1efd550b85712b261eaf1f7904f776f555
             }
         }
     }
@@ -361,6 +395,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         selectFromGallery.setType("image/*");
         selectFromGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        isGalleryOpen = true;
         startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
         Toast.makeText(getApplicationContext(), "Select and hold the photos to be analyze.", Toast.LENGTH_SHORT).show();
         //startActivityForResult(selectFromGallery, SELECT_PHOTO);
@@ -374,16 +409,17 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onRestart() {
+        super.onRestart();
 
-        Log.i(TAG, "CustomCamera onStart");
-        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
-            //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
+        Log.i(TAG, "CustomCamera onRestart");
+        if(fd.getStatus() != AsyncTask.Status.RUNNING) {
+            fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
+                //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         }
-        Log.i(TAG, "CustomCamera onStart End");
+        Log.i(TAG, "CustomCamera onRestart End");
 
     }
 
@@ -391,7 +427,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     protected void onPause() {
         super.onPause();
         Log.i(TAG, "CustomCamera onPause");
-        td.setIsUIOpenedToFalse();
     }
 
     @Override
@@ -399,7 +434,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         super.onStop();
 
         Log.i(TAG, "CustomCamera onStop");
-        td.setIsUIOpenedToFalse();
+        if(!isGalleryOpen) {
+            td.setThreadsToDie();
+        }
 
     }
 
@@ -407,7 +444,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "CustomCamera onDestroy");
-        td.setIsUIOpenedToFalse();
+        if(!isGalleryOpen) {
+            td.setThreadsToDie();
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

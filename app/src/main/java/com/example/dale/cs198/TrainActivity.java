@@ -1,6 +1,7 @@
 package com.example.dale.cs198;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -83,6 +84,11 @@ public class TrainActivity extends AppCompatActivity {
 
         Toast toast = Toast.makeText(this, "Face Crop Number = " + pathList.size(), Toast.LENGTH_SHORT);
         toast.show();
+    }
+
+    public void trainRecognizer(View view){
+        FaceRecogTrainTask tt = new FaceRecogTrainTask(this);
+        tt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
 

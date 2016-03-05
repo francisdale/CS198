@@ -1,5 +1,9 @@
 package com.example.dale.cs198;
 
+import android.util.Log;
+
+import java.util.LinkedList;
+
 import static org.bytedeco.javacpp.opencv_core.Mat;
 
 /**
@@ -10,21 +14,79 @@ public class TaskData {
     public static final String detectOutputDir = "cs198/detectedFaces";
     ThreadSafeQueue<Mat> detectQueue = new ThreadSafeQueue<Mat>();
     ThreadSafeQueue<Mat> recogQueue = new ThreadSafeQueue<Mat>();
-    private boolean isMainThreadOpened = true;
+    private boolean isMainThreadRunning = true;
 
-
-
-    public synchronized void setIsUIOpenedToFalse(){
-        isMainThreadOpened = false;
+    public synchronized void setThreadsToDie(){
+        isMainThreadRunning = false;
+        detectQueue.setNoMoreMatsComing();
+        recogQueue.setNoMoreMatsComing();
     }
 
-    public synchronized boolean isUIOpened(){
-        return isMainThreadOpened;
+    public synchronized boolean isUIOpen(){
+        return isMainThreadRunning;
     }
-
-
-
 
 
 
 }
+
+class ThreadSafeQueue<E>{
+
+    private static final String TAG = "testMessage";
+    private boolean isNoMoreMatsComing = false;
+
+    private LinkedList<E> mq = new LinkedList<E>();
+
+    public void add(E item) {
+        synchronized(mq) {
+            mq.addLast(item);
+            mq.notifyAll();
+        }
+        //notifyAll();
+    }
+
+    public E poll() {
+        Log.i(TAG, "now in poll");
+
+        synchronized(mq) {
+            Log.i(TAG, "now in poll sync block");
+            if(isQueueEmpty()){
+                if(isNoMoreMatsComing){
+                    return null;//This null will tell the polling thread, which is either FaceDetectTask or FaceRecogTask, that it's time to die.
+                }
+                try {
+                    Log.i(TAG, "Waiting for a train...");
+                    mq.wait();
+                    Log.i(TAG, "We will be together.");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return mq.poll();
+        }
+
+    }
+
+    public boolean isQueueEmpty() {
+        synchronized(mq) {
+            return mq.isEmpty();
+        }
+    }
+
+    public int size() {
+        synchronized(mq) {
+            return mq.size();
+        }
+    }
+
+    public void setNoMoreMatsComing() {
+        isNoMoreMatsComing = true;
+        synchronized(mq) {
+            mq.notifyAll();
+        }
+    }
+
+
+
+}
+
