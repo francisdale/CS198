@@ -30,10 +30,11 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    private static final String trainingDir = "sdcard/PresentData/researchMode/trainingSet";
+    private static final String trainingSetDir = "sdcard/att_faces";
 
     String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
     String targetDir = "sdcard/PresentData/researchMode/recognitionResults";
+
 
     public static final String eigenModelYML = "eigenModel.xml";
     public static final String fisherModelYML = "fisherModel.xml";
@@ -146,21 +147,15 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         CvSVMParams params = new CvSVMParams();
         params = params.svm_type(CvSVM.C_SVC);
-        params = params.kernel_type(CvSVM.POLY);
+        params = params.kernel_type(CvSVM.LINEAR);
         params = params.gamma(3);
         //params = params.C(1);
         //params = params.gamma(0.001);
-        params = params.degree(3);
-
-
-
-
-
+        //params = params.degree(3);
 
 
         //sfr.load(modelDir + "/" + svmModelXML);
 
-        String rootz = trainingDir + "/att_faces";
         Mat trainingMat = new Mat();
         opencv_core.MatVector images = new opencv_core.MatVector(numTrainingImages);
         Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
@@ -169,7 +164,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         int counter = 0;
 
         for(int s = 1; s <= 40; s++){
-            currrSPath = rootz + "/s" + s;
+            currrSPath = trainingSetDir + "/s" + s;
             for(int i = 1; i <= 4; i++, counter++){
                 Mat img = imread(currrSPath + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
 

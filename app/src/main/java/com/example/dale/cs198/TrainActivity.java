@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -73,6 +74,7 @@ public class TrainActivity extends AppCompatActivity {
             }
         });
 
+<<<<<<< HEAD
         train = (Button)findViewById(R.id.train);
         train.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,6 +84,8 @@ public class TrainActivity extends AppCompatActivity {
         });
 
 
+=======
+>>>>>>> 5d287cfb474bf469fdfd7114fa460082dd796ff0
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view_crop_images);
         //layoutManager = new LinearLayoutManager(this);
         //recyclerView.setLayoutManager(layoutManager);
@@ -89,7 +93,14 @@ public class TrainActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(null);
         adapter=new CropImageAdapter(this,pathList);
+
         recyclerView.setAdapter(adapter);
+        runOnUiThread(new Runnable() {
+            public void run() {
+                adapter.notifyDataSetChanged();
+                Log.i(TAG,"running notify data set change");
+            }
+        });
 
         // Setup ItemTouchHelper
         ItemTouchHelper.Callback callback = new CropImageTouchHelper(recyclerView,adapter);
