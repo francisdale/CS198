@@ -21,8 +21,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +36,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
 
     ArrayList<CropImageItem> faceCrops = new ArrayList<CropImageItem>();
+    ArrayList<CropImageItem> copyFaceCrops;
     ArrayList<Integer> ids = new ArrayList<>();
     ArrayList<String> names = new ArrayList<String>();
 
@@ -50,11 +53,16 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
     int pos;
     String[] labelArr;
 
+    //String dataPath = "sdcard/PresentData/faceDatabase/untrainedCrops/";
+    //File trainFile = new File(dataPath, "train.txt");
+
 
     public CropImageAdapter(Context context,ArrayList<CropImageItem> faceCrops){
         this.faceCrops = faceCrops;
         this.context = context;
         labelArr = new String[faceCrops.size()];
+        copyFaceCrops = new ArrayList<CropImageItem>(faceCrops);
+
         readMasterList();
 
 
@@ -62,14 +70,16 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
     @Override
     public void onBindViewHolder(final CropImageViewHolder holder, int position) {
-        Log.i(TAG, "onBindViewHolder Recycling...");
+        //Log.i(TAG, "onBindViewHolder Recycling...");
         CropImageItem c = faceCrops.get(position);
         //holder.cropName.setText(c.getFileName());
 
         Bitmap bmImg = BitmapFactory.decodeFile(c.getPath());
         holder.cropImage.setImageBitmap(bmImg);
         holder.customEtListener.updatePosition(position);
+        //holder.cropName.setText(c.getPos() + "x");
         holder.cropName.setText(labelArr[position]);
+
 
     }
 
@@ -116,14 +126,18 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                     ViewGroup viewGroup = (ViewGroup) view;
                     dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
                     //label is the name of the cro
-                    Log.i(TAG,"");
-                    Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
+                    //Log.i(TAG,"");
+                    //Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
 
                     String idAndName[] =  dialogName.getText().toString().split("-");
                     label = idAndName[1];
                     int idNum = Integer.parseInt(idAndName[0]);
-                    String fileNameOfLabeled = faceCrops.get(pos).getFileName();
-                    String filePathOfLabeled = faceCrops.get(pos).getPath();
+
+                    Log.i(TAG,"");
+                    Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
+
+                    String fileNameOfLabeled = faceCrops.get(getAdapterPosition()).getFileName();
+                    String filePathOfLabeled = faceCrops.get(getAdapterPosition()).getPath();
 
                     Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
 
@@ -146,21 +160,17 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                     File oldfile =new File(filePathOfLabeled);
                     File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+".jpg");
                     if(oldfile.renameTo(newfile)){
-                        faceCrops.get(pos).setFileName(newfile.getName());
-                        faceCrops.get(pos).setPath(newfile.getAbsolutePath());
-                        Log.i(TAG,"The renamed file is: "+faceCrops.get(pos).getFileName()+"\n"+faceCrops.get(pos).getPath());
+                        faceCrops.get(getAdapterPosition()).setFileName(newfile.getName());
+                        faceCrops.get(getAdapterPosition()).setPath(newfile.getAbsolutePath());
+                        Log.i(TAG, "Rename succesful");
+                        Log.i(TAG,"The renamed file is: "+faceCrops.get(getAdapterPosition()).getFileName()+"\n"+faceCrops.get(getAdapterPosition()).getPath());
                     }
                     else{
                         Log.i(TAG, "Rename failed");
                     }
-
                     cropName.setText(label);
                     nameDialog.dismiss();
-                    notifyItemChanged(pos);
-
-                    Log.i(TAG, "////////////////////////////////END OF RENAMING PHASE//////////////////////////////");
-                    Log.i(TAG,"");
-                    }
+                }
             });
 
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -180,6 +190,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         //@param position - position of the focused ite
         public void updatePosition(int position) {
             this.position = position;
+            //pos = position;
         }
 
         @Override
@@ -190,7 +201,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             // Change the value of array according to the position
             labelArr[position] = charSequence.toString();
-            pos = position;
+
         }
 
         @Override
@@ -244,6 +255,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         notifyItemMoved(fromPosition, toPosition);
         return true;
     }
+
 
     public void readMasterList(){
         String dataPath = "sdcard/PresentData/";

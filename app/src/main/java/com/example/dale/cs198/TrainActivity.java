@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class TrainActivity extends AppCompatActivity {
@@ -25,6 +27,8 @@ public class TrainActivity extends AppCompatActivity {
     ArrayList<CropImageItem> pathList = new ArrayList<CropImageItem>();
 
     Button openCamera;
+    Button train;
+    String dataPath = "sdcard/PresentData/faceDatabase/untrainedCrops/";
 
 
     @Override
@@ -35,16 +39,27 @@ public class TrainActivity extends AppCompatActivity {
         //POPULATE pathList from the cropped faces files from sdCard/PresentData/faceCrops folder
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
+
+        try{
+            File trainFile = new File(dataPath, "train.txt");
+            trainFile.createNewFile();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+
         //File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
 
         //change the directory to /sdcard/presentdata/facedatabase/untrainedcrops
-
+        int i=0;
         for (File f : faceCropsDir.listFiles()) {
             if (f.isFile()) {
                 String name = f.getName();
                 CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
+                c.setPos(i);
                 //CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
                 pathList.add(c);
+                i++;
             }
         }
 
@@ -55,6 +70,14 @@ public class TrainActivity extends AppCompatActivity {
                 Intent cam = new Intent(TrainActivity.this, CustomCamera.class);
                 cam.putExtra("detectUsage", FaceDetectTask.TRAIN_USAGE);
                 startActivity(cam);
+            }
+        });
+
+        train = (Button)findViewById(R.id.train);
+        train.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               //
             }
         });
 

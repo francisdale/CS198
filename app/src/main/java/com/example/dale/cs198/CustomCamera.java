@@ -220,7 +220,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 */
                 Log.i(TAG, "Getting ClipData...");
                 ClipData clipData = data.getClipData();
-<<<<<<< HEAD
+
 
                 ArrayList<Uri> fileList = data.getParcelableArrayListExtra(Intent.ACTION_PICK);
                 for(int i=0;i<fileList.size();i++){
@@ -250,7 +250,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 //                    Log.i(TAG, "CustomCamera Gallery: Done filling queue with gallery pics.");
 //                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
 //                }
-=======
+
                 if (clipData == null) {
                     Log.i(TAG, "SELECTED NOTHING");
                 } else {
@@ -267,7 +267,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                     Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
                 }
 
->>>>>>> a091ac1efd550b85712b261eaf1f7904f776f555
+
             }
         }
     }

@@ -7,6 +7,7 @@ public class CropImageItem {
 
     private String path;
     private String fileName;
+    private int pos;
 
     public CropImageItem(String path, String fileName) {
         this.setPath(path);
@@ -27,5 +28,13 @@ public class CropImageItem {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public int getPos() {
+        return pos;
+    }
+
+    public void setPos(int pos) {
+        this.pos = pos;
     }
 }
