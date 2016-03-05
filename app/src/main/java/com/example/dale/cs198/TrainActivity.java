@@ -59,10 +59,6 @@ public class TrainActivity extends AppCompatActivity {
         });
 
 
-
-
-
-
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view_crop_images);
         //layoutManager = new LinearLayoutManager(this);
         //recyclerView.setLayoutManager(layoutManager);

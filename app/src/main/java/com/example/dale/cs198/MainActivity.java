@@ -18,8 +18,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.bytedeco.javacpp.opencv_highgui.imread;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,17 +30,13 @@ public class MainActivity extends AppCompatActivity {
     private String name;
     private String dir;
     private String selectedImagePath;
+    private String researchDir = "sdcard/PresentData/researchMode/capturedImages";
     private ImageView imageView;
     //private Face_Detection_View fd;
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
 
-    TaskData td = new TaskData();
-    FaceDetectTask fd = new FaceDetectTask(td,this,FaceDetectTask.TRAIN_USAGE);
-
     //for debugging lang yung mga may LOG
-
-    private static final String trainingDir = "sdcard/CS198/faceDatabase";
 
     @Override
     //came from activity template
@@ -50,6 +44,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate state na");
+
+        File folder = new File(researchDir);
+
+        if(folder.exists()==false){
+            folder.mkdir();
+        }
 
         //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
         Button camButton = (Button) findViewById(R.id.camButton);
@@ -81,21 +81,15 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
-
-        fd.execute();
     }
 
     private File getFile(){
-        File folder = new File("sdcard/CS198Photos");
 
-        if(folder.exists()==false){
-            folder.mkdir();
-        }
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = JPEG_FILE_PREFIX + timeStamp + JPEG_FILE_SUFFIX;
         name = imageFileName;
-        dir = "sdcard/CS198Photos/"+imageFileName;
-        File imageFile = new File(folder,imageFileName);
+        dir = researchDir+"/"+imageFileName;
+        File imageFile = new File(new File(researchDir),imageFileName);
         return imageFile;
     }
 
@@ -172,23 +166,18 @@ public class MainActivity extends AppCompatActivity {
 
         if(resultCode == RESULT_OK){
             if(requestCode == REQUEST_TAKE_PHOTO){
-                String path = "sdcard/CS198Photos/"+name;
-                selectedImagePath="sdcard/CS198Photos/"+name;
+                String path = researchDir + "/" + name;
+                selectedImagePath= researchDir +"/" + name;
                 imageView.setImageDrawable(Drawable.createFromPath(path));
                 galleryAddPic();
-                td.detectQueue.add(imread(selectedImagePath));
-                Log.i(TAG, "MainActivity, Request Take Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
             }
 
             if(requestCode == SELECT_PHOTO){
                 Log.i(TAG, "MainActivity: now in Select Photo");
                 Uri selectedImageUri = data.getData();
                 selectedImagePath = getPath(selectedImageUri);
-                Log.i(TAG, "Selected URI: "+selectedImagePath);
+                Log.i(TAG, "Selected URI: " + selectedImagePath);
                 imageView.setImageDrawable(Drawable.createFromPath(selectedImagePath));
-                Log.i(TAG, "MainActivity: about to add to detectQueue");
-                td.detectQueue.add(imread(selectedImagePath));
-                Log.i(TAG, "MainActivity, Select Photo: Added image to detectQueue. Its size is now " + td.detectQueue.size());
             }
 
         }

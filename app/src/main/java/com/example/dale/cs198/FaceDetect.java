@@ -48,6 +48,9 @@ import static org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 
 public class FaceDetect extends AppCompatActivity {
 
+    private String cropPath = "sdcard/PresentData/researchMode/faceCrops";
+    private String outputImgPath = "sdcard/PresentData/researchMode/imagesWithGreenBoxes";
+
     public static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
     public static final String haar20CascadeXML = "haarcascade_frontalface_alt.xml";
     public static final String lbpCascadeXML = "lbpcascade_frontalface.xml";
@@ -56,9 +59,7 @@ public class FaceDetect extends AppCompatActivity {
 
     String filepath;
     String imgName;
-    String cropPath;
     String cropName;
-    String outputImgPath;
     int detectType;
     String detectTypeString;
     ImageView imgWindow;
@@ -71,7 +72,6 @@ public class FaceDetect extends AppCompatActivity {
 
     private IplImage imgRgba;
     private IplImage imgGray;
-    private Mat mRgba;
     private Mat mGray;
     private int mAbsoluteFaceSize = 30;
 
@@ -114,28 +114,21 @@ public class FaceDetect extends AppCompatActivity {
         }
 
         Log.i(TAG, "Creating folders:");
-        cropPath = "sdcard/CS198Crops";
-        outputImgPath = "sdcard/CS198OutputImgs";
+
+        cropPath = cropPath + "/" + cropName;
 
         File folder = new File(cropPath);
         if(!folder.exists()){
             Log.i(TAG, cropPath + " does not exist. Creating...");
-            folder.mkdir();
+            folder.mkdirs();
         }
 
         folder = new File(outputImgPath);
         if(!folder.exists()){
             Log.i(TAG, outputImgPath + " does not exist. Creating...");
-            folder.mkdir();
+            folder.mkdirs();
         }
 
-        cropPath = "sdcard/CS198Crops/" + cropName;
-
-        folder = new File(cropPath);
-        if(!folder.exists()){
-            Log.i(TAG, cropPath + " does not exist. Creating...");
-            folder.mkdir();
-        }
 
         if(detectType == 2) {
             Log.i(TAG, "Detecting with Android");
@@ -268,7 +261,6 @@ public class FaceDetect extends AppCompatActivity {
         faceCount = face_detector.findFaces(background_image, faces);
 
         Log.i(TAG, "entered on draw");
-
 
         imgRgba = cvLoadImage(path);
         imgGray = IplImage.create(imgRgba.width(),imgRgba.height(), IPL_DEPTH_8U, 1);

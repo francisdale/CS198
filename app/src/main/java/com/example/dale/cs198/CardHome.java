@@ -141,6 +141,11 @@ public class CardHome extends AppCompatActivity{
                 showAddStudentDialog();
                 //just show a dialog box with edit text fields
                 return true;
+            case R.id.research_mode:
+                Log.i(TAG, "CardHome: Activate Research Mode");
+                Intent faceDetect = new Intent(CardHome.this,MainActivity.class);
+                startActivity(faceDetect);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -326,11 +331,5 @@ public class CardHome extends AppCompatActivity{
             Log.i(TAG, dataPath + " does not exist. Creating...");
             untrainedFaceFolder.mkdir();
         }
-    }
-
-    public void dispatchMainActivityIntent(View view){
-        Log.i(TAG, "dispatchMainActivityIntent");
-        Intent faceDetect = new Intent(CardHome.this,MainActivity.class);
-        startActivity(faceDetect);
     }
 }

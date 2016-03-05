@@ -174,12 +174,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             }
         };
 
-        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
-            //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        }
-
         Log.i(TAG, "CustomCamera onCreate done");
     }
 
@@ -376,17 +370,17 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
+    protected void onStart() {
+        super.onStart();
 
-        Log.i(TAG, "CustomCamera onRestart");
+        Log.i(TAG, "CustomCamera onStart");
         if(fd.getStatus() != AsyncTask.Status.RUNNING) {
             fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
                 //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         }
-        Log.i(TAG, "CustomCamera onRestart End");
+        Log.i(TAG, "CustomCamera onStart End");
 
     }
 

@@ -25,13 +25,12 @@ import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_highgui.imread;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String TAG = "testMessage";
-    private static final String trainingDir = "sdcard/CS198/faceDatabase";
-    private static final String modelDir = "sdcard/CS198/recognizerModels";
+    private static final String trainingDir = "sdcard/PresentData/researchMode/trainingSet";
+    private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
     int numTrainingImages = 160;
 
@@ -57,7 +56,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         IntBuffer labelsBuf = labels.getIntBuffer();
         int counter = 0;
 
-        (new File(modelDir)).mkdir();
+        (new File(modelDir)).mkdirs();
 
         //Image resolution92x112
         Mat trainingMat = new Mat();
@@ -106,9 +105,9 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         Log.i(TAG, "train eigenvectors row col: " + pca.eigenvectors().rows() + ", " + pca.eigenvectors().cols());
         Log.i(TAG, "train eigenvalues row col: " + pca.eigenvalues().rows() + ", " + pca.eigenvalues().cols());
 
-        imwrite("sdcard/CS198/MeanInJTrain.jpg", pca.mean());
-        imwrite("sdcard/CS198/EVectorsInJTrain.jpg",pca.eigenvectors());
-        imwrite("sdcard/CS198/EValuesInJTrain.jpg",pca.eigenvalues());
+        //imwrite("sdcard/CS198/MeanInJTrain.jpg", pca.mean());
+        //imwrite("sdcard/CS198/EVectorsInJTrain.jpg",pca.eigenvectors());
+        //imwrite("sdcard/CS198/EValuesInJTrain.jpg",pca.eigenvalues());
 
         /* For Yale Database:
         File root = new File(trainingDir + "/att_faces");

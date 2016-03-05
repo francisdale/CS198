@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.bytedeco.javacpp.opencv_core;
@@ -29,43 +28,31 @@ import static org.bytedeco.javacpp.opencv_ml.CvSVMParams;
 
 public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
-    private static final String trainingDir = "sdcard/CS198/faceDatabase";
-
     private static final String TAG = "testMessage";
-    String modelDir = "sdcard/CS198/recognizerModels";
-    String targetDir = "sdcard/CS198/faceDatabase";
+
+    private static final String trainingDir = "sdcard/PresentData/researchMode/trainingSet";
+
+    String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
+    String targetDir = "sdcard/PresentData/researchMode/recognitionResults";
 
     public static final String eigenModelYML = "eigenModel.xml";
     public static final String fisherModelYML = "fisherModel.xml";
     public static final String lbphModelYML = "lbphModel.xml";
     public static final String svmModelXML = "svmModel.xml";
 
-    String eigenOutputDir = "sdcard/CS198/eigenRecog";
-    String fisherOutputDir = "sdcard/CS198/fisherRecog";
-    String lbphOutputDir = "sdcard/CS198/lbphRecog";
-    String svmOutputDir = "sdcard/CS198/svmRecog";
-
-    String eigenOutputDirRight = "sdcard/CS198/eigenRecog/right";
-    String eigenOutputDirWrong = "sdcard/CS198/eigenRecog/wrong";
-    String fisherOutputDirRight = "sdcard/CS198/fisherRecog/right";
-    String fisherOutputDirWrong = "sdcard/CS198/fisherRecog/wrong";
-    String lbphOutputDirRight = "sdcard/CS198/lbphRecog/right";
-    String lbphOutputDirWrong = "sdcard/CS198/lbphRecog/wrong";
-    String svmOutputDirRight = "sdcard/CS198/svmRecog/right";
-    String svmOutputDirWrong = "sdcard/CS198/svmRecog/wrong";
+    String eigenOutputDirRight = targetDir + "/eigenRecog/right";
+    String eigenOutputDirWrong = targetDir + "/eigenRecog/wrong";
+    String fisherOutputDirRight = targetDir + "/fisherRecog/right";
+    String fisherOutputDirWrong = targetDir + "/fisherRecog/wrong";
+    String lbphOutputDirRight = targetDir + "/lbphRecog/right";
+    String lbphOutputDirWrong = targetDir + "/lbphRecog/wrong";
+    String svmOutputDirRight = targetDir + "/svmRecog/right";
+    String svmOutputDirWrong = targetDir + "/svmRecog/wrong";
 
     int numTrainingImages = 160;
 
     String filepath;
-    String imgName;
-    String cropPath;
-    String cropName;
-    String outputImgPath;
-    int detectType;
-    String detectTypeString;
-    ImageView imgWindow;
 
-    private int faceCount;
     long timeStart;
     long timeEnd;
     long timeElapsed;
@@ -99,57 +86,46 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         //mkdir does not overwrite the directory if it already exists.
 
-        File folder = new File(eigenOutputDir);
-        folder.mkdir();
 
-        folder = new File(fisherOutputDir);
-        folder.mkdir();
-
-        folder = new File(lbphOutputDir);
-        folder.mkdir();
-
-        folder = new File(svmOutputDir);
-        folder.mkdir();
-
-        folder = new File(eigenOutputDirRight);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        File folder = new File(eigenOutputDirRight);
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         folder = new File(eigenOutputDirWrong);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         folder = new File(fisherOutputDirRight);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         folder = new File(fisherOutputDirWrong);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         folder = new File(lbphOutputDirRight);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         folder = new File(lbphOutputDirWrong);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         folder = new File(svmOutputDirRight);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         folder = new File(svmOutputDirWrong);
-        //if(!folder.exists()){
-            folder.mkdir();
-        //}
+        if(!folder.exists()){
+            folder.mkdirs();
+        }
 
         Log.i(TAG, "onCreate initialization complete");
         recog();
@@ -159,15 +135,6 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         FaceRecognizer efr = createEigenFaceRecognizer();
         FaceRecognizer ffr = createFisherFaceRecognizer();
         FaceRecognizer lfr = createLBPHFaceRecognizer();
-
-
-        CvSVMParams params = new CvSVMParams();
-        params = params.svm_type(CvSVM.C_SVC);
-        params = params.kernel_type(CvSVM.POLY);
-        params = params.gamma(3);
-        //params = params.C(1);
-        //params = params.gamma(0.001);
-        params = params.degree(3);
         CvSVM sfr = new CvSVM();
 
         Log.i(TAG, "Does " + modelDir + "/" + eigenModelYML + " exist = " + (new File(modelDir + "/" + eigenModelYML)).exists());
@@ -176,6 +143,19 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         lfr.load(modelDir + "/" + lbphModelYML);
 
         Log.i(TAG, "Three KNN recog loading complete");
+
+        CvSVMParams params = new CvSVMParams();
+        params = params.svm_type(CvSVM.C_SVC);
+        params = params.kernel_type(CvSVM.POLY);
+        params = params.gamma(3);
+        //params = params.C(1);
+        //params = params.gamma(0.001);
+        params = params.degree(3);
+
+
+
+
+
 
 
         //sfr.load(modelDir + "/" + svmModelXML);
