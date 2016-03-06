@@ -21,13 +21,13 @@ public class CropImageTouchHelper extends ItemTouchHelper.SimpleCallback  {
 
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-        //cropImageAdapter.swap(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+        cropImageAdapter.swap(viewHolder.getAdapterPosition(), target.getAdapterPosition());
         return true;
     }
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-        //cropImageAdapter.removeCrop(viewHolder.getAdapterPosition(),recyclerView);
+        cropImageAdapter.removeCrop(viewHolder.getAdapterPosition(),recyclerView);
     }
 //    @Override
 //    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder source, RecyclerView.ViewHolder target) {

@@ -41,12 +41,7 @@ public class TrainActivity extends AppCompatActivity {
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
 
-        try{
-            File trainFile = new File(dataPath, "train.txt");
-            trainFile.createNewFile();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+
 
 
         //File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
@@ -74,7 +69,6 @@ public class TrainActivity extends AppCompatActivity {
             }
         });
 
-<<<<<<< HEAD
         train = (Button)findViewById(R.id.train);
         train.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,9 +77,6 @@ public class TrainActivity extends AppCompatActivity {
             }
         });
 
-
-=======
->>>>>>> 5d287cfb474bf469fdfd7114fa460082dd796ff0
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view_crop_images);
         //layoutManager = new LinearLayoutManager(this);
         //recyclerView.setLayoutManager(layoutManager);

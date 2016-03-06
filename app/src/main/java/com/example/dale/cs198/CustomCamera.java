@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -219,7 +220,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 */
                 Log.i(TAG, "Getting ClipData...");
                 ClipData clipData = data.getClipData();
-<<<<<<< HEAD
 
 
                 ArrayList<Uri> fileList = data.getParcelableArrayListExtra(Intent.ACTION_PICK);
@@ -251,8 +251,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 //                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
 //                }
 
-=======
->>>>>>> 5d287cfb474bf469fdfd7114fa460082dd796ff0
                 if (clipData == null) {
                     Log.i(TAG, "SELECTED NOTHING");
                 } else {
@@ -268,11 +266,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
                     Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
                 }
-
-<<<<<<< HEAD
-
-=======
->>>>>>> 5d287cfb474bf469fdfd7114fa460082dd796ff0
             }
         }
     }
