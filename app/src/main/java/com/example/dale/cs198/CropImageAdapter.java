@@ -53,8 +53,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
     int pos;
     String[] labelArr;
 
-    //String dataPath = "sdcard/PresentData/faceDatabase/untrainedCrops/";
-    //File trainFile = new File(dataPath, "train.txt");
 
 
     public CropImageAdapter(Context context,ArrayList<CropImageItem> faceCrops){
@@ -77,9 +75,22 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         Bitmap bmImg = BitmapFactory.decodeFile(c.getPath());
         holder.cropImage.setImageBitmap(bmImg);
         holder.customEtListener.updatePosition(position);
-        //holder.cropName.setText(c.getPos() + "x");
         holder.cropName.setText(labelArr[position]);
+        //holder.cropName.setText(c.getPos() + "x");
 
+        String holderName[] = c.getFileName().split("_");
+
+        if(holderName[0].length()<=2){
+            String nameInfo[] = names.get(Integer.parseInt(holderName[0])-1).split("-");
+            holder.cropName.setText(nameInfo[1]);
+        }
+        //1-12-7
+        if(holderName[0].equals("unlabeled")){
+            holder.cropName.setText(labelArr[position]);
+        }
+        if(holderName[0].equals("delete")){
+           holder.cropName.setText("FALSE POSITIVE");
+        }
 
     }
 
@@ -107,10 +118,14 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         public CropImageViewHolder(View view,CustomEtListener etListener){
             super(view);
             view.setOnClickListener(this);
+
             cropName = (TextView)view.findViewById(R.id.crop_label);
             cropImage = (ImageView)view.findViewById(R.id.crop_image);
             customEtListener = etListener;
             cropName.addTextChangedListener(customEtListener);
+
+
+
         }
 
         @Override
@@ -214,10 +229,29 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         temp = faceCrops.get(position);
         //rename mo nalang yung file and give an indication na dapat siyang madelete
 
-        String fileNameOfRemoved = temp.getFileName();
+        File oldfile;
+        File newfile;
+        CropImageItem rename;
+        final String fileNameOfRemoved = temp.getFileName();
         String filePathOfRemoved = temp.getPath();
         Log.i(TAG,"TO BE DELETED: "+fileNameOfRemoved+"\n"+filePathOfRemoved);
         //DELETE AND MAKE A COPY OF CROP TO BE REMOVED WITH DIFF FILE NAME IN DIRECTORY
+
+        //RENAME CROP WITH CHOSEN IDNUM
+
+        final File sdCardRoot = Environment.getExternalStorageDirectory();
+        oldfile = new File(filePathOfRemoved);
+        newfile = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+"delete_"+fileNameOfRemoved);
+
+        if(oldfile.renameTo(newfile)){
+            temp.setFileName(newfile.getName());
+            temp.setPath(newfile.getAbsolutePath());
+            Log.i(TAG, "Rename succesful");
+            Log.i(TAG,"The renamed file is: "+temp.getFileName()+"\n"+temp.getPath());
+        }
+        else{
+            Log.i(TAG, "Rename failed");
+        }
 
         faceCrops.remove(position);
         notifyItemRemoved(position);
@@ -231,6 +265,24 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                         faceCrops.add(position, temp);
                         notifyItemInserted(position);
                         recyclerView.scrollToPosition(position);
+
+                        String filePathOfUndo = faceCrops.get(position).getPath();
+                        String fileNameOfUndo = faceCrops.get(position).getFileName();
+
+                        File old = new File(filePathOfUndo);
+                        File newF = new File(sdCardRoot,"PresentData/faceDatabase/untrainedCrops/"+fileNameOfRemoved);
+
+                        if(old.renameTo(newF)){
+                            faceCrops.get(position).setFileName(newF.getName());
+                            faceCrops.get(position).setPath(newF.getAbsolutePath());
+                            Log.i(TAG,"UNDO SUCCESSFUL");
+                            Log.i(TAG,"RETURNED : "+faceCrops.get(position).getFileName()+"\n"+faceCrops.get(position).getPath());
+                        }
+                        else{
+                            Log.i(TAG, "Rename failed");
+                        }
+
+                        Log.i(TAG,"You just undo and returned: " + temp.getFileName() + "\n"+temp.getPath());
 
                         Toast toast = Toast.makeText(context, "Face Crop Number = " + faceCrops.size(), Toast.LENGTH_SHORT);
                         toast.show();
