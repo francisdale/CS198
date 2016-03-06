@@ -27,14 +27,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static org.bytedeco.javacpp.opencv_highgui.imread;
 
 public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Callback {
-
+    //C:\Users\jedpatrickdatu\AppData\Local\GitHub\PortableGit_c7e0cbde92ba565cb218a521411d0e854079a28c\cmd\git.exe
     private static final String TAG = "testMessage";
     private final String tempImgDir = "sdcard/PresentData/temp.jpg";
     private static final int SELECT_PHOTO = 2;
@@ -218,15 +217,9 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 }
                 Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
                 */
+
                 Log.i(TAG, "Getting ClipData...");
                 ClipData clipData = data.getClipData();
-
-                ArrayList<Uri> fileList = data.getParcelableArrayListExtra(Intent.ACTION_PICK);
-                for(int i=0;i<fileList.size();i++){
-                    Log.i(TAG,fileList.get(i).toString());
-                    //do something
-                }
-
 
 //                if (clipData == null) {
 //                    Log.i(TAG, "SELECTED NOTHING");

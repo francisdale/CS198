@@ -8,7 +8,6 @@ import android.widget.TextView;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
-import org.bytedeco.javacpp.opencv_ml;
 import org.bytedeco.javacpp.opencv_ml.CvSVM;
 import org.bytedeco.javacpp.opencv_ml.CvSVMParams;
 
@@ -17,8 +16,6 @@ import java.nio.IntBuffer;
 
 import static org.bytedeco.javacpp.opencv_contrib.FaceRecognizer;
 import static org.bytedeco.javacpp.opencv_contrib.createEigenFaceRecognizer;
-import static org.bytedeco.javacpp.opencv_contrib.createFisherFaceRecognizer;
-import static org.bytedeco.javacpp.opencv_contrib.createLBPHFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
 import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
@@ -159,7 +156,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         }
         */
         Log.i(TAG, "okz4");
-        FaceRecognizer faceRecognizer;
+
 
         File folder = new File(modelDir);
         if(!folder.exists()){
@@ -178,19 +175,23 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         numImg.setText("Number of Training Images: " + images.size());
 
         //Eigen Recog:
-        faceRecognizer = createEigenFaceRecognizer();
-        Log.i(TAG, "okz4.1");
-        notification.setText("Training Eigenface...");
-        timeStart = System.currentTimeMillis();
-        Log.i(TAG, "Training Eigenface...");
-        faceRecognizer.train(images, labels);
-        Log.i(TAG, "okz4.2");
-        timeEnd = System.currentTimeMillis();
-        timeElapsed = timeEnd - timeStart;
-        eigenTime.setText("Eigen Time = " + timeElapsed + "ms");
-        faceRecognizer.save(modelDir + "/eigenModel.xml");
-        Log.i(TAG, "okz4.3");
-
+        double threshold = 10;
+        FaceRecognizer faceRecognizer;
+        for(int i = 0; i < 200; i+= 10) {
+            faceRecognizer = createEigenFaceRecognizer(i, threshold);
+            Log.i(TAG, "okz4.1");
+            notification.setText("Training Eigenface...");
+            timeStart = System.currentTimeMillis();
+            Log.i(TAG, "Training Eigenface...");
+            faceRecognizer.train(images, labels);
+            Log.i(TAG, "okz4.2");
+            timeEnd = System.currentTimeMillis();
+            timeElapsed = timeEnd - timeStart;
+            eigenTime.setText("Eigen Time = " + timeElapsed + "ms");
+            faceRecognizer.save(modelDir + "/eigenModel" + i + ".xml");
+            Log.i(TAG, "okz4.3");
+        }
+        /*
         //Fisher Recog:
         faceRecognizer = createFisherFaceRecognizer();
         notification.setText("Training Fisherface...");
@@ -212,11 +213,11 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         timeElapsed = timeEnd - timeStart;
         lbphTime.setText("LBPH Time = " + timeElapsed + "ms");
         faceRecognizer.save(modelDir + "/lbphModel.xml");
-
+        */
         //SVM Recog:
 
         CvSVM svm = new CvSVM();
-        CvSVMParams params = new opencv_ml.CvSVMParams();
+        CvSVMParams params = new CvSVMParams();
         params.svm_type(CvSVM.C_SVC);
         params.kernel_type(CvSVM.LINEAR);
         params.gamma(3);
