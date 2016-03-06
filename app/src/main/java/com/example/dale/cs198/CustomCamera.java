@@ -219,40 +219,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 */
                 Log.i(TAG, "Getting ClipData...");
                 ClipData clipData = data.getClipData();
-<<<<<<< HEAD
-
-
-                ArrayList<Uri> fileList = data.getParcelableArrayListExtra(Intent.ACTION_PICK);
-                for(int i=0;i<fileList.size();i++){
-                    Log.i(TAG,fileList.get(i).toString());
-                    //do something
-                }
-
-
-//                if (clipData == null) {
-//                    Log.i(TAG, "SELECTED NOTHING");
-//                } else {
-//                    for (int i = 0; i < clipData.getItemCount(); i++) {
-//                        ClipData.Item item = clipData.getItemAt(i);
-//                        Uri uri = item.getUri();
-//
-//                        Log.i(TAG, "Selected URI: "+getPath(uri));
-//
-//                        Log.i(TAG, "Does file exist: "+ (new File(getPath(uri))).exists() + ", is file a directory: " + (new File(getPath(uri))).isDirectory());
-//                        //pass the getPath(uri) to the thread
-//                        Log.i(TAG, "CustomCamera is mColor null = " + imread(getPath(uri)).isNull());
-//                        Log.i(TAG, "Writing image...");
-//                        imwrite("sdcard/PresentData", imread(getPath(uri)));
-//                        Log.i(TAG, "Image written.");
-//                        td.detectQueue.add(imread(uri.getPath()));
-//                        Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. i = " + (i + 1));
-//                    }
-//                    Log.i(TAG, "CustomCamera Gallery: Done filling queue with gallery pics.");
-//                    Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
-//                }
-
-=======
->>>>>>> 5d287cfb474bf469fdfd7114fa460082dd796ff0
                 if (clipData == null) {
                     Log.i(TAG, "SELECTED NOTHING");
                 } else {
@@ -269,10 +235,6 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                     Toast.makeText(getApplicationContext(), "The images you selected are now being analyzed.", Toast.LENGTH_LONG).show();
                 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 5d287cfb474bf469fdfd7114fa460082dd796ff0
             }
         }
     }

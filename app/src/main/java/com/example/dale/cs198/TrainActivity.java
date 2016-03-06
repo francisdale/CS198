@@ -14,7 +14,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -37,6 +37,24 @@ public class TrainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_train);
 
+        openCamera = (Button)findViewById(R.id.camera_train);
+        openCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent cam = new Intent(TrainActivity.this, CustomCamera.class);
+                cam.putExtra("detectUsage", FaceDetectTask.TRAIN_USAGE);
+                startActivity(cam);
+            }
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        populateWithFaces();
+    }
+
+    public void populateWithFaces(){
         //POPULATE pathList from the cropped faces files from sdCard/PresentData/faceCrops folder
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
@@ -52,8 +70,15 @@ public class TrainActivity extends AppCompatActivity {
         //File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
 
         //change the directory to /sdcard/presentdata/facedatabase/untrainedcrops
+        FilenameFilter untrainedCropsImgFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".bmp");
+            }
+        };
+
         int i=0;
-        for (File f : faceCropsDir.listFiles()) {
+        for (File f : faceCropsDir.listFiles(untrainedCropsImgFilter)) {
             if (f.isFile()) {
                 String name = f.getName();
                 CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
@@ -64,28 +89,6 @@ public class TrainActivity extends AppCompatActivity {
             }
         }
 
-        openCamera = (Button)findViewById(R.id.camera_train);
-        openCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent cam = new Intent(TrainActivity.this, CustomCamera.class);
-                cam.putExtra("detectUsage", FaceDetectTask.TRAIN_USAGE);
-                startActivity(cam);
-            }
-        });
-
-<<<<<<< HEAD
-        train = (Button)findViewById(R.id.train);
-        train.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               //
-            }
-        });
-
-
-=======
->>>>>>> 5d287cfb474bf469fdfd7114fa460082dd796ff0
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view_crop_images);
         //layoutManager = new LinearLayoutManager(this);
         //recyclerView.setLayoutManager(layoutManager);
@@ -109,13 +112,14 @@ public class TrainActivity extends AppCompatActivity {
 
         Toast toast = Toast.makeText(this, "Face Crop Number = " + pathList.size(), Toast.LENGTH_SHORT);
         toast.show();
+
     }
+
 
     public void trainRecognizer(View view){
         FaceRecogTrainTask tt = new FaceRecogTrainTask(this);
         tt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
-
 
 
 
