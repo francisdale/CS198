@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class TrainActivity extends AppCompatActivity {
@@ -59,12 +58,7 @@ public class TrainActivity extends AppCompatActivity {
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
 
-        try{
-            File trainFile = new File(dataPath, "train.txt");
-            trainFile.createNewFile();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+
 
 
         //File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
@@ -80,12 +74,18 @@ public class TrainActivity extends AppCompatActivity {
         int i=0;
         for (File f : faceCropsDir.listFiles(untrainedCropsImgFilter)) {
             if (f.isFile()) {
+                String nameArr[] = f.getName().split("_");
                 String name = f.getName();
-                CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
-                c.setPos(i);
-                //CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
-                pathList.add(c);
-                i++;
+                if(nameArr[0].equals("delete")){
+                    //do nothing
+                }
+                else{
+                    CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
+                    c.setPos(i);
+                    //CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
+                    pathList.add(c);
+                    i++;
+                }
             }
         }
 
