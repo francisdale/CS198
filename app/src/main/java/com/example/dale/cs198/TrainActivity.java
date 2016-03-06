@@ -50,12 +50,18 @@ public class TrainActivity extends AppCompatActivity {
         int i=0;
         for (File f : faceCropsDir.listFiles()) {
             if (f.isFile()) {
+                String nameArr[] = f.getName().split("_");
                 String name = f.getName();
-                CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
-                c.setPos(i);
-                //CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
-                pathList.add(c);
-                i++;
+                if(nameArr[0].equals("delete")){
+                    //do nothing
+                }
+                else{
+                    CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
+                    c.setPos(i);
+                    //CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
+                    pathList.add(c);
+                    i++;
+                }
             }
         }
 

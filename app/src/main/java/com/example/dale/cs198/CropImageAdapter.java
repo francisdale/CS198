@@ -75,9 +75,22 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         Bitmap bmImg = BitmapFactory.decodeFile(c.getPath());
         holder.cropImage.setImageBitmap(bmImg);
         holder.customEtListener.updatePosition(position);
-        //holder.cropName.setText(c.getPos() + "x");
         holder.cropName.setText(labelArr[position]);
+        //holder.cropName.setText(c.getPos() + "x");
 
+        String holderName[] = c.getFileName().split("_");
+
+        if(holderName[0].length()<=2){
+            String nameInfo[] = names.get(Integer.parseInt(holderName[0])-1).split("-");
+            holder.cropName.setText(nameInfo[1]);
+        }
+        //1-12-7
+        if(holderName[0].equals("unlabeled")){
+            holder.cropName.setText(labelArr[position]);
+        }
+        if(holderName[0].equals("delete")){
+           holder.cropName.setText("FALSE POSITIVE");
+        }
 
     }
 
@@ -105,10 +118,14 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         public CropImageViewHolder(View view,CustomEtListener etListener){
             super(view);
             view.setOnClickListener(this);
+
             cropName = (TextView)view.findViewById(R.id.crop_label);
             cropImage = (ImageView)view.findViewById(R.id.crop_image);
             customEtListener = etListener;
             cropName.addTextChangedListener(customEtListener);
+
+
+
         }
 
         @Override
