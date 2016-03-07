@@ -5,21 +5,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Environment;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,6 +26,9 @@ public class ClassList extends AppCompatActivity {
 
     ActionBar actionBar;
     private static final String TAG = "testMessage";
+
+    String classesDir = "sdcard/PresentData/Classes";
+    String classDir;
 
     String name;
     String start;
@@ -54,9 +51,9 @@ public class ClassList extends AppCompatActivity {
         end = intent.getStringExtra("end");
         //read the txt file of student names then populate students ArrayList
 
-        String dataPath="sdcard/PresentData/Classes/"+name;
+        classDir=classesDir + "/" + name;
 
-        File file = new File(dataPath,name+".txt");
+        File file = new File(classDir, name+"_studentList.txt");
         StringBuilder text = new StringBuilder();
 
         try {
@@ -102,6 +99,7 @@ public class ClassList extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 delToSp();
+                                DirectoryDeleter.deleteDir(new File(classDir));
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {

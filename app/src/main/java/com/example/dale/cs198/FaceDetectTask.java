@@ -99,6 +99,8 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     timeEnd = System.currentTimeMillis();
                     timeElapsed = timeEnd - timeStart;
 
+                    mGray.deallocate();
+
 
                     Log.i(TAG, "Detection complete. Cropping...");
                     //Crop faces:
@@ -133,6 +135,8 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
                     timeEnd = System.currentTimeMillis();
                     timeElapsed = timeEnd - timeStart;
+
+                    mGray.deallocate();
 
                     Log.i(TAG, "Detection complete. Cropping...");
                     //Crop faces:

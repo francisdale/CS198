@@ -47,25 +47,8 @@
             android:id="@+id/eigenTime"
             android:textColor="#ffffff"
             android:layout_marginTop="30dp"
-            android:layout_gravity="center_horizontal" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/fisherTime"
-            android:textColor="#ffffff"
-            android:layout_marginTop="30dp"
-            android:layout_gravity="center_horizontal" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/lbphTime"
-            android:textColor="#ffffff"
-            android:layout_marginTop="30dp"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:inputType="textMultiLine"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -74,7 +57,8 @@
             android:id="@+id/svmTime"
             android:textColor="#ffffff"
             android:layout_marginTop="30dp"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:inputType="textMultiLine"/>
 
     </LinearLayout>
 </RelativeLayout>

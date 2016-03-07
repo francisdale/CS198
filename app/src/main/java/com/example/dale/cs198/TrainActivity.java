@@ -58,14 +58,10 @@ public class TrainActivity extends AppCompatActivity {
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
 
-
-        //File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
-
-        //change the directory to /sdcard/presentdata/facedatabase/untrainedcrops
         FilenameFilter untrainedCropsImgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
-                return name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".bmp");
+                return !name.startsWith("unlabeled") || name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".bmp");
             }
         };
 
@@ -75,7 +71,7 @@ public class TrainActivity extends AppCompatActivity {
                 String nameArr[] = f.getName().split("_");
                 String name = f.getName();
                 if(nameArr[0].equals("delete")){
-                    //do nothing
+                    f.delete();
                 }
                 else{
                     CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);

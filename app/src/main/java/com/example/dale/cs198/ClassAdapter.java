@@ -71,7 +71,6 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
             takePic.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v){
-                    Log.i(TAG, "ClassAdapter Clicked Take Pic");
                     Intent cam = new Intent(context, CustomCamera.class);
                     cam.putExtra("detectUsage", FaceDetectTask.ATTENDANCE_USAGE);
                     cam.putExtra("classNameString", classNameString);

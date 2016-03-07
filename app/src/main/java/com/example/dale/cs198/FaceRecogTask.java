@@ -66,7 +66,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             //Read class list:
             BufferedReader br;
             HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
-            HashMap<Integer, String> studentNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+            HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
             String line;
             String[] details;
             String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
@@ -78,21 +78,21 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             File recordFile = new File(recordFilePath);
             if(!recordFile.exists()){
                 //f.createNewFile();
-                br = new BufferedReader(new FileReader(classDir + "/studentList.txt"));
+                br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
                 while((line = br.readLine()) != null){
                     details = line.split(",");
-                    //a line in the studentList has the syntax: <id>,<student number>,<lastname>
+                    //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
                     attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
-                    studentNames.put(Integer.parseInt(details[0]), Integer.parseInt(details[2]) + "," + Integer.parseInt(details[3])); //(id, lastname+firstname
+                    studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
                 }
             } else {
                 br = new BufferedReader(new FileReader(recordFile));
                 while((line = br.readLine()) != null){
                     details = line.split(",");
-                    //a line in an attendance record text file has the syntax: <id>,<lastname>,<firstname>,<attendance>
-                    attendanceRecord.put(Integer.parseInt(details[0]), Integer.parseInt(details[3])); //(id, attendance)
-                    studentNames.put(Integer.parseInt(details[0]), Integer.parseInt(details[1]) + "," + Integer.parseInt(details[2])); //(id, lastname+firstname)
-                    if(details[3] == "1"){
+                    //a line in an attendance record text file has the syntax: <id>,<studentNumber>,<lastname>,<firstname>,<attendance>
+                    attendanceRecord.put(Integer.parseInt(details[0]), Integer.parseInt(details[4])); //(id, attendance)
+                    studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                    if(details[4] == "1"){
                         numStudentsPresent++;
                     }
                 }
@@ -108,9 +108,9 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             Mat mGray;
             int predictedLabel;
 
-            while((mColor = td.recogQueue.poll()) == null) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
+            while((mColor = td.recogQueue.poll()) != null) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
                 Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
-                mGray = mColor;
+                mGray = new Mat();
                 cvtColor(mColor, mGray, CV_BGR2GRAY);
                 Log.i(TAG, "Train usage: image converted to grayscale");
                 //Recognize faces:
@@ -120,6 +120,9 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 predictedLabel = efr.predict(mGray);
                 timeEnd = System.currentTimeMillis();
                 timeElapsed = timeEnd - timeStart;
+
+                mColor.deallocate();
+                mGray.deallocate();
 
                 Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
@@ -138,10 +141,10 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             }
 
-
+            //Thread has been signalled to die at this point; time to write the attendance report .txt file.
             BufferedWriter bw = new BufferedWriter(new FileWriter(recordFile));
             Set attendanceSet = attendanceRecord.entrySet();
-            Set nameSet = studentNames.entrySet();
+            Set nameSet = studentNumsAndNames.entrySet();
             Iterator ai = attendanceSet.iterator();
             Iterator ni = nameSet.iterator();
             Entry ae;

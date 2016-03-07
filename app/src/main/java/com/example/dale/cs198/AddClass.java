@@ -30,8 +30,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.nbsp.materialfilepicker.utils.FileUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -49,6 +47,8 @@ public class AddClass extends AppCompatActivity {
 
     static final int START_DIALOG_ID = 0;
     static final int END_DIALOG_ID = 1;
+
+    private String classesDir = "sdcard/PresentData/Classes";
 
     int hour_start;
     int minute_start;
@@ -324,18 +324,17 @@ public class AddClass extends AppCompatActivity {
 
     int generateClassFile(String fileName) {
         try {
-            String dataPath = "sdcard/PresentData/Classes";
+            String classDir = classesDir + "/" + fileName;
+            String dataPath = classDir + "/attendanceReports";
 
-            File classFolder = new File(dataPath+"/"+fileName);
+            File classFolder = new File(dataPath);
             if(!classFolder.exists()){
                 Log.i(TAG, dataPath + " does not exist. Creating...");
-                classFolder.mkdir();
+                classFolder.mkdirs();
             }
 
-            File classFile = new File(dataPath+"/"+fileName, fileName + ".txt");
+            File classFile = new File(classDir, fileName + "_studentList" + ".txt");
             FileWriter writer = new FileWriter(classFile);
-
-            (new File(dataPath + "/attendanceReports")).mkdirs();
 
             selected = 0;
             for (int i = 0; i < studentList.size(); i++) {
