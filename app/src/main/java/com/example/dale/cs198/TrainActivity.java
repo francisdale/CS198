@@ -59,8 +59,6 @@ public class TrainActivity extends AppCompatActivity {
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
 
 
-
-
         //File faceCropsDir = new File(sdCardRoot, "PresentData/faceCrops");
 
         //change the directory to /sdcard/presentdata/facedatabase/untrainedcrops

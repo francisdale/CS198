@@ -12,7 +12,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="10dp"
             android:background="@drawable/recycler_view_background"
             >
             <ImageView
@@ -24,7 +23,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="170dp"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:id="@+id/crop_label"/>
 
         </RelativeLayout>
