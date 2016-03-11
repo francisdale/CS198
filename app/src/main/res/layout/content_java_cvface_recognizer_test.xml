@@ -46,69 +46,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/eigenTime"
+                android:id="@+id/recogTimesAndAccuraciesTextView"
                 android:textColor="#ffffff"
                 android:layout_marginTop="30dp"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_marginTop="15dp"
-                android:id="@+id/eigenAccuracy"
-                android:textColor="#ffffff" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/fisherTime"
-                android:textColor="#ffffff"
-                android:layout_marginTop="30dp"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_marginTop="15dp"
-                android:id="@+id/fisherAccuracy"
-                android:textColor="#ffffff" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/lbphTime"
-                android:textColor="#ffffff"
-                android:layout_marginTop="30dp"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_marginTop="15dp"
-                android:id="@+id/lbphAccuracy"
-                android:textColor="#ffffff" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/svmTime"
-                android:textColor="#ffffff"
-                android:layout_marginTop="30dp"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_marginTop="15dp"
-                android:id="@+id/svmAccuracy"
-                android:textColor="#ffffff" />
+                android:layout_gravity="center_horizontal"
+                android:inputType="textMultiLine" />
 
         </LinearLayout>
     </ScrollView>

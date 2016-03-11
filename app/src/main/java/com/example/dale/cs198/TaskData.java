@@ -14,6 +14,7 @@ public class TaskData {
     public static final String detectOutputDir = "cs198/detectedFaces";
     ThreadSafeQueue<Mat> detectQueue = new ThreadSafeQueue<Mat>();
     ThreadSafeQueue<Mat> recogQueue = new ThreadSafeQueue<Mat>();
+    ThreadSafeQueue<String> pathQueue = new ThreadSafeQueue<String>();
     private boolean isMainThreadRunning = true;
 
     public synchronized void setThreadsToDie(){
@@ -52,12 +53,13 @@ class ThreadSafeQueue<E>{
             Log.i(TAG, "now in poll sync block");
             if(isQueueEmpty()){
                 if(isNoMoreMatsComing){
+                    Log.i(TAG, "No more mats coming. Returning null.");
                     return null;//This null will tell the polling thread, which is either FaceDetectTask or FaceRecogTask, that it's time to die.
                 }
                 try {
-                    Log.i(TAG, "Waiting for a train...");
+                    Log.i(TAG, "Waiting...");
                     mq.wait();
-                    Log.i(TAG, "We will be together.");
+                    Log.i(TAG, "Woke up!");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

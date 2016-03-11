@@ -15,6 +15,7 @@ import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
 import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_highgui.imwrite;
+import static org.bytedeco.javacpp.opencv_highgui.imread;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
@@ -27,10 +28,16 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
     private static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
-    private int mAbsoluteFaceSize = 30;
 
     static final int ATTENDANCE_USAGE = 0;
     static final int TRAIN_USAGE = 1;
+
+    //Face detection parameters:
+    double scaleFactor = 1.1;
+    int minNeighbors = 3;
+    int flags = 0;
+    Size minSize = new Size(30, 30);
+    Size maxSize = new Size();
 
     int faceCount = 0;
     int imgCount = 0;
@@ -95,23 +102,30 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     //Detect faces:
                     Log.i(TAG, "Detecting...");
                     timeStart = System.currentTimeMillis();
-                    faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                    faceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
                     timeEnd = System.currentTimeMillis();
                     timeElapsed = timeEnd - timeStart;
 
-                    mGray.deallocate();
+                    mGray.release();
 
+                    if(faces.width() > 0) {//check if faces is not empty; an empty r means no face was really detected
 
-                    Log.i(TAG, "Detection complete. Cropping...");
-                    //Crop faces:
-                    numFaces = faces.capacity();
-                    faceCount += numFaces;
-                    for (int i = 0; i < numFaces; i++) {
-                        r = faces.position(i);
+                        Log.i(TAG, "Detection complete. Cropping...");
+                        //Crop faces:
+                        numFaces = faces.capacity();
 
-                        roi = new Rect(r.x(), r.y(), r.width(), r.height());
-                        td.recogQueue.add(new Mat(mColor, roi));
+                        for (int i = 0; i < numFaces; i++) {
+                            r = faces.position(i);
+
+                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
+                            td.recogQueue.add(new Mat(mColor, roi));
+                        }
+                    } else {
+                        numFaces = 0;
                     }
+
+                    faceCount += numFaces;
+
                     Log.i(TAG, "Cropping complete. Publishing progress.");
                     publishProgress();
                 }
@@ -123,6 +137,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     folder.mkdir();
                 }
 
+
                 while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
                     imgCount++;
                     mGray = new Mat();
@@ -132,27 +147,75 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     //Detect faces:
                     Log.i(TAG, "Detecting...");
                     timeStart = System.currentTimeMillis();
-                    faceDetector.detectMultiScale(mGray, faces, 1.2, 4, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                    faceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
                     timeEnd = System.currentTimeMillis();
                     timeElapsed = timeEnd - timeStart;
 
-                    mGray.deallocate();
+                    mGray.release();
 
-                    Log.i(TAG, "Detection complete. Cropping...");
-                    //Crop faces:
-                    numFaces = faces.capacity();
-                    faceCount += numFaces;
-                    for (int i = 0; i < numFaces; i++) {
-                        r = faces.position(i);
-                        roi = new Rect(r.x(), r.y(), r.width(), r.height());
+                    if(faces.width() > 0) {//check if faces is not empty; an empty r means no face was really detected
+                        //Crop faces:
+                        numFaces = faces.capacity();
 
-                        crop = new Mat(mColor, roi);
-                        imwrite(untrainedCropsDir + "/" + "unlabeled_" + System.currentTimeMillis() + ".jpg", crop);
+                        Log.i(TAG, "Detection complete. Found " + numFaces + " faces. Cropping...");
+
+                        for (int i = 0; i < numFaces; i++) {
+                            r = faces.position(i);
+
+                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
+
+                            crop = new Mat(mColor, roi);
+
+                            imwrite(untrainedCropsDir + "/" + "unlabeled_" + System.currentTimeMillis() + ".jpg", crop);
+                        }
+                    } else {
+                        numFaces = 0;
                     }
+
+                    faceCount += numFaces;
+
+
+
+                    //For cropping the AT&T faces:
+                    File fd = new File("sdcard/PresentData/att_faces_labeled_jpg");
+                    for (File f : fd.listFiles()) {
+                        td.pathQueue.add(f.getAbsolutePath());
+                        Log.i(TAG, "Added " + f.getName() + " to detectQueue for cropping");
+                    }
+                    (new File("sdcard/PresentData/att_faces_labeled_cropped_jpg")).mkdirs();
+
+                    while(!td.pathQueue.isQueueEmpty()) {
+                        String path = td.pathQueue.poll();
+                        String name = (new File(path)).getName();
+                        Mat m = imread(path);
+                        faces = new Rect();
+                        faceDetector.detectMultiScale(m, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
+
+                        if(faces.width() > 0) {//check if faces is not empty; an empty r means no face was really detected
+                            int sizeF = faces.capacity();
+                            Log.i(TAG, "AT&T numOfFacesDetected: " + sizeF);
+                            for (int i = 0; i < sizeF; i++) {
+                                r = faces.position(i);
+
+                                roi = new Rect(r.x(), r.y(), r.width(), r.height());
+
+                                Log.i(TAG, "AT&T cropping...");
+                                crop = new Mat(m, roi);
+                                Log.i(TAG, "AT&T cropped");
+                                imwrite("sdcard/PresentData/att_faces_labeled_cropped_jpg/" + name.replace(".jpg", "_" + i + ".jpg"), crop);
+                                Log.i(TAG, "AT&T cropped " + name.replace(".jpg", "_" + i + ".jpg") + ". x = " + r.x() + ", y = " + r.y() + ", x2 = " + (r.x() + r.width()) + ", y2 = " + (r.y() + r.height()));
+                            }
+                        }
+                        m.release();
+                    }
+                    //
+
+
 
                     Log.i(TAG, "Faces cropped. Publishing progress...");
                     publishProgress();
                 }
+
                 Log.i(TAG, "Train camera UI closed. Goodbye!");
             }
         } catch (Exception e) {

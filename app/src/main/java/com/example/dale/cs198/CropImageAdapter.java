@@ -21,10 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,7 +123,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             cropName.addTextChangedListener(customEtListener);
 
 
-
         }
 
         @Override
@@ -136,9 +133,9 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             ArrayAdapter<String> namesListAdapter = new ArrayAdapter<String>(context.getApplicationContext(),R.layout.names_dialog_layout,R.id.dialogName,names);
             namesList.setAdapter(namesListAdapter);
             namesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ViewGroup viewGroup = (ViewGroup) view;
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        ViewGroup viewGroup = (ViewGroup) view;
                     dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
                     //label is the name of the cro
                     //Log.i(TAG,"");
@@ -344,7 +341,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             String[] details;
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
-                names.add(details[0]+"-"+details[2]+" "+details[3]);
+                names.add(details[0]+"-"+details[2]+", "+details[3]);
                 //lagay yung mga mapping if ids
             }
             br.close();

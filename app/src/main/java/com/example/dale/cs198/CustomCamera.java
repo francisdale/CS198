@@ -251,6 +251,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                         Uri uri = item.getUri();
                         Log.i(TAG, "Selected URI: " + getPath(uri));
                         //pass the getPath(uri) to the thread
+
                         td.detectQueue.add(imread(getPath(uri)));
                         Log.i(TAG, "CustomCamera Gallery: Added image to detectQueue. i = " + (i + 1));
                     }
@@ -398,6 +399,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
         Log.i(TAG, "CustomCamera onStart");
         if(fd.getStatus() != AsyncTask.Status.RUNNING) {
+            Log.i(TAG, "Executing fd...");
             fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
                 //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

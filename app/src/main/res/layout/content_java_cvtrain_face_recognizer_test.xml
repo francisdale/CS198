@@ -12,53 +12,53 @@
     tools:context="com.example.dale.cs198.JavaCVTrainFaceRecognizerTest"
     tools:showIn="@layout/activity_java_cvtrain_face_recognizer_test">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="?android:dividerVertical"
-        android:showDividers="middle"
-        android:weightSum="1"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
+        android:layout_height="wrap_content"
+        android:id="@+id/trainScrollView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" >
 
-        <TextView
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/trainingNotification"
-            android:textColor="#3ffa3f"
-            android:layout_marginTop="15dp"
-            android:editable="false" />
+            android:layout_height="match_parent"
+            android:divider="?android:dividerVertical"
+            android:showDividers="middle"
+            android:weightSum="1"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/numImg"
-            android:textColor="#3ffa3f"
-            android:enabled="false" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/trainingNotification"
+                android:textColor="#3ffa3f"
+                android:layout_marginTop="15dp"
+                android:editable="false" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/eigenTime"
-            android:textColor="#ffffff"
-            android:layout_marginTop="30dp"
-            android:layout_gravity="center_horizontal"
-            android:inputType="textMultiLine"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/numImg"
+                android:textColor="#3ffa3f"
+                android:enabled="false" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/svmTime"
-            android:textColor="#ffffff"
-            android:layout_marginTop="30dp"
-            android:layout_gravity="center_horizontal"
-            android:inputType="textMultiLine"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/trainTimesTextView"
+                android:textColor="#ffffff"
+                android:layout_marginTop="30dp"
+                android:layout_gravity="center_horizontal"
+                android:inputType="textMultiLine"/>
 
-    </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
 </RelativeLayout>

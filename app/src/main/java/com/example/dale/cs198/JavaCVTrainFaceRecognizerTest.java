@@ -8,10 +8,10 @@ import android.widget.TextView;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
-import org.bytedeco.javacpp.opencv_ml.CvSVM;
-import org.bytedeco.javacpp.opencv_ml.CvSVMParams;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.IntBuffer;
 
 import static org.bytedeco.javacpp.opencv_contrib.FaceRecognizer;
@@ -26,8 +26,10 @@ import static org.bytedeco.javacpp.opencv_highgui.imread;
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String TAG = "testMessage";
-    private static final String trainingSetDir = "sdcard/PresentData/att_faces";
+    private static final String trainingSetDir = "sdcard/PresentData/att_faces_labeled_jpg";
     private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
+
+    private static double threshold = 10.0;
 
     int numTrainingImages = 160;
 
@@ -46,8 +48,6 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
     public void trainAlgorithm() {
         //for AT&T face database:
-        String root = trainingSetDir;
-        String currSPath;
         MatVector images = new MatVector(numTrainingImages);
         Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
         IntBuffer labelsBuf = labels.getIntBuffer();
@@ -57,20 +57,38 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         //Image resolution92x112
         Mat trainingMat = new Mat();
-        int ii = 0; // Current column in training_mat
         for(int s = 1; s <= 40; s++){
-            currSPath = root + "/s" + s;
-            for(int i = 1; i <= 4; i++, counter++){
-                Mat img = imread(currSPath + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
+            for(int i = 1; i <= 7; i += 2, counter++){
+                Mat img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
                 images.put(counter, img);
                 labelsBuf.put(counter, s);
-                Log.i(TAG, "s" + s + " i" + i);
+
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
                 trainingMat.push_back(img);
 
+                img.deallocate();
+
+                Log.i(TAG, "s" + s + " i" + i);
             }
         }
+
+        /*
+        //For saving to jpg and labelling:
+        (new File("sdcard/PresentData/att_faces_labeled_jpg")).mkdirs();
+
+        for(int s = 1; s <= 40; s++){
+            currSPath = trainingSetDir + "/s" + s;
+            for(int i = 1; i <= 10; i++, counter++){
+                Mat imgj = imread(currSPath + "/" + i + ".pgm");
+                imwrite("sdcard/PresentData/att_faces_labeled_jpg/" + s + "_" + i + ".jpg", imgj);
+                //imgj.deallocate();
+
+                Log.i(TAG, "label s" + s + " i" + i);
+            }
+        }
+        */
+
         trainingMat.convertTo(trainingMat, CV_32FC1);
         Log.i(TAG, "Number of images loaded: " + images.size());
 
@@ -167,29 +185,32 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         TextView numImg = (TextView) findViewById(R.id.numImg);
         TextView notification = (TextView) findViewById(R.id.trainingNotification);
-        TextView eigenTime = (TextView) findViewById(R.id.eigenTime);
-        TextView fisherTime = (TextView) findViewById(R.id.fisherTime);
-        TextView lbphTime = (TextView) findViewById(R.id.lbphTime);
-        TextView svmTime = (TextView) findViewById(R.id.svmTime);
+        TextView trainTimesTextView = (TextView) findViewById(R.id.trainTimesTextView);
 
-        numImg.setText("Number of Training Images: " + images.size());
+
 
         //Eigen Recog:
-        double threshold = 10;
-        FaceRecognizer faceRecognizer;
-        for(int i = 0; i < 200; i+= 10) {
-            faceRecognizer = createEigenFaceRecognizer(i, threshold);
-            Log.i(TAG, "okz4.1");
-            notification.setText("Training Eigenface...");
-            timeStart = System.currentTimeMillis();
-            Log.i(TAG, "Training Eigenface...");
-            faceRecognizer.train(images, labels);
-            Log.i(TAG, "okz4.2");
-            timeEnd = System.currentTimeMillis();
-            timeElapsed = timeEnd - timeStart;
-            eigenTime.setText("Eigen Time = " + timeElapsed + "ms");
-            faceRecognizer.save(modelDir + "/eigenModel" + i + ".xml");
-            Log.i(TAG, "okz4.3");
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(modelDir + "/eigenTrainingTimes.txt"));
+
+            bw.write("Training complete.\nThreshold used = " + threshold + "\nNumber of Training Images: " + images.size() + "\n\n");
+            FaceRecognizer faceRecognizer;
+            for (int i = 0; i <= 200; i += 10) {
+                faceRecognizer = createEigenFaceRecognizer(i, threshold);
+                timeStart = System.currentTimeMillis();
+                Log.i(TAG, "Training Eigenface " + i + "...");
+                faceRecognizer.train(images, labels);
+                timeEnd = System.currentTimeMillis();
+                timeElapsed = timeEnd - timeStart;
+                trainTimesTextView.setText(trainTimesTextView.getText() + "PCs: " + i + ": " + ((float) timeElapsed / 1000) + "s\n");
+                bw.write("PCs: " + i + ": " + ((float) timeElapsed / 1000) + "s\n");
+                faceRecognizer.save(modelDir + "/eigenModel_" + i + ".xml");
+            }
+
+            bw.flush();
+            bw.close();
+        } catch (Exception e){
         }
         /*
         //Fisher Recog:
@@ -216,6 +237,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         */
         //SVM Recog:
 
+        /*
         CvSVM svm = new CvSVM();
         CvSVMParams params = new CvSVMParams();
         params.svm_type(CvSVM.C_SVC);
@@ -232,10 +254,9 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         timeElapsed = timeEnd - timeStart;
         svmTime.setText("SVM Time = " + timeElapsed + "ms");
         svm.save(modelDir + "/svmModel.xml");
+        */
 
-
-        notification.setText("Training complete.");
-        Log.i(TAG, "okz5");
+        notification.setText("Training complete.\nThreshold used = " + threshold);
 
     }
 

@@ -51,11 +51,17 @@ public class FaceDetect extends AppCompatActivity {
     private String cropPath = "sdcard/PresentData/researchMode/faceCrops";
     private String outputImgPath = "sdcard/PresentData/researchMode/imagesWithGreenBoxes";
 
+    //Face detection parameters:
+    double scaleFactor = 1.1;
+    int minNeighbors = 3;
+    int flags = 0;
+    Size minSize = new Size(30, 30);
+    Size maxSize = new Size();
+
     public static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
     public static final String haar20CascadeXML = "haarcascade_frontalface_alt.xml";
     public static final String lbpCascadeXML = "lbpcascade_frontalface.xml";
     CascadeClassifier cascadeFaceDetector;
-    private static final int SCALE = 2; // scaling factor to reduce size of input image
 
     String filepath;
     String imgName;
@@ -73,16 +79,6 @@ public class FaceDetect extends AppCompatActivity {
     private IplImage imgRgba;
     private IplImage imgGray;
     private Mat mGray;
-    private int mAbsoluteFaceSize = 30;
-
-    // Variables for Android FaceDetect:
-
-    /**===========================================================**/
-
-    private FaceDetector.Face[] faces;
-
-
-    /**===========================================================**/
 
 
     @Override
@@ -104,13 +100,13 @@ public class FaceDetect extends AppCompatActivity {
         Log.i(TAG, "imgName: " + imgName);
 
         if(detectType == 0) {
-            cropName = imgName + "Haar";
+            cropName = imgName + "_Haar";
         } else if(detectType == 1) {
-            cropName = imgName + "LBP";
+            cropName = imgName + "_LBP";
         } else if(detectType == 2) {
-            cropName = imgName + "Android";
+            cropName = imgName + "_Android";
         } else {
-            cropName = imgName + "Haar20";
+            cropName = imgName + "_Haar20";
         }
 
         Log.i(TAG, "Creating folders:");
@@ -172,14 +168,6 @@ public class FaceDetect extends AppCompatActivity {
                 cascadeFaceDetector = new CascadeClassifier(cascadeFile.getAbsolutePath());
                 cascadeDir.delete();
 
-                /*
-                if (cascadeFaceDetector.empty()) {
-                    Log.e(TAG, "Failed to load cascade classifier");
-                    cascadeFaceDetector = null;
-                } else {
-                    Log.i(TAG, "Loaded cascade classifier from " + cascadeFile.getAbsolutePath());
-                }
-                */
                 detectFacesByCascade(filepath);
 
             } catch (IOException e) {
@@ -206,27 +194,33 @@ public class FaceDetect extends AppCompatActivity {
 
         Rect faces = new Rect();
 
-        //cascadeFaceDetector.detectMultiScale(mGray, faces, 1.2, 3, 0, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        cascadeFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+        cascadeFaceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
+        //cascadeFaceDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 
-        // draw thick green rectangles around all the faces
-        faceCount = faces.capacity();
+        if(faces.width() > 0) {//check if faces is not empty; an empty r means no face was really detected
+            // draw thick green rectangles around all the faces
+            faceCount = faces.capacity();
 
-        Rect roi;
-        Mat crop;
-        for (int i = 0; i < faceCount; i++) {
-            Rect r = faces.position(i);
-            int x = r.x();
-            int y = r.y();
-
-
-            cvRectangle(imgRgba, cvPoint(x, y), cvPoint((r.x() + r.width()), (r.y() + r.height())), CvScalar.GREEN, 6, CV_AA, 0);
-            //undo image scaling when calculating rect coordinates
+            Rect roi;
+            Mat crop;
+            for (int i = 0; i < faceCount; i++) {
+                Rect r = faces.position(i);
+                int x = r.x();
+                int y = r.y();
 
 
-            roi = new Rect(x, y, r.width(), r.height());
-            crop = new Mat(mGray, roi);
-            imwrite(cropPath + "/" + cropName + "_" + (i+1) + ".jpg", crop);
+                cvRectangle(imgRgba, cvPoint(x, y), cvPoint((r.x() + r.width()), (r.y() + r.height())), CvScalar.GREEN, 6, CV_AA, 0);
+                //undo image scaling when calculating rect coordinates
+
+                Log.i(TAG, "FaceDetect: drew a rectangle at x = " + r.x() + ", y = " + r.y() + ", x2 = " + (r.x() + r.width()) + ", y2 = " + (r.y() + r.height()));
+
+                roi = new Rect(x, y, r.width(), r.height());
+                crop = new Mat(mGray, roi);
+                imwrite(cropPath + "/" + cropName + "_" + (i + 1) + ".jpg", crop);
+
+            }
+        } else {
+            faceCount = 0;
         }
 
         cvSaveImage(outputImgPath + "/" + cropName + ".jpg", imgRgba);

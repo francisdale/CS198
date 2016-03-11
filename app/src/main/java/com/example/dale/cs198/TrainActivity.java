@@ -61,7 +61,7 @@ public class TrainActivity extends AppCompatActivity {
         FilenameFilter untrainedCropsImgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
-                return !name.startsWith("unlabeled") || name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".bmp");
+                return !name.startsWith("unlabeled") || !name.startsWith("delete");
             }
         };
 
@@ -70,16 +70,11 @@ public class TrainActivity extends AppCompatActivity {
             if (f.isFile()) {
                 String nameArr[] = f.getName().split("_");
                 String name = f.getName();
-                if(nameArr[0].equals("delete")){
-                    f.delete();
-                }
-                else{
-                    CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
-                    c.setPos(i);
-                    //CropImageItem c = new CropImageItem("sdcard/PresentData/faceCrops/"+name,name);
-                    pathList.add(c);
-                    i++;
-                }
+                CropImageItem c = new CropImageItem("sdcard/PresentData/faceDatabase/untrainedCrops/"+name,name);
+                c.setPos(i);
+                pathList.add(c);
+                i++;
+
             }
         }
 
