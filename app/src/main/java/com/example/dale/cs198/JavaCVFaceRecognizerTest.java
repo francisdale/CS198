@@ -305,17 +305,19 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         float[] eigenTimes = new float[21];
         float[] eigenAccuracies = new float[21];
         int[] numsRight = new int[21];
+        int[] numsFalseNegatives = new int[21];
         int index = 0;
-        int numImages;
+        int numImages = 0;
 
         for(int j = 0; j <= 200; j += 10, index++) {
             efr = createEigenFaceRecognizer();
             efr.load(modelDir + "/eigenModel_" + j + ".xml");
             eigenTimes[index] = 0;
             numsRight[index] = 0;
+            numsFalseNegatives[index] = 0;
             numImages = 0;
             for (int s = 1; s <= 40; s++) {
-                for (int i = 2; i <= 10; i += 2, numImages++) {
+                for (int i = 5; i <= 10; i++, numImages++) {
 
                     Log.i(TAG, "PCs: " + j + ", s" + s + " i" + i);
 
@@ -327,11 +329,13 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                     eigenTimes[index] += timeEnd - timeStart;
                     if (s == predictedLabel) {
                         numsRight[index]++;
+                    } else if (s == -1){
+                        numsFalseNegatives[index]++;
                     }
                 }
             }
             eigenTimes[index] =  (eigenTimes[index]/(numImages))/1000;
-            eigenAccuracies[index] = (numsRight[index]/numImages) * 100;
+            eigenAccuracies[index] = ((float) numsRight[index]/numImages) * 100;
         }
 
         TextView numImgViewz = (TextView) findViewById(R.id.numImg);
@@ -342,17 +346,19 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
             BufferedWriter bw = new BufferedWriter(new FileWriter(targetDir + "/eigenTimesAndAcccuracies.txt"));
             Log.i(TAG, "Setting up the text fields");
             notificationz.setText("Recognition complete.");
-            numImgViewz.setText("Number of Training Images = " + numImg);
-            bw.write("Recognition complete. Number of Training Images = " + numImg + "\n\n");
+            numImgViewz.setText("Number of Training Images = " + numImages);
+            bw.write("Recognition complete.\nNumber of Training Images = " + numImages + "\n\n");
 
-            for(int i = 0; i <= 21; i++) {
-                timesAndAccuraciesTextViewz.setText(timesAndAccuraciesTextViewz.getText() + "PCs= " + (i*10) + ", avgTime= " + eigenTimes[i] + "s\nacc= " + eigenAccuracies[index]+ "%\n\n");
-                bw.write("Recognition complete. Number of Training Images = " + numImg + "\n\n");
+            for(int i = 0; i < 21; i++) {
+                Log.i(TAG, "Writing eigen" + i);
+                timesAndAccuraciesTextViewz.setText(timesAndAccuraciesTextViewz.getText() + "PCs= " + (i*10) + ", avgTime= " + eigenTimes[i] + "s\nacc= " + eigenAccuracies[i]+ "%\nFalse negatives = " + numsFalseNegatives[i] + "\n\n");
+                bw.write("PCs= " + (i*10) + ", avgTime= " + eigenTimes[i] + "s\nacc= " + eigenAccuracies[i]+ "%\nFalse negatives = " + numsFalseNegatives[i] + "\n\n");
             }
 
             bw.flush();
             bw.close();
         } catch (Exception e){
+            Log.e(TAG, "Exception thrown at JavaCVFaceRecognizerTest: " + e);
         }
 
         //
@@ -372,10 +378,10 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         TextView timesAndAccuraciesTextView = (TextView) findViewById(R.id.recogTimesAndAccuraciesTextView);
 
         Log.i(TAG, "Setting up the text fields");
-        notification.setText("Recognition complete.");
-        numImgView.setText("Number of Training Images: " + numImg);
+        //notification.setText("Recognition complete.");
+        //numImgView.setText("Number of Training Images: " + numImg);
 
-        timesAndAccuraciesTextView.setText("Eigen time average= " + eigenAvgTime + "ms");
+        //timesAndAccuraciesTextView.setText("Eigen time average= " + eigenAvgTime + "ms");
         /*
         eigenAccuracy.setText("Eigen accuracy = " + (int)eigenNumRight + "/" + (int)numImg + " = " + eigenPercentAcc + "%");
         fisherTime.setText("Fisher time average= " + fisherAvgTime + "ms");

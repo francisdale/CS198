@@ -30,7 +30,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
     private static final String trainedCropsDir = "sdcard/PresentData/faceDatabase/trainedCrops";
     private static final String modelDir = "sdcard/PresentData/eigenModel.xml";
 
-    private static final int dSize = 200;
+    private static final int dSize = 160;
     int numPrincipalComponents;
 
     long timeStart;

@@ -22,6 +22,7 @@ import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_highgui.imread;
+import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
@@ -29,7 +30,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String trainingSetDir = "sdcard/PresentData/att_faces_labeled_jpg";
     private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
-    private static double threshold = 10.0;
+    private static double threshold = 20.0;
 
     int numTrainingImages = 160;
 
@@ -54,11 +55,12 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         int counter = 0;
 
         (new File(modelDir)).mkdirs();
+        (new File("sdcard/PresentData/att_faces_labeled_training_jpg")).mkdirs();
 
         //Image resolution92x112
         Mat trainingMat = new Mat();
         for(int s = 1; s <= 40; s++){
-            for(int i = 1; i <= 7; i += 2, counter++){
+            for(int i = 1; i <= 4; i++, counter++){
                 Mat img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
                 images.put(counter, img);
@@ -67,6 +69,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
                 trainingMat.push_back(img);
 
+                imwrite("sdcard/PresentData/att_faces_labeled_training_jpg/" + s + "_" + i + ".jpg", img);
                 img.deallocate();
 
                 Log.i(TAG, "s" + s + " i" + i);
@@ -197,6 +200,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
             bw.write("Training complete.\nThreshold used = " + threshold + "\nNumber of Training Images: " + images.size() + "\n\n");
             FaceRecognizer faceRecognizer;
             for (int i = 0; i <= 200; i += 10) {
+                //faceRecognizer = createEigenFaceRecognizer(150, threshold);
                 faceRecognizer = createEigenFaceRecognizer(i, threshold);
                 timeStart = System.currentTimeMillis();
                 Log.i(TAG, "Training Eigenface " + i + "...");
