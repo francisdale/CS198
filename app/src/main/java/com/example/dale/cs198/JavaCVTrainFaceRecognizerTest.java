@@ -22,7 +22,6 @@ import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_highgui.imread;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
@@ -55,7 +54,6 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         int counter = 0;
 
         (new File(modelDir)).mkdirs();
-        (new File("sdcard/PresentData/att_faces_labeled_training_jpg")).mkdirs();
 
         //Image resolution92x112
         Mat trainingMat = new Mat();
@@ -69,7 +67,6 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
                 trainingMat.push_back(img);
 
-                imwrite("sdcard/PresentData/att_faces_labeled_training_jpg/" + s + "_" + i + ".jpg", img);
                 img.deallocate();
 
                 Log.i(TAG, "s" + s + " i" + i);
