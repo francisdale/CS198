@@ -87,6 +87,22 @@ public class TrainActivity extends AppCompatActivity {
             }
         }
 
+//        for (File f : faceCropsDir.listFiles(untrainedCropsImgFilter)) {
+//            if (f.isFile()) {
+//                String nameArr[] = f.getName().split("_");
+//                String name = f.getName();
+//                if(nameArr[0].equals("delete")){
+//                    //delete file
+//                }
+//                if(nameArr[0].equals("unlabeled")){
+//                    //do nothing
+//                }
+//                else{
+//                    //may id sama sa queue
+//                }
+//            }
+//        }
+
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view_crop_images);
         //layoutManager = new LinearLayoutManager(this);
         //recyclerView.setLayoutManager(layoutManager);

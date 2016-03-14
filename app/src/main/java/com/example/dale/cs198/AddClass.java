@@ -335,7 +335,7 @@ public class AddClass extends AppCompatActivity {
             File classFile = new File(dataPath+"/"+fileName, fileName + ".txt");
             FileWriter writer = new FileWriter(classFile);
 
-            (new File(dataPath + "/attendanceReports")).mkdirs();
+            (new File(dataPath + "/"+ fileName+"/attendanceReports")).mkdirs();
 
             selected = 0;
             for (int i = 0; i < studentList.size(); i++) {

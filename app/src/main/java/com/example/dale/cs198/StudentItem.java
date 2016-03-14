@@ -10,8 +10,17 @@ public class StudentItem {
     private  String firstName;
     private int abscences;
     private int id;
+    private int attendanceStatus; //attendance in a given day
 
     private boolean selected;
+
+    public int getAttendanceStatus() {
+        return attendanceStatus;
+    }
+
+    public void setAttendanceStatus(int attendanceStatus) {
+        this.attendanceStatus = attendanceStatus;
+    }
 
     public StudentItem(int id,String studentNumber,String lastName,String firstName){
         this.setStudentNumber(studentNumber);

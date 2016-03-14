@@ -116,7 +116,14 @@ public class ClassList extends AppCompatActivity {
                 alert.show();
                 return true;
             case R.id.report_id:
-                Log.i(TAG, "make report");
+                Log.i(TAG, "view report");
+                Intent viewReports = new Intent(ClassList.this, ViewAttendanceReport.class);
+
+                viewReports.putExtra("name",name);
+                startActivity(viewReports);
+
+
+
                 return true;
             case R.id.edit_student_id:
                 Log.i(TAG, "EDIT STUDENTS");

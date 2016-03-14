@@ -61,7 +61,15 @@
             android:label="Edit Class List" />
         <activity
             android:name=".TrainActivity"
-            android:label="Train Face Crops" />
+            android:label="Train Face Crops"
+            android:parentActivityName=".CardHome" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".CardHome" />
+        </activity>
+
+
+
         <activity android:name=".MainActivity" />
         <activity android:name=".JavaCVTrainFaceRecognizerTest" />
         <activity android:name=".JavaCVFaceRecognizerTest" />
@@ -73,7 +81,21 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".TrainListActivity"></activity>
+        <activity android:name=".TrainListActivity" />
+
+        <activity
+            android:name=".ViewAttendanceReport"
+            android:label="Attendance Reports">
+        </activity>
+
+        <activity
+            android:name=".EditAttendanceReport"
+            android:label="View Report">
+        </activity>
+
+
+
+
     </application>
 
 </manifest>

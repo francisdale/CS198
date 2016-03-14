@@ -10,7 +10,7 @@
     </item>
     <item
         android:id="@+id/report_id"
-        android:title="Make Attendance Report"
+        android:title="View Attendance Reports"
         app:showAsAction="always">
     </item>
 
