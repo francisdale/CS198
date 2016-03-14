@@ -55,10 +55,8 @@
             android:textColor="#FFFFFF"
             android:layout_weight="1"
             android:onClick="trainRecognizer" />
-    </TableRow>
 
-
-
+</TableRow>
 
 
 

@@ -7,7 +7,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.dale.cs198.CardHome">
+    tools:context="com.example.dale.cs198.CardHome"
+    android:background="#ffffff">
 
     <android.support.v7.widget.RecyclerView
         android:layout_height="430dp"
@@ -29,8 +30,8 @@
             android:text="Add Class"
             android:id="@+id/addClass"
             android:layout_marginRight="4dp"
-            android:background="@drawable/red_button"
-            android:textColor="#FFFFFF"
+            android:background="#29a324"
+            android:textColor="#ffffff"
             android:layout_weight="0.33" />
 
         <Button
@@ -39,8 +40,8 @@
             android:text="Train"
             android:id="@+id/train"
             android:layout_marginRight="4dp"
-            android:background="@drawable/red_button"
-            android:textColor="#FFFFFF"
+            android:background="#29a324"
+            android:textColor="#ffffff"
             android:layout_weight="0.33" />
 
     </TableRow>

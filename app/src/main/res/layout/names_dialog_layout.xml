@@ -8,9 +8,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Student Name"
-        android:textSize="15sp"
+        android:textSize="16sp"
         android:padding="10dp"
-        android:id="@+id/dialogName" />
+        android:id="@+id/dialogName"
+        android:textColor="#020202" />
 
 
 </LinearLayout>
