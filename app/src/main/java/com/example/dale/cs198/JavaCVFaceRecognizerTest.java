@@ -346,8 +346,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
             BufferedWriter bw = new BufferedWriter(new FileWriter(targetDir + "/eigenTimesAndAcccuracies.txt"));
             Log.i(TAG, "Setting up the text fields");
             notificationz.setText("Recognition complete.");
-            numImgViewz.setText("Number of Training Images = " + numImages);
-            bw.write("Recognition complete.\nNumber of Training Images = " + numImages + "\n\n");
+            numImgViewz.setText("Number of Testing Images = " + numImages);
+            bw.write("Recognition complete.\nNumber of Testing Images = " + numImages + "\n\n");
 
             for(int i = 0; i < 21; i++) {
                 Log.i(TAG, "Writing eigen" + i);
