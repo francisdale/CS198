@@ -128,7 +128,7 @@ public class EditClassList extends AppCompatActivity {
     public void readClassList(){
         String dataPath = "sdcard/PresentData/Classes/"+name;
 
-        File file = new File(dataPath, name+".txt");
+        File file = new File(dataPath, name+"_studentList.txt");
 
         try {
             br = new BufferedReader(new FileReader(file));
@@ -149,13 +149,11 @@ public class EditClassList extends AppCompatActivity {
         int selected;
         try {
             String dataPath = "sdcard/PresentData/Classes/"+name;
-            File classFile = new File(dataPath, name + ".txt");
-
-
+            File classFile = new File(dataPath, name + "_studentList.txt");
             selected = 0;
             boolean a = classFile.delete();
             if(a == true){
-                File file = new File(dataPath, name + ".txt");
+                File file = new File(dataPath, name + "_studentList.txt");
                 FileWriter writer = new FileWriter(file);
                 for (int i = 0; i < students.size(); i++) {
                     StudentItem s = students.get(i);

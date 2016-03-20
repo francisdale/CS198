@@ -18,8 +18,7 @@
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:id="@+id/student_face"
-                android:src="@mipmap/ic_launcher"/>
+                android:id="@+id/student_face"/>
 
             <TextView
                 android:layout_width="wrap_content"

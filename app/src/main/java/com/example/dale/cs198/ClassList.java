@@ -76,7 +76,7 @@ public class ClassList extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
 
-        adapter=new StudentAdapter(this,students);
+        adapter=new StudentAdapter(this,students,name);
         recyclerView.setAdapter(adapter);
 
     }
