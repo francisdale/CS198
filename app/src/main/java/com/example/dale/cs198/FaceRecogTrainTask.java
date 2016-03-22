@@ -32,6 +32,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
 
     private static final int dSize = 160;
     int numPrincipalComponents;
+    double threshold = 10.0;
 
     long timeStart;
     long timeEnd;
@@ -64,7 +65,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
         File[] untrainedCrops = untrainedCropsFolder.listFiles(untrainedCropsImgFilter);
 
 
-        if(untrainedCrops.length == 0){
+        if(untrainedCrops.length == 0 && trainedCrops.length == 0){
             //toast = Toast.makeText(c, "No training images found.", Toast.LENGTH_SHORT);
             //toast.show();
             return null;
@@ -79,17 +80,15 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
         int label;
 
 
-        if(trainedCrops.length > 0) {
-            for (int i = 0; i < trainedCrops.length; i++) {
-                label = Integer.parseInt(trainedCrops[i].getName().split("_")[0]);
-                img = imread(trainedCrops[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-                resize(img, img, new Size(dSize, dSize));
+        for (int i = 0; i < trainedCrops.length; i++) {
+            label = Integer.parseInt(trainedCrops[i].getName().split("_")[0]);
+            img = imread(trainedCrops[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+            resize(img, img, new Size(dSize, dSize));
 
-                labelsBuf.put(i, label);
-                images.put(i, img);
-                img.deallocate();
-                Log.i(TAG, "trainedCrops i" + i);
-            }
+            labelsBuf.put(i, label);
+            images.put(i, img);
+            img.deallocate();
+            Log.i(TAG, "trainedCrops i" + i);
         }
 
         String firstWord;
@@ -114,7 +113,8 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
 
         Log.i(TAG, "Number of images loaded: " + images.size());
 
-        FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
+        numPrincipalComponents = (int)images.size() - 1;
+        FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
 
 
         Log.i(TAG, "Training Eigenface...");
@@ -122,7 +122,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Void> {
         faceRecognizer.train(images, labels);
         timeEnd = System.currentTimeMillis();
         timeElapsed = timeEnd - timeStart;
-        Log.i(TAG, "Training complete.");
+        Log.i(TAG, "Training completed in " + (float)timeElapsed/1000 + "s.");
         faceRecognizer.save(modelDir);
         Log.i(TAG, "Training model saved.");
         //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);

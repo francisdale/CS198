@@ -12,7 +12,8 @@
         android:layout_height="864px"
         android:id="@+id/surfaceView"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 
     <ImageButton

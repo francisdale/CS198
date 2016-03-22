@@ -14,8 +14,8 @@ import java.io.InputStream;
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 import static org.bytedeco.javacpp.opencv_highgui.imread;
+import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
@@ -93,6 +93,19 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
             if (usageType == ATTENDANCE_USAGE){
                 Log.i(TAG, "Now in Attendance Usage ");
+
+
+                //For testing with AT&T database:
+                File[] testCrops = new File("sdcard/PresentData/att_faces_labeled_testing_jpg").listFiles();
+                int count = 0;
+                for(File f : testCrops){
+                    td.detectQueue.add(imread(f.getAbsolutePath()));
+                    count++;
+                    Log.i(TAG, count + " images added.");
+                }
+                //
+
+
                 while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
                     imgCount++;
                     mGray = new Mat();
@@ -127,6 +140,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     faceCount += numFaces;
 
                     Log.i(TAG, "Cropping complete. Publishing progress.");
+                    Log.i(TAG, imgCount + " images detected.");
                     publishProgress();
                 }
                 Log.i(TAG, "Attendance camera UI closed. Goodbye!");

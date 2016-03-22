@@ -339,6 +339,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private void setMyPreviewSize(int width, int height) {
+
         // Get the set dimensions
         float newProportion = (float) width / (float) height;
 
@@ -362,6 +363,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
 
 
         //surfaceView.setLayoutParams(lp);
+
     }
 
 
@@ -396,13 +398,17 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     protected void onStart() {
         super.onStart();
-
         Log.i(TAG, "CustomCamera onStart");
+
         if(fd.getStatus() != AsyncTask.Status.RUNNING) {
             Log.i(TAG, "Executing fd...");
             fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
             if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
-                //fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                if(fr.getStatus() != AsyncTask.Status.RUNNING) {
+                    Log.i(TAG, "Executing fr...");
+                    fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
             }
         }
         Log.i(TAG, "CustomCamera onStart End");

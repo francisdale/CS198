@@ -21,8 +21,11 @@ import java.util.Set;
 
 import static org.bytedeco.javacpp.opencv_contrib.FaceRecognizer;
 import static org.bytedeco.javacpp.opencv_contrib.createEigenFaceRecognizer;
+import static org.bytedeco.javacpp.opencv_core.Size;
+import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
 
 /**
  * Created by jedpatrickdatu on 2/15/2016.
@@ -34,11 +37,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
     private static final String modelFileDir = "sdcard/PresentData/eigenModel.xml";
     private static final String classesDir = "sdcard/PresentData/Classes";
 
-    private int numPrincipalComponents;
-    private final double threshold = 10.0;
+    private static final int dSize = 160;
 
-    int faceCount = 0;
-    int imgCount = 0;
     int numStudents;
     int numStudentsPresent = 0;
     int numUnrecognizedFaces = 0;
@@ -61,6 +61,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        Log.i(TAG, "FaceRecogTask started.");
         try {
 
             //Read class list:
@@ -74,10 +75,13 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             String classDir = classesDir + "/" + className;
             String recordsDir = classDir + "/attendanceReports";
             //Filename of record is <className>_<date>.txt
-            String recordFilePath = recordsDir + "/" + className + "_" + timeStamp + ".txt";
+            String recordCropsDirPath = recordsDir + "/" + className + "_" + timeStamp;
+            String recordFilePath = recordCropsDirPath + ".txt";
+            File recordCropsDirFile = new File (recordCropsDirPath);
             File recordFile = new File(recordFilePath);
+
             if(!recordFile.exists()){
-                //f.createNewFile();
+                recordCropsDirFile.mkdirs();
                 br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
                 while((line = br.readLine()) != null){
                     details = line.split(",");
@@ -102,16 +106,29 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
 
             FaceRecognizer efr = createEigenFaceRecognizer();
+
+            timeStart = System.currentTimeMillis();
             efr.load(modelFileDir);
+            timeEnd = System.currentTimeMillis();
+            timeElapsed = timeEnd - timeStart;
+            Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
 
             Mat mColor;
+            Mat mColorResized;
             Mat mGray;
             int predictedLabel;
 
-            while((mColor = td.recogQueue.poll()) != null) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
+            Log.i(TAG, "FaceRecogTask: Initialization complete.");
+
+            //Resize input mats to same size as mats in train.
+            while(null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
                 Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
+
+                mColorResized = new Mat();
+                resize(mColor, mColorResized, new Size(dSize, dSize));
+
                 mGray = new Mat();
-                cvtColor(mColor, mGray, CV_BGR2GRAY);
+                cvtColor(mColorResized, mGray, CV_BGR2GRAY);
                 Log.i(TAG, "Train usage: image converted to grayscale");
                 //Recognize faces:
 
@@ -121,19 +138,23 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 timeEnd = System.currentTimeMillis();
                 timeElapsed = timeEnd - timeStart;
 
-                mColor.deallocate();
-                mGray.deallocate();
-
                 Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
 
                 if(attendanceRecord.containsKey(predictedLabel)){
                     Log.i(TAG, "predictedLabel was found in the classlist.");
                     attendanceRecord.put(predictedLabel, 1);
+                    Log.i(TAG, "predictedLabel attendance was marked.");
+                    imwrite(recordCropsDirPath + "/" + predictedLabel + ".jpg", mColor);
+                    Log.i(TAG, "Crop saved.");
                 } else {
                     Log.i(TAG, "Unrecognized face found.");
+                    imwrite(recordCropsDirPath + "/" + predictedLabel + ".jpg", mColor);
                     numUnrecognizedFaces++;
                 }
+
+                mColor.deallocate();
+                mGray.deallocate();
 
                 publishProgress();
                 Log.i(TAG, "FaceRecogTask: Progress published.");
@@ -162,6 +183,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e(TAG, "Exception thrown at FaceRecogTask: " + e);
         }
         Log.i(TAG, "Closing FaceRecogTask thread.");
 
