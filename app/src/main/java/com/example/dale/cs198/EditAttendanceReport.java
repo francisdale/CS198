@@ -3,6 +3,10 @@ package com.example.dale.cs198;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -176,6 +182,7 @@ public class EditAttendanceReport extends AppCompatActivity {
         }
 
         private class ViewHolder {
+            ImageView studentFace;
             CheckBox listItem;
         }
 
@@ -186,10 +193,13 @@ public class EditAttendanceReport extends AppCompatActivity {
 
             if (convertView == null) {
                 LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = vi.inflate(R.layout.edit_report_item_detail, null);
+                convertView = vi.inflate(R.layout.edit_report_item_secondary, null);
 
                 holder = new ViewHolder();
                 holder.listItem = (CheckBox) convertView.findViewById(R.id.report_detail_item);
+                holder.studentFace = (ImageView) convertView.findViewById(R.id.student_face);
+
+
                 convertView.setTag(holder);
                 final boolean previousState = studentList.get(position).isSelected();
                 holder.listItem.setOnClickListener(new View.OnClickListener() {
@@ -261,7 +271,32 @@ public class EditAttendanceReport extends AppCompatActivity {
             }
 
             StudentItem si = studentList.get(position);
-            holder.listItem.setText(si.getStudentNumber() + "  " + si.getLastName() + " " + si.getFirstName());
+            String a[] = name.split("\\.");
+            File sdCardRoot = Environment.getExternalStorageDirectory();
+            File faceCropsDir = new File(sdCardRoot, "PresentData/Classes/"+className + "/attendanceReports/" + a[0]);
+
+            final String ID = Integer.toString(si.getId());
+            FilenameFilter IDImgFilter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    Log.i(TAG, "Filtered ID --> " + ID);
+                    return name.startsWith(ID);
+                }
+            };
+
+            File[] fileArr = faceCropsDir.listFiles(IDImgFilter);
+            Log.i(TAG, "File arr size -->" + fileArr.length);
+            if (fileArr.length > 0) {
+                Log.i(TAG, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
+                Bitmap bmImg = BitmapFactory.decodeFile(fileArr[0].getAbsolutePath());
+                holder.studentFace.setImageBitmap(bmImg);
+            } else {
+                Log.i(TAG, "no image");
+                holder.studentFace.setImageResource(R.mipmap.ic_launcher);
+            }
+
+
+
+            holder.listItem.setText(si.getStudentNumber() + " " + si.getLastName() + ", " + si.getFirstName());
             holder.listItem.setChecked(si.isSelected());
             //holder.listItem.setChecked(true);
             holder.listItem.setTag(si);

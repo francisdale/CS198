@@ -111,36 +111,39 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
             File sdCardRoot = Environment.getExternalStorageDirectory();
             File reportListDir = new File(sdCardRoot, "PresentData/Classes/" + className + "/attendanceReports");
 
-            if (reportListDir.list().length == 0) {
-                Toast.makeText(context, "There are no attendance reports for " + className + " yet.", Toast.LENGTH_LONG).show();
-            } else {
-                int absentNum = 0;
-                for (File f : reportListDir.listFiles()) {
-                    if (f.isFile()) {
-                        try {
-                            br = new BufferedReader(new FileReader(f));
-                            String line;
-                            String[] details;
-                            while ((line = br.readLine()) != null) {
-                                details = line.split(",");
-                                if(Integer.parseInt(details[0]) == students.get(getAdapterPosition()).getId()){
-                                    if(Integer.parseInt(details[4]) == 0){
-                                        absentNum++;
-                                        break;
-                                    }
-                                    else{
-                                        break;
+
+                if (reportListDir.list().length == 0) {
+                    Toast.makeText(context, "There are no attendance reports for " + className + " yet.", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    int absentNum = 0;
+                    for (File f : reportListDir.listFiles()) {
+                        if (f.isFile()) {
+                            try {
+                                br = new BufferedReader(new FileReader(f));
+                                String line;
+                                String[] details;
+                                while ((line = br.readLine()) != null) {
+                                    details = line.split(",");
+                                    if(Integer.parseInt(details[0]) == students.get(getAdapterPosition()).getId()){
+                                        if(Integer.parseInt(details[4]) == 0){
+                                            absentNum++;
+                                            break;
+                                        }
+                                        else{
+                                            break;
+                                        }
                                     }
                                 }
+                                br.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                            br.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
                     }
+                    Toast.makeText(context, studentName.getText().toString() + " has " + absentNum + " absences for " + className + ".", Toast.LENGTH_LONG).show();
                 }
-                Toast.makeText(context, studentName.getText().toString() + " has " + absentNum + " absences for " + className + ".", Toast.LENGTH_LONG).show();
-            }
+
         }
     }
 }

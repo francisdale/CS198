@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <RelativeLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:background="@drawable/recycler_view_background">
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:id="@+id/student_face" />
+
+        <CheckBox
+            android:layout_width="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_height="wrap_content"
+            android:text="New CheckBox"
+            android:id="@+id/report_detail_item"
+            android:button="@null"
+            android:textSize="15sp"
+            android:drawableRight="?android:attr/listChoiceIndicatorMultiple"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/student_face"
+            android:layout_toEndOf="@+id/student_face" />
+
+    </RelativeLayout>
+
+
+</LinearLayout>

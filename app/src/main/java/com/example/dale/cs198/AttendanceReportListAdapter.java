@@ -82,6 +82,9 @@ public class AttendanceReportListAdapter extends RecyclerView.Adapter<Attendance
             openReport.putExtra("className",className);
             openReport.putExtra("date",reportName.getText().toString());
             openReport.putExtra("reportPath",reportItems.get(getAdapterPosition()).getReportPath());
+            //openReport.putExtra("dateOfFile",reportItems.get(getAdapterPosition()).)
+
+
             //Log.i(TAG, "OPENING --> " + reportItems.get(getAdapterPosition()).getFileName());
             //openReport.putExtra("name",reportName.getText().toString());
 
