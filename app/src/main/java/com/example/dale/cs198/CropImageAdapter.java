@@ -79,7 +79,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         String holderName[] = c.getFileName().split("_");
 
         if(holderName[0].length()<=2){
-            String nameInfo[] = names.get(Integer.parseInt(holderName[0])-1).split("-");
+            String nameInfo[] = names.get(Integer.parseInt(holderName[0])).split("-");
             holder.cropName.setText(nameInfo[1]);
         }
         //1-12-7
@@ -87,7 +87,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             holder.cropName.setText(labelArr[position]);
         }
         if(holderName[0].equals("delete")){
-           holder.cropName.setText("FALSE POSITIVE");
+           holder.cropName.setText("NOT A FACE");
         }
 
     }
@@ -121,8 +121,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             cropImage = (ImageView)view.findViewById(R.id.crop_image);
             customEtListener = etListener;
             cropName.addTextChangedListener(customEtListener);
-
-
         }
 
         @Override
@@ -136,77 +134,107 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         ViewGroup viewGroup = (ViewGroup) view;
-                    dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
-                    //label is the name of the cro
-                    //Log.i(TAG,"");
-                    //Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
+                        dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
+                        //label is the name of the cro
+                        //Log.i(TAG,"");
+                        //Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
+                        if(dialogName.getText().toString().equals("NOT A FACE") == false){
+                            String idAndName[] =  dialogName.getText().toString().split("-");
+                            label = idAndName[1];
+                            int idNum = Integer.parseInt(idAndName[0]);
 
-                    String idAndName[] =  dialogName.getText().toString().split("-");
-                    label = idAndName[1];
-                    int idNum = Integer.parseInt(idAndName[0]);
+                            Log.i(TAG,"");
+                            Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
 
-                    Log.i(TAG,"");
-                    Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
+                            String fileNameOfLabeled = faceCrops.get(getAdapterPosition()).getFileName();
+                            String filePathOfLabeled = faceCrops.get(getAdapterPosition()).getPath();
 
-                    String fileNameOfLabeled = faceCrops.get(getAdapterPosition()).getFileName();
-                    String filePathOfLabeled = faceCrops.get(getAdapterPosition()).getPath();
+                            Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
 
-                    Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
-
-                    //CHECK IF MAY EXISTING CROP NA SI ID SA TRAINED FOLDER
-                    File sdCardRoot = Environment.getExternalStorageDirectory();
-                    File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
-                    int count=0;
-                    for (File f : faceCropsDir.listFiles()) {
-                        if (f.isFile()) {
-                            String name = f.getName();
-                            String nameArr[] = name.split("_");
-                            if(nameArr[0].equals(idAndName[0])){
-                                count++;
+                            //CHECK IF MAY EXISTING CROP NA SI ID SA TRAINED FOLDER
+                            File sdCardRoot = Environment.getExternalStorageDirectory();
+                            File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
+                            int count=0;
+                            for (File f : faceCropsDir.listFiles()) {
+                                if (f.isFile()) {
+                                    String name = f.getName();
+                                    String nameArr[] = name.split("_");
+                                    if(nameArr[0].equals(idAndName[0])){
+                                        count++;
+                                    }
+                                }
                             }
-                        }
-                    }
-                    Log.i(TAG,"COUNT = "+count);
+                            Log.i(TAG,"COUNT = "+count);
 
-                    //RENAME CROP WITH CHOSEN IDNUM
-                    File oldfile =new File(filePathOfLabeled);
-                    File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+".jpg");
+                            //RENAME CROP WITH CHOSEN IDNUM
+                            File oldfile =new File(filePathOfLabeled);
+                            File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+".jpg");
 
-                    if(newfile.exists()){
-                        int newNumId;
-                        for(int i=0;i<=count;i++){
-                            File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+i+".jpg");
-                            if(newFilePic.exists()){
+                            if(newfile.exists()){
+                                int newNumId;
+                                for(int i=0;i<=count;i++){
+                                    File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+i+".jpg");
+                                    if(newFilePic.exists()){
 
+                                    }
+                                    else{
+                                        newNumId = i;
+                                        File newFilePic2 = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+newNumId+".jpg");
+                                        if (oldfile.renameTo(newFilePic2)) {
+                                            faceCrops.get(getAdapterPosition()).setFileName(newFilePic2.getName());
+                                            faceCrops.get(getAdapterPosition()).setPath(newFilePic2.getAbsolutePath());
+                                            Log.i(TAG, "Rename succesful");
+                                            Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
+                                        } else {
+                                            Log.i(TAG, "Rename failed");
+                                        }
+                                        break;
+                                    }
+                                }
                             }
-                            else{
-                                newNumId = i;
-                                File newFilePic2 = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+newNumId+".jpg");
-                                if (oldfile.renameTo(newFilePic2)) {
-                                    faceCrops.get(getAdapterPosition()).setFileName(newFilePic2.getName());
-                                    faceCrops.get(getAdapterPosition()).setPath(newFilePic2.getAbsolutePath());
+                            else {
+                                if (oldfile.renameTo(newfile)) {
+                                    faceCrops.get(getAdapterPosition()).setFileName(newfile.getName());
+                                    faceCrops.get(getAdapterPosition()).setPath(newfile.getAbsolutePath());
                                     Log.i(TAG, "Rename succesful");
                                     Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
                                 } else {
                                     Log.i(TAG, "Rename failed");
                                 }
-                                break;
                             }
+                            cropName.setText(label);
+                            nameDialog.dismiss();
+                        }
+
+                        else{
+                            label = dialogName.getText().toString();
+
+                            String fileNameOfNotFace = faceCrops.get(getAdapterPosition()).getFileName();
+                            String filePathOfNotFace = faceCrops.get(getAdapterPosition()).getPath();
+
+                            File sdCardRoot = Environment.getExternalStorageDirectory();
+                            File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
+                            Log.i(TAG,"");
+                            Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
+
+                            File oldfile = new File(filePathOfNotFace);
+                            File newfile = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+"delete_"+fileNameOfNotFace);
+
+                            if(oldfile.renameTo(newfile)){
+                                faceCrops.get(getAdapterPosition()).setFileName(newfile.getName());
+                                faceCrops.get(getAdapterPosition()).setPath(newfile.getAbsolutePath());
+                                Log.i(TAG, "Rename succesful");
+                                Log.i(TAG,"The renamed file is: "+ faceCrops.get(getAdapterPosition()).getFileName()+"\n"+ faceCrops.get(getAdapterPosition()).getPath());
+                            }
+                            else{
+                                Log.i(TAG, "Rename failed");
+                            }
+
+
+                            cropName.setText(label);
+                            nameDialog.dismiss();
                         }
                     }
-                    else {
-                        if (oldfile.renameTo(newfile)) {
-                            faceCrops.get(getAdapterPosition()).setFileName(newfile.getName());
-                            faceCrops.get(getAdapterPosition()).setPath(newfile.getAbsolutePath());
-                            Log.i(TAG, "Rename succesful");
-                            Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
-                        } else {
-                            Log.i(TAG, "Rename failed");
-                        }
-                    }
-                    cropName.setText(label);
-                    nameDialog.dismiss();
-                }
             });
 
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -339,6 +367,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             String[] details;
+            names.add("NOT A FACE");
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
                 names.add(details[0]+"-"+details[2]+", "+details[3]);

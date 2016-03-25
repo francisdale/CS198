@@ -111,9 +111,9 @@ public class TrainActivity extends AppCompatActivity {
         });
 
         // Setup ItemTouchHelper
-        ItemTouchHelper.Callback callback = new CropImageTouchHelper(recyclerView,adapter);
-        ItemTouchHelper helper = new ItemTouchHelper(callback);
-        helper.attachToRecyclerView(recyclerView);
+        //ItemTouchHelper.Callback callback = new CropImageTouchHelper(recyclerView,adapter);
+        //ItemTouchHelper helper = new ItemTouchHelper(callback);
+        //helper.attachToRecyclerView(recyclerView);
 
         Toast toast = Toast.makeText(this, "Face Crop Number = " + pathList.size(), Toast.LENGTH_SHORT);
         toast.show();
