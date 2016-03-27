@@ -8,6 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
+    android:background="#9E9E9E"
     tools:context="com.example.dale.cs198.ClassList">
 
 
@@ -17,6 +18,7 @@
         android:textSize="15sp"
         android:textStyle="bold"
         android:text="Large Text"
+        android:textColor="#fff"
         android:id="@+id/className_textView" />
 
     <android.support.v7.widget.RecyclerView

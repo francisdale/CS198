@@ -92,7 +92,7 @@ public class ClassList extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.delete_list_id:
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this,R.style.Theme_Holo_Dialog_Alert);
                 alertBuilder.setMessage("Are you sure you want to delete " + name +"?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {

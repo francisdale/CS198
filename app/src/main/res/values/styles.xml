@@ -3,10 +3,114 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">#03A9F4</item>
-        <item name="colorPrimaryDark">#0288D1</item>
+
+        <!--<item name="android:background">#9E9E9E</item>-->
+
+        <item name="colorPrimary">#616161</item>
+        <item name="colorPrimaryDark">#9E9E9E</item>
+        <item name="colorAccent">#03A9F4</item>
+        <item name="android:itemBackground">@drawable/menu_item </item>
+
+        <item name="android:itemTextAppearance">@style/AppTheme.MenuTextStyle</item>
+        <item name="colorControlNormal">#ffffff</item>
+
+        <item name="android:alertDialogTheme">@style/Theme_Sphinx_Dialog_Alert</item>
+        <!--<item name="primary_light">#F5F5F5</item>-->
+        <!--<item name="accent">#03A9F4</item>-->
+        <!--<item name="android:textColorPrimary">#212121</item>-->
+        <!--<item name="android:textColorSecondary">#727272</item>-->
+        <!--<item name="icons">#212121</item>-->
+
+    </style>
 
 
+    <!-- DIALOG THEME -->
+
+    <style name="Theme_Holo_Dialog_Alert" parent="@android:style/Theme.Holo.Dialog">
+        <item name="android:windowBackground">@color/dialog_background_color</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
+    </style>
+
+    <style name="DialogWindowTitle_Holo">
+        <item name="android:maxLines">1</item>
+        <item name="android:scrollHorizontally">true</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.Holo.DialogWindowTitle</item>
+    </style>
+
+    <style name="Theme.Sphinx" parent="@android:style/Theme.Holo">
+        <item name="android:alertDialogTheme">@style/Theme_Sphinx_Dialog_Alert</item>
+        <item name="android:alertDialogStyle">@style/AlertDialog_Sphinx</item>
+    </style>
+
+    <style name="Theme_Sphinx_Dialog_Alert" parent="@style/Theme_Holo_Dialog_Alert">
+        <item name="android:windowBackground">@color/dialog_background_color</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
+        <item name="android:windowTitleStyle">@style/DialogWindowTitle.Sphinx</item>
+        <item name="android:textColorPrimary">#fff</item>
+        <item name="android:textColorAlertDialogListItem">#fff</item>
+        <item name="android:textAppearanceMedium">@style/TextAppearance.Sphinx.Medium</item>
+        <item name="android:textAppearanceLarge">@style/TextAppearance.Sphinx.DialogWindowTitle</item>
+        <item name="android:borderlessButtonStyle">@style/Widget.Sphinx.Button.Borderless.Small</item>
+        <item name="android:buttonBarStyle">@style/Sphinx.ButtonBar.AlertDialog</item>
+    </style>
+
+    <style name="DialogWindowTitle.Sphinx" parent="@style/DialogWindowTitle_Holo">
+        <item name="android:textAppearance">@style/TextAppearance.Sphinx.DialogWindowTitle</item>
+    </style>
+
+    <style name="TextAppearance.Sphinx.DialogWindowTitle" parent="@android:style/TextAppearance.Holo.DialogWindowTitle">
+        <item name="android:textColor">#fff</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.Sphinx.Medium" parent="@android:style/TextAppearance.Holo.Medium">
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="Widget.Sphinx.Button.Borderless.Small" parent="@android:style/Widget.Holo.Button.Borderless.Small">
+        <item name="android:textColor">@android:color/holo_blue_light</item>
+        <item name="android:textAppearance">@style/TextAppearance.Sphinx.DialogButton</item>
+    </style>
+
+    <style name="TextAppearance.Sphinx.DialogButton" parent="@android:style/TextAppearance.Holo.Medium"></style>
+
+    <style name="Sphinx.ButtonBar.AlertDialog" parent="@android:style/Holo.ButtonBar.AlertDialog">
+        <item name="android:background">@color/dialog_background_color</item>
+    </style>
+
+    <style name="AlertDialog_Sphinx">
+        <item name="android:fullDark">@color/dialog_background_color</item>
+        <item name="android:topDark">@color/dialog_background_color</item>
+        <item name="android:centerDark">@color/dialog_background_color</item>
+        <item name="android:bottomDark">@color/dialog_background_color</item>
+        <item name="android:fullBright">@color/dialog_background_color</item>
+        <item name="android:topBright">@color/dialog_background_color</item>
+        <item name="android:centerBright">@color/dialog_background_color</item>
+        <item name="android:bottomBright">@color/dialog_background_color</item>
+        <item name="android:bottomMedium">@color/dialog_background_color</item>
+        <item name="android:centerMedium">@color/dialog_background_color</item>
+    </style>
+
+    <!-- DIALOG THEME -->
+
+    <style name="AppTheme.MenuTextStyle" parent="style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="AppTheme.PopupMenu" parent="android:Widget.Holo.Light.ListPopupWindow">
+        <item name="android:popupBackground">#616161</item>
+    </style>
+
+    <style name="AppTheme.Dialog" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorPrimary">#616161</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

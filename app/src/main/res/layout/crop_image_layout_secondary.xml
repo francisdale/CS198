@@ -20,7 +20,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="170dp"
             android:textSize="20sp"
-            android:id="@+id/crop_label_grid"/>
+            android:id="@+id/crop_label_grid"
+            />
 
     </RelativeLayout>
 

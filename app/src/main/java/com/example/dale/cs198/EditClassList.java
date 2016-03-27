@@ -187,7 +187,7 @@ public class EditClassList extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_class_id:
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this,R.style.Theme_Holo_Dialog_Alert);
                 alertBuilder.setMessage("Save changes to this class?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {

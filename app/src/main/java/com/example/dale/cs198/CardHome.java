@@ -167,10 +167,11 @@ public class CardHome extends AppCompatActivity{
 
 
     public void showAddStudentDialog() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this,R.style.Theme_Holo_Dialog_Alert);
         LayoutInflater inflater = this.getLayoutInflater();
         final View dialogView = inflater.inflate(R.layout.add_student_to_master_dialog, null);
         dialogBuilder.setView(dialogView);
+
 
         final EditText studNum = (EditText) dialogView.findViewById(R.id.toAdd_student_number);
         final EditText studSurname = (EditText) dialogView.findViewById(R.id.toAdd_student_surname);

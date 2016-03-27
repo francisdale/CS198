@@ -211,7 +211,7 @@ public class EditAttendanceReport extends AppCompatActivity {
                         //if cb is checked, then student is present
                         //so dapat tanungin kung absent yung student
                         if (studentList.get(position).isSelected() == true) {
-                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext());
+                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext(),R.style.Theme_Holo_Dialog_Alert);
                             alertBuilder.setMessage("Are you sure that " + cb.getText().toString() + " is ABSENT on " + date + " for " + className + " ?")
                                     .setCancelable(false)
                                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -237,7 +237,7 @@ public class EditAttendanceReport extends AppCompatActivity {
 
                         }
                         if (studentList.get(position).isSelected() == false) {
-                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext());
+                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext(),R.style.Theme_Holo_Dialog_Alert);
                             alertBuilder.setMessage("Are you sure that " + cb.getText().toString() + " is PRESENT on " + date + " for " + className + " ?")
                                     .setCancelable(false)
                                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
