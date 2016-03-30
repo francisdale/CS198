@@ -3,27 +3,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#616161">
 
     <EditText
         android:id="@+id/toAdd_student_number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:hint="Student Number"/>
+        android:hint="Student Number"
+        android:textColorHint="#fff"
+        android:textColor="#fff"/>
 
     <EditText
         android:id="@+id/toAdd_student_surname"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="text"
-        android:hint="Surname"/>
+        android:hint="Surname"
+
+        android:textColorHint="#fff"
+        android:textColor="#fff"/>
 
     <EditText
         android:id="@+id/toAdd_student_firstname"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="text"
-        android:hint="First Name"/>
+        android:hint="First Name"
+
+        android:textColorHint="#fff"
+        android:textColor="#fff"/>
 
 </LinearLayout>

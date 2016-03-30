@@ -167,11 +167,11 @@ public class AddClass extends AppCompatActivity {
     @Override
     protected Dialog onCreateDialog(int id) {
         if (id == START_DIALOG_ID) {
-            TimePickerDialog startTimePickerDialog = new TimePickerDialog(AddClass.this, startTimePickerListener, hour_start, minute_start, true);
+            TimePickerDialog startTimePickerDialog = new TimePickerDialog(AddClass.this,R.style.Theme_Holo_Dialog_Alert,startTimePickerListener, hour_start, minute_start, true);
             startTimePickerDialog.setTitle("Set class start time");
             return startTimePickerDialog;
         } else if (id == END_DIALOG_ID) {
-            TimePickerDialog endTimePickerDialog = new TimePickerDialog(AddClass.this, endTimePickerListener, hour_end, minute_end, true);
+            TimePickerDialog endTimePickerDialog = new TimePickerDialog(AddClass.this,R.style.Theme_Holo_Dialog_Alert, endTimePickerListener, hour_end, minute_end, true);
             endTimePickerDialog.setTitle("Set class end time");
             return endTimePickerDialog;
         } else {
@@ -236,7 +236,7 @@ public class AddClass extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_class_id:
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this,R.style.Theme_Holo_Dialog_Alert);
                 alertBuilder.setMessage("Save this class with the selected students?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
