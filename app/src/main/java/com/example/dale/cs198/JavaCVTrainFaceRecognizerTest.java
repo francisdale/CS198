@@ -26,7 +26,7 @@ import static org.bytedeco.javacpp.opencv_highgui.imread;
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String TAG = "testMessage";
-    private static final String trainingSetDir = "sdcard/PresentData/att_faces_labeled_jpg";
+    private static final String trainingSetDir = "sdcard/PresentData/att/att_faces";
     private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
     private static double threshold = 20.0;
@@ -58,7 +58,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         //Image resolution92x112
         Mat trainingMat = new Mat();
         for(int s = 1; s <= 40; s++){
-            for(int i = 1; i <= 4; i++, counter++){
+            for(int i = 1; i <= 7; i += 2, counter++){
                 Mat img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
                 images.put(counter, img);
@@ -72,6 +72,41 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
                 Log.i(TAG, "s" + s + " i" + i);
             }
         }
+
+
+        //For stitching up a big matrix of faces:
+
+        //For training:
+        int sbWidth = 92;
+        int sbHeight = 112;
+        int cWidth = sbWidth*4;
+        int cHeight = sbHeight*40;
+
+        MatVector smallBlocks = new MatVector(numTrainingImages);
+        for(int s = 1; s <= 40; s++) {
+            for (int i = 1; i <= 7; i += 2, counter++) {
+                Mat img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
+                smallBlocks.put(counter, img);
+            }
+        }
+
+        Mat combined = new Mat(cWidth, cHeight, smallBlocks.get(0).type());
+        long smallBlocksSize = smallBlocks.size();
+
+
+        for( int i = 0; i < smallBlocksSize; i++ )
+        {
+            for  ( int y = 0; y < cHeight; y += sbHeight)
+            {
+                for  ( int  x= 0 ; x < cWidth; x += sbWidth)
+                {
+                    // get the correct slice
+                    //Mat roi = combined(new Rect(x,y,sbWidth,sbHeight));
+                    //smallBlocks.get(i).copyTo(roi);
+                }
+            }
+        }
+
 
         /*
         //For saving to jpg and labelling:

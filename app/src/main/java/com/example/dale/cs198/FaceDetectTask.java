@@ -14,7 +14,6 @@ import java.io.InputStream;
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_highgui.imread;
 import static org.bytedeco.javacpp.opencv_highgui.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
@@ -94,7 +93,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             if (usageType == ATTENDANCE_USAGE){
                 Log.i(TAG, "Now in Attendance Usage ");
 
-
+                /*
                 //For testing with AT&T database:
                 File[] testCrops = new File("sdcard/PresentData/att_faces_labeled_testing_jpg").listFiles();
                 int count = 0;
@@ -103,7 +102,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     count++;
                     Log.i(TAG, count + " images added.");
                 }
-                //
+                */
 
 
                 while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
@@ -178,7 +177,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                             roi = new Rect(r.x(), r.y(), r.width(), r.height());
 
-                            crop = new Mat(mColor, roi);
+                            crop = new Mat(mColor, r);
 
                             imwrite(untrainedCropsDir + "/" + "unlabeled_" + System.currentTimeMillis() + ".jpg", crop);
                         }
@@ -189,7 +188,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     faceCount += numFaces;
 
 
-
+                    /*
                     //For cropping the AT&T faces:
                     File fd = new File("sdcard/PresentData/att_faces_labeled_jpg");
                     for (File f : fd.listFiles()) {
@@ -214,7 +213,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                                 roi = new Rect(r.x(), r.y(), r.width(), r.height());
 
                                 Log.i(TAG, "AT&T cropping...");
-                                crop = new Mat(m, roi);
+                                crop = new Mat(m, r);
                                 Log.i(TAG, "AT&T cropped");
                                 imwrite("sdcard/PresentData/att_faces_labeled_cropped_jpg/" + name.replace(".jpg", "_" + i + ".jpg"), crop);
                                 Log.i(TAG, "AT&T cropped " + name.replace(".jpg", "_" + i + ".jpg") + ". x = " + r.x() + ", y = " + r.y() + ", x2 = " + (r.x() + r.width()) + ", y2 = " + (r.y() + r.height()));
@@ -223,6 +222,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         m.release();
                     }
                     //
+                    */
 
 
 

@@ -7,15 +7,17 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class TrainActivity extends AppCompatActivity {
 
@@ -27,8 +29,7 @@ public class TrainActivity extends AppCompatActivity {
     ArrayList<CropImageItem> pathList = new ArrayList<CropImageItem>();
 
     Button openCamera;
-    Button train;
-    String dataPath = "sdcard/PresentData/faceDatabase/untrainedCrops/";
+    String modelFileDir = "sdcard/PresentData";
 
 
     @Override
@@ -45,6 +46,28 @@ public class TrainActivity extends AppCompatActivity {
                 startActivity(cam);
             }
         });
+
+        FilenameFilter eigenModelFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return name.startsWith("eigenModel") || name.endsWith(".xml");
+            }
+        };
+
+        File[] modelFileDirFiles = (new File(modelFileDir)).listFiles(eigenModelFilter);
+        if(modelFileDirFiles.length > 0) {
+
+            String modelFileDateString = modelFileDirFiles[0].getName().split("_")[1];
+            SimpleDateFormat modelFileDate = new SimpleDateFormat("MM/dd/yyyy - HH:mm");
+
+            try {
+                Date dt = modelFileDate.parse(modelFileDateString);
+                getActionBar().setTitle("Last trained at " + dt);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception thrown at TrainActivity onCreate.");
+            }
+        }
+
     }
 
     @Override
@@ -123,7 +146,10 @@ public class TrainActivity extends AppCompatActivity {
 
     public void trainRecognizer(View view){
         FaceRecogTrainTask tt = new FaceRecogTrainTask(this);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         tt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
 

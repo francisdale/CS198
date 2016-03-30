@@ -7,15 +7,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by DALE on 3/12/2016.
@@ -37,7 +33,7 @@ public class AttendanceReportListAdapter extends RecyclerView.Adapter<Attendance
     @Override
     public void onBindViewHolder(ReportViewHolder holder, int position) {
         try {
-
+            //DateFormat df=new SimpleDateFormat("yyyy-MM-dd");
             DateFormat df=new SimpleDateFormat("EEEE MMM dd yyyy");
             finalDay=df.format(reportItems.get(position).getDate());
             holder.reportName.setText(finalDay);

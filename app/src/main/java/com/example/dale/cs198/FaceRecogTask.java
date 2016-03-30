@@ -12,6 +12,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "testMessage";
 
-    private static final String modelFileDir = "sdcard/PresentData/eigenModel.xml";
+    private static final String modelFileDir = "sdcard/PresentData";
     private static final String classesDir = "sdcard/PresentData/Classes";
 
     private static final int dSize = 160;
@@ -61,6 +62,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+
         Log.i(TAG, "FaceRecogTask started.");
         try {
 
@@ -70,7 +72,9 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
             String line;
             String[] details;
-            String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            String timeStamp = new SimpleDateFormat("MMddyyyy").format(new Date());
+            //String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
 
             String classDir = classesDir + "/" + className;
             String recordsDir = classDir + "/attendanceReports";
@@ -107,8 +111,17 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             FaceRecognizer efr = createEigenFaceRecognizer();
 
+            FilenameFilter eigenModelFilter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    name = name.toLowerCase();
+                    return name.startsWith("eigenModel") || name.endsWith(".xml");
+                }
+            };
+
+            String modelFilePath = ((new File(modelFileDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
+
             timeStart = System.currentTimeMillis();
-            efr.load(modelFileDir);
+            efr.load(modelFilePath);
             timeEnd = System.currentTimeMillis();
             timeElapsed = timeEnd - timeStart;
             Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
@@ -117,6 +130,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             Mat mColorResized;
             Mat mGray;
             int predictedLabel;
+            int secondaryID;
+            File f;
 
             Log.i(TAG, "FaceRecogTask: Initialization complete.");
 
@@ -140,16 +155,28 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                 Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
-
                 if(attendanceRecord.containsKey(predictedLabel)){
                     Log.i(TAG, "predictedLabel was found in the classlist.");
-                    attendanceRecord.put(predictedLabel, 1);
-                    Log.i(TAG, "predictedLabel attendance was marked.");
-                    imwrite(recordCropsDirPath + "/" + predictedLabel + ".jpg", mColor);
+                    if(0 == attendanceRecord.get(predictedLabel)) {
+                        attendanceRecord.put(predictedLabel, 1);
+                        numStudentsPresent++;
+                        Log.i(TAG, "predictedLabel attendance was marked.");
+                    }
+
+                    //Before saving the crop, check which secondaryID is still available:
+                    secondaryID = 0;
+                    do {
+                        f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + secondaryID + ".jpg");
+                        secondaryID++;
+                    } while(f.exists());
+
+                    imwrite(f.getAbsolutePath(), mColor);
+                    //imwrite(recordCropsDirPath + "/" + predictedLabel + ".jpg", mColor);
+
                     Log.i(TAG, "Crop saved.");
                 } else {
                     Log.i(TAG, "Unrecognized face found.");
-                    imwrite(recordCropsDirPath + "/" + predictedLabel + ".jpg", mColor);
+                    imwrite(recordCropsDirPath + "/unrecognizedFace_" + predictedLabel + ".jpg", mColor);
                     numUnrecognizedFaces++;
                 }
 

@@ -18,6 +18,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -401,6 +402,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         Log.i(TAG, "CustomCamera onStart");
 
         if(fd.getStatus() != AsyncTask.Status.RUNNING) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
             Log.i(TAG, "Executing fd...");
             fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
@@ -411,8 +414,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
                 }
             }
         }
-        Log.i(TAG, "CustomCamera onStart End");
 
+        Log.i(TAG, "CustomCamera onStart End");
     }
 
     @Override
@@ -428,6 +431,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         Log.i(TAG, "CustomCamera onStop");
         if(!isGalleryOpen) {
             td.setThreadsToDie();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
     }
@@ -438,6 +442,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         Log.i(TAG, "CustomCamera onDestroy");
         if(!isGalleryOpen) {
             td.setThreadsToDie();
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
