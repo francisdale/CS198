@@ -50,7 +50,7 @@ public class TrainActivity extends AppCompatActivity {
         FilenameFilter eigenModelFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
-                return name.startsWith("eigenModel") || name.endsWith(".xml");
+                return name.startsWith("eigenModel") && name.endsWith(".xml");
             }
         };
 
@@ -62,7 +62,7 @@ public class TrainActivity extends AppCompatActivity {
 
             try {
                 Date dt = modelFileDate.parse(modelFileDateString);
-                getActionBar().setTitle("Last trained at " + dt);
+                getSupportActionBar().setTitle("Last trained at " + dt);
             } catch (Exception e) {
                 Log.e(TAG, "Exception thrown at TrainActivity onCreate.");
             }

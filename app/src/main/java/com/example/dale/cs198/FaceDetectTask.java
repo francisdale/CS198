@@ -13,8 +13,9 @@ import java.io.InputStream;
 
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
+import static org.bytedeco.javacpp.opencv_core.RectVector;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
@@ -84,7 +85,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             Mat mColor;
             Mat mGray;
             Mat crop;
-            Rect faces;
+            RectVector faces;
             Rect r;
             Rect roi;
             int numFaces;
@@ -93,9 +94,10 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             if (usageType == ATTENDANCE_USAGE){
                 Log.i(TAG, "Now in Attendance Usage ");
 
+
                 /*
                 //For testing with AT&T database:
-                File[] testCrops = new File("sdcard/PresentData/att_faces_labeled_testing_jpg").listFiles();
+                File[] testCrops = new File("sdcard/PresentData/att/att_faces_labeled_testing_jpg").listFiles();
                 int count = 0;
                 for(File f : testCrops){
                     td.detectQueue.add(imread(f.getAbsolutePath()));
@@ -109,7 +111,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     imgCount++;
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
-                    faces = new Rect();
+                    faces = new RectVector();
 
                     //Detect faces:
                     Log.i(TAG, "Detecting...");
@@ -120,17 +122,18 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                     mGray.release();
 
-                    if(faces.width() > 0) {//check if faces is not empty; an empty r means no face was really detected
+                    numFaces = (int)faces.size();
+
+                    if(numFaces > 0) {//check if faces is not empty; an empty r means no face was really detected
 
                         Log.i(TAG, "Detection complete. Cropping...");
                         //Crop faces:
-                        numFaces = faces.capacity();
 
                         for (int i = 0; i < numFaces; i++) {
-                            r = faces.position(i);
+                            r = faces.get(i);
 
-                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
-                            td.recogQueue.add(new Mat(mColor, roi));
+                            //roi = new Rect(r.x(), r.y(), r.width(), r.height());
+                            td.recogQueue.add(new Mat(mColor, r));
                         }
                     } else {
                         numFaces = 0;
@@ -155,7 +158,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     imgCount++;
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
-                    faces = new Rect();
+                    faces = new RectVector();
 
                     //Detect faces:
                     Log.i(TAG, "Detecting...");
@@ -166,16 +169,17 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                     mGray.release();
 
-                    if(faces.width() > 0) {//check if faces is not empty; an empty r means no face was really detected
+                    numFaces = (int)faces.size();
+
+                    if(numFaces > 0) {//check if faces is not empty; an empty r means no face was really detected
                         //Crop faces:
-                        numFaces = faces.capacity();
 
                         Log.i(TAG, "Detection complete. Found " + numFaces + " faces. Cropping...");
 
                         for (int i = 0; i < numFaces; i++) {
-                            r = faces.position(i);
+                            r = faces.get(i);
 
-                            roi = new Rect(r.x(), r.y(), r.width(), r.height());
+                            //roi = new Rect(r.x(), r.y(), r.width(), r.height());
 
                             crop = new Mat(mColor, r);
 

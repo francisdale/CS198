@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 
 import java.io.BufferedReader;
@@ -20,13 +22,16 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static org.bytedeco.javacpp.opencv_contrib.FaceRecognizer;
-import static org.bytedeco.javacpp.opencv_contrib.createEigenFaceRecognizer;
+import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
+import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_highgui.imwrite;
+import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
+import static org.bytedeco.javacpp.opencv_ml.SVM;
 
 /**
  * Created by jedpatrickdatu on 2/15/2016.
@@ -35,10 +40,10 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "testMessage";
 
-    private static final String modelFileDir = "sdcard/PresentData";
+    private static final String modelDir = "sdcard/PresentData";
     private static final String classesDir = "sdcard/PresentData/Classes";
 
-    private static final int dSize = 160;
+    private static final Size dSize = new Size(160, 160);
 
     int numStudents;
     int numStudentsPresent = 0;
@@ -107,6 +112,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             }
 
             numStudents = attendanceRecord.size();
+            publishProgress();
 
 
             FaceRecognizer efr = createEigenFaceRecognizer();
@@ -118,13 +124,28 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 }
             };
 
-            String modelFilePath = ((new File(modelFileDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
+            String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
 
             timeStart = System.currentTimeMillis();
             efr.load(modelFilePath);
             timeEnd = System.currentTimeMillis();
             timeElapsed = timeEnd - timeStart;
             Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
+
+
+            //For PCA+SVM recognition:
+            FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
+            SVM sfr = SVM.create();
+            sfr.read(fs.root());
+            fs.release();
+
+            fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+            PCA pca = new PCA();
+            pca.read(fs.root());
+            fs.release();
+
+            Log.i(TAG, "SVM and PCA loaded.");
+
 
             Mat mColor;
             Mat mColorResized;
@@ -135,21 +156,33 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             Log.i(TAG, "FaceRecogTask: Initialization complete.");
 
+            /*
+            //For testing with AT&T database:
+            File[] testCrops = new File("sdcard/PresentData/att/att_faces_labeled_cropped_testing_jpg").listFiles();
+            int count = 0;
+            for(File c : testCrops){
+                td.detectQueue.add(imread(c.getAbsolutePath()));
+                count++;
+                Log.i(TAG, count + " images added.");
+            }
+            */
+
             //Resize input mats to same size as mats in train.
             while(null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
                 Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
 
                 mColorResized = new Mat();
-                resize(mColor, mColorResized, new Size(dSize, dSize));
+                resize(mColor, mColorResized, dSize);
 
                 mGray = new Mat();
                 cvtColor(mColorResized, mGray, CV_BGR2GRAY);
                 Log.i(TAG, "Train usage: image converted to grayscale");
                 //Recognize faces:
 
-
                 timeStart = System.currentTimeMillis();
-                predictedLabel = efr.predict(mGray);
+                mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+                predictedLabel = (int)sfr.predict(pca.project(mGray));
+                //predictedLabel = efr.predict(mGray);
                 timeEnd = System.currentTimeMillis();
                 timeElapsed = timeEnd - timeStart;
 

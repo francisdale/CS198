@@ -6,21 +6,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.FileStorage;
+import org.bytedeco.javacpp.opencv_core.Mat;
 
-import static org.bytedeco.javacpp.opencv_contrib.FaceRecognizer;
-import static org.bytedeco.javacpp.opencv_contrib.createEigenFaceRecognizer;
-import static org.bytedeco.javacpp.opencv_core.Mat;
-import static org.bytedeco.javacpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
-import static org.bytedeco.javacpp.opencv_highgui.imread;
+import java.io.File;
+
+import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
+import static org.bytedeco.javacpp.opencv_core.PCA;
+import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
+import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
+import static org.bytedeco.javacpp.opencv_ml.SVM;
+
 
 public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    private static final String trainingSetDir = "sdcard/PresentData/att_faces_labeled_jpg";
+    private static final String trainingSetDir = "sdcard/PresentData/att/att_faces";
 
     String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
     String targetDir = "sdcard/PresentData/researchMode/recognitionResults";
@@ -53,6 +59,16 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_java_cvface_recognizer_test);
+
+        /*
+        ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setIndeterminate(true);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setMessage("Testing recognizer...");
+        dialog.show();
+        */
 
         Log.i(TAG, "onCreate na ng recognizer");
 
@@ -113,10 +129,39 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         Log.i(TAG, "onCreate initialization complete");
         recog();
+
+        //dialog.dismiss();
     }
 
     public void recog(){
+        Log.i(TAG, "Now in recog(). Loading eigenModel...");
         FaceRecognizer efr = createEigenFaceRecognizer();
+        efr.load(modelDir + "/eigenModel.xml");
+
+        Log.i(TAG, "eigenModel loaded. Loading SVM...");
+
+        FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
+        SVM sfr = SVM.create();
+        sfr.read(fs.root());
+        fs.release();
+
+        fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+        PCA pca = new PCA();
+        pca.read(fs.root());
+        fs.release();
+
+        Log.i(TAG, "SVM and PCA loaded.");
+
+        /*
+        Log.i(TAG, "Setting SVM params...");
+        CvSVMParams params = new CvSVMParams();
+        params = params.svm_type(CvSVM.C_SVC);
+        params = params.kernel_type(CvSVM.LINEAR);
+        params = params.gamma(3);
+        Log.i(TAG, "SVM params set.");
+        //params = params.C(1);
+        //params = params.gamma(0.001);
+        //params = params.degree(3);
 
         /*
         FaceRecognizer ffr = createFisherFaceRecognizer();
@@ -130,36 +175,31 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         lfr.load(modelDir + "/" + lbphModelYML);
 
         Log.i(TAG, "Three KNN recog loading complete");
+        */
 
-        CvSVMParams params = new CvSVMParams();
-        params = params.svm_type(CvSVM.C_SVC);
-        params = params.kernel_type(CvSVM.LINEAR);
-        params = params.gamma(3);
-        //params = params.C(1);
-        //params = params.gamma(0.001);
-        //params = params.degree(3);
-
-
-        //sfr.load(modelDir + "/" + svmModelXML);
-
+        /*
+        Log.i(TAG, "Training SVM...");
         Mat trainingMat = new Mat();
         opencv_core.MatVector images = new opencv_core.MatVector(numTrainingImages);
         Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
         IntBuffer labelsBuf = labels.getIntBuffer();
         int counter = 0;
 
+        Log.i(TAG, "Reshaping images to 1,1...");
         for(int s = 1; s <= 40; s++){
-            for(int i = 1; i < 10; i += 2, counter++){
-                Mat img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
+            for(int i = 1; i <= 4; i++, counter++){
+                Mat img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
 
                 images.put(counter, img);
                 labelsBuf.put(counter, s);
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
                 trainingMat.push_back(img);
+                Log.i(TAG, "image s" + s + "i" + i + " reshaped.");
             }
         }
         trainingMat.convertTo(trainingMat, CV_32FC1);
         Log.i(TAG, "Number of images loaded for SVM: " + trainingMat.rows());
+        Log.i(TAG, "Images reshaped to 1,1.");
 
         int nEigens = trainingMat.rows() - 1; //Number of Eigen Vectors.
 
@@ -179,11 +219,12 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
             data.push_back(projectedMat);
 
         }
+        Log.i(TAG, "PCA data set.");
 
         data.convertTo(data, CV_32FC1);
-
-        sfr.train(data, labels, new Mat(), new Mat(), params);
         */
+
+        //sfr.train(data, labels, new Mat(), new Mat(), params);
 
         /*
         Log.i(TAG, "SVM model loaded");
@@ -237,14 +278,14 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         Mat img;
 
 
-        /*
+
         Log.i(TAG, "recog initialization complete");
         for(int s = 1; s <= 40; s++) {
-            for (int i = 2; i <= 10; i += 2, numImg++) {
+            for (int i = 5; i <= 10; i ++, numImg++) {
 
                 Log.i(TAG, "s" + s + " i" + i);
 
-                img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
+                img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
                 int intNumImg = (int) numImg;
 
 
@@ -260,6 +301,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 }
                 Log.i(TAG, "Eigen done");
 
+                /*
                 timeStart = System.currentTimeMillis();
                 predictedLabel = ffr.predict(img);
                 timeEnd = System.currentTimeMillis();
@@ -272,6 +314,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 }
                 Log.i(TAG, "Fisher done");
 
+
                 timeStart = System.currentTimeMillis();
                 predictedLabel = lfr.predict(img);
                 timeEnd = System.currentTimeMillis();
@@ -283,6 +326,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                     imwrite(lbphOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
                 }
                 Log.i(TAG, "lbph done");
+                */
 
                 timeStart = System.currentTimeMillis();
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
@@ -298,9 +342,9 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 Log.i(TAG, "SVM done");
             }
         }
-        */
 
 
+        /*
         //For testing different numbers of PCs:
         float[] eigenTimes = new float[21];
         float[] eigenAccuracies = new float[21];
@@ -361,12 +405,12 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
             Log.e(TAG, "Exception thrown at JavaCVFaceRecognizerTest: " + e);
         }
 
-        //
+        */
 
-        eigenAvgTime /= numImg;
-        fisherAvgTime /= numImg;
-        lbphAvgTime /= numImg;
-        svmAvgTime /= numImg;
+        eigenAvgTime /= numImg*1000;
+        fisherAvgTime /= numImg*1000;
+        lbphAvgTime /= numImg*1000;
+        svmAvgTime /= numImg*1000;
 
         eigenPercentAcc = (eigenNumRight/numImg) * 100;
         fisherPercentAcc = (fisherNumRight/numImg) * 100;
@@ -378,10 +422,12 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         TextView timesAndAccuraciesTextView = (TextView) findViewById(R.id.recogTimesAndAccuraciesTextView);
 
         Log.i(TAG, "Setting up the text fields");
-        //notification.setText("Recognition complete.");
-        //numImgView.setText("Number of Training Images: " + numImg);
+        notification.setText("Recognition complete.");
+        numImgView.setText("Number of Training Images: " + numImg);
 
-        //timesAndAccuraciesTextView.setText("Eigen time average= " + eigenAvgTime + "ms");
+        timesAndAccuraciesTextView.setText("Eigen time average = " + eigenAvgTime + "s\nEigen accuracy = " + eigenPercentAcc + "%\n\n");
+        timesAndAccuraciesTextView.setText(timesAndAccuraciesTextView.getText() + "SVM time average = " + svmAvgTime + "s\nSVM accuracy = " + svmPercentAcc + "%\n\n");
+
         /*
         eigenAccuracy.setText("Eigen accuracy = " + (int)eigenNumRight + "/" + (int)numImg + " = " + eigenPercentAcc + "%");
         fisherTime.setText("Fisher time average= " + fisherAvgTime + "ms");

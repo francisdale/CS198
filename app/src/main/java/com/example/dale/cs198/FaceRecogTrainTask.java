@@ -7,9 +7,12 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.bytedeco.javacpp.opencv_contrib.FaceRecognizer;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
+import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+import org.bytedeco.javacpp.opencv_ml.SVM;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -17,12 +20,16 @@ import java.nio.IntBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.bytedeco.javacpp.opencv_contrib.createEigenFaceRecognizer;
+import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
+import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
+import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_highgui.CV_LOAD_IMAGE_GRAYSCALE;
-import static org.bytedeco.javacpp.opencv_highgui.imread;
+import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
+import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
+import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 
 ;
 
@@ -36,7 +43,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
     private static final String trainedCropsDir = "sdcard/PresentData/faceDatabase/trainedCrops";
     private static final String modelDir = "sdcard/PresentData";
 
-    private static final int dSize = 160;
+    private static final Size dSize = new Size(160, 160);
     int numPrincipalComponents;
     double threshold = 0.01;
 
@@ -52,9 +59,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
 
     protected void onPreExecute() {
-
-
-        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setIndeterminate(true);
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
@@ -127,15 +132,22 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         int counter = 0;
         int secondaryID;
 
+        //For SVM:
+        Mat trainingMat = new Mat();
 
         for (File c : trainedCrops) {
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
             label = Integer.parseInt(c.getName().split("_")[0]);
 
-            resize(img, img, new Size(dSize, dSize));
+            resize(img, img, dSize);
 
             labelsBuf.put(counter, label);
             images.put(counter, img);
+
+            //For SVM:
+            img.reshape(1, 1).convertTo(img, CV_32FC1);
+            trainingMat.push_back(img);
+
             img.deallocate();
             counter++;
             Log.i(TAG, "trainedCrops " + counter);
@@ -145,10 +157,14 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
             label = Integer.parseInt(c.getName().split("_")[0]);
 
-            resize(img, img, new Size(dSize, dSize));
+            resize(img, img, dSize);
 
             labelsBuf.put(counter, label);
             images.put(counter, img);
+
+            //For SVM:
+            img.reshape(1, 1).convertTo(img, CV_32FC1);
+            trainingMat.push_back(img);
 
             //Before moving the crop to trainedCrops, find a new filename for the crop that does not conflict with a crop already in trainedCrops.
             secondaryID = 0;
@@ -168,7 +184,53 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         //dialog.setMessage("Training recognizer...");
 
-        numPrincipalComponents = (int)images.size() - 1;
+        int numTrainingImages = (int)images.size();
+        numPrincipalComponents = numTrainingImages - 1;
+
+        //For PCA+SVM recognition:
+        trainingMat.convertTo(trainingMat, CV_32FC1);
+        Mat data = new Mat();
+        Mat projectedMat;
+        Mat temp;
+        PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+
+        for(int i = 0; i < numTrainingImages; i++) {
+            projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
+            Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
+            pca.project(trainingMat.row(i), projectedMat);
+            temp = pca.project(trainingMat.row(i));
+
+            Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
+            Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
+            data.push_back(projectedMat);
+        }
+
+        Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+        Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+        Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+
+        data.convertTo(data, CV_32FC1);
+        SVM svm = SVM.create();
+        svm.setType(SVM.C_SVC);
+        svm.setKernel(SVM.LINEAR);
+        //svm.setDegree(2);
+        svm.setGamma(3);
+        Log.i(TAG, "Training SVM...");
+        Log.i(TAG, "Num of rows and cols in data: " + data.rows() + ", " + data.cols());
+        Log.i(TAG, "Num of rows and cols in labels: " + labels.rows() + ", " + labels.cols());
+        svm.train(data, ROW_SAMPLE, labels);
+        Log.i(TAG, "SVM trained. Saving to svmModel.xml...");
+
+        FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.WRITE);
+        svm.write(fs);
+        fs.release();
+
+        Log.i(TAG, "Saving pca to pca.xml...");
+        fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.WRITE);
+        pca.write(fs);
+        fs.release();
+
+        //For PCA+KNN recognition:
         FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
         //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
 
@@ -176,7 +238,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         FilenameFilter eigenModelFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
-                return name.startsWith("eigenModel") || name.endsWith(".xml");
+                return name.startsWith("eigenModel") && name.endsWith(".xml");
             }
         };
 
