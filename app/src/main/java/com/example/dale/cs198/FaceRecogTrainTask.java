@@ -11,7 +11,6 @@ import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
-import org.bytedeco.javacpp.opencv_face.FaceRecognizer;
 import org.bytedeco.javacpp.opencv_ml.SVM;
 
 import java.io.File;
@@ -25,7 +24,6 @@ import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
 import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
@@ -230,6 +228,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         pca.write(fs);
         fs.release();
 
+        /*
         //For PCA+KNN recognition:
         FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
         //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
@@ -246,8 +245,9 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         if(modelFileDirFiles.length > 0) {
             modelFileDirFiles[0].delete();
         }
+        */
 
-
+        /*
         Log.i(TAG, "Training Eigenface...");
         timeStart = System.currentTimeMillis();
         faceRecognizer.train(images, labels);
@@ -260,6 +260,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Training model saved.");
         //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);
         //toast.show();
+        */
 
         isTrainingSuccess = true;
         return isTrainingSuccess;

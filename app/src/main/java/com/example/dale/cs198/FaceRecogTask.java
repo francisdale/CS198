@@ -14,7 +14,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,8 +24,6 @@ import java.util.Set;
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
-import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
@@ -114,7 +111,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             numStudents = attendanceRecord.size();
             publishProgress();
 
-
+            /*
             FaceRecognizer efr = createEigenFaceRecognizer();
 
             FilenameFilter eigenModelFilter = new FilenameFilter() {
@@ -132,6 +129,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             timeElapsed = timeEnd - timeStart;
             Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
 
+            */
 
             //For PCA+SVM recognition:
             FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
@@ -153,6 +151,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             int predictedLabel;
             int secondaryID;
             File f;
+            String studentNameAndNum;
+            String[] temp;
 
             Log.i(TAG, "FaceRecogTask: Initialization complete.");
 
@@ -199,7 +199,9 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     //Before saving the crop, check which secondaryID is still available:
                     secondaryID = 0;
                     do {
-                        f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + secondaryID + ".jpg");
+                        temp = studentNumsAndNames.get(predictedLabel).split(",");
+                        studentNameAndNum = temp[1] + "," + temp[2] + "," + temp[0];
+                        f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + secondaryID + "_" + studentNameAndNum + ".jpg");
                         secondaryID++;
                     } while(f.exists());
 
