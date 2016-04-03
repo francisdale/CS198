@@ -73,7 +73,7 @@ public class AttendanceReportListAdapter extends RecyclerView.Adapter<Attendance
         public void onClick(View v) {
 
             Log.i(TAG, "CALLING FRAGMENT MANAGER");
-            Intent openReport = new Intent(context,EditAttendanceReport.class);
+            Intent openReport = new Intent(context,EditAttendanceReport_RV.class);
             openReport.putExtra("name", reportItems.get(getAdapterPosition()).getFileName());
             openReport.putExtra("className",className);
             openReport.putExtra("date",reportName.getText().toString());

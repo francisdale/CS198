@@ -36,6 +36,7 @@ import java.util.Date;
 public class EditAttendanceReport extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
+    private static final String TAG2 = "testMessageCrop";
     String name;
     String className;
     String date;
@@ -203,14 +204,15 @@ public class EditAttendanceReport extends AppCompatActivity {
                 convertView.setTag(holder);
                 final boolean previousState = studentList.get(position).isSelected();
                 holder.listItem.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
+                    public void onClick(final View v) {
                         final CheckBox cb = (CheckBox) v;
                         StudentItem s = (StudentItem) cb.getTag();
 
                         Log.i(TAG, "Previous state --> " + previousState);
                         //if cb is checked, then student is present
                         //so dapat tanungin kung absent yung student
-                        if (studentList.get(position).isSelected() == true) {
+                        Log.i(TAG,"position -->" + position);
+                        if (studentList.get((Integer)v.getTag()).isSelected() == true) {
                             AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext(),R.style.Theme_Holo_Dialog_Alert);
                             alertBuilder.setMessage("Are you sure that " + cb.getText().toString() + " is ABSENT on " + date + " for " + className + " ?")
                                     .setCancelable(false)
@@ -218,9 +220,9 @@ public class EditAttendanceReport extends AppCompatActivity {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             cb.setChecked(false);
-                                            studentList.get(position).setSelected(false);
+                                            studentList.get((Integer)v.getTag()).setSelected(false);
                                             rewriteReport(studentList);
-                                            Log.i(TAG,studentList.get(position).getLastName() + "is " + studentList.get(position).isSelected());
+                                            Log.i(TAG,studentList.get((Integer)v.getTag()).getLastName() + " is " + studentList.get((Integer)v.getTag()).isSelected());
                                         }
                                     })
                                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -236,7 +238,7 @@ public class EditAttendanceReport extends AppCompatActivity {
                             alert.show();
 
                         }
-                        if (studentList.get(position).isSelected() == false) {
+                        if (studentList.get((Integer)v.getTag()).isSelected() == false) {
                             AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext(),R.style.Theme_Holo_Dialog_Alert);
                             alertBuilder.setMessage("Are you sure that " + cb.getText().toString() + " is PRESENT on " + date + " for " + className + " ?")
                                     .setCancelable(false)
@@ -244,9 +246,9 @@ public class EditAttendanceReport extends AppCompatActivity {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             cb.setChecked(true);
-                                            studentList.get(position).setSelected(true);
+                                            studentList.get((Integer)v.getTag()).setSelected(true);
                                             rewriteReport(studentList);
-                                            Log.i(TAG, studentList.get(position).getLastName() + "is " + studentList.get(position).isSelected());
+                                            Log.i(TAG, studentList.get((Integer)v.getTag()).getLastName() + "is " + studentList.get((Integer)v.getTag()).isSelected());
                                         }
                                     })
                                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -278,19 +280,19 @@ public class EditAttendanceReport extends AppCompatActivity {
             final String ID = Integer.toString(si.getId());
             FilenameFilter IDImgFilter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
-                    Log.i(TAG, "Filtered ID --> " + ID);
+                    Log.i(TAG2, "Filtered ID --> " + ID);
                     return name.startsWith(ID);
                 }
             };
 
             File[] fileArr = faceCropsDir.listFiles(IDImgFilter);
-            Log.i(TAG, "File arr size -->" + fileArr.length);
+            Log.i(TAG2, "File arr size -->" + fileArr.length);
             if (fileArr.length > 0) {
-                Log.i(TAG, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
+                Log.i(TAG2, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
                 Bitmap bmImg = BitmapFactory.decodeFile(fileArr[0].getAbsolutePath());
                 holder.studentFace.setImageBitmap(bmImg);
             } else {
-                Log.i(TAG, "no image");
+                Log.i(TAG2, "no image");
                 holder.studentFace.setImageResource(R.mipmap.ic_launcher);
             }
 

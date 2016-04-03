@@ -62,14 +62,11 @@
         <activity
             android:name=".TrainActivity"
             android:label="Train Face Crops"
-            android:parentActivityName=".CardHome" >
+            android:parentActivityName=".CardHome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CardHome" />
         </activity>
-
-
-
         <activity android:name=".MainActivity" />
         <activity android:name=".JavaCVTrainFaceRecognizerTest" />
         <activity android:name=".JavaCVFaceRecognizerTest" />
@@ -82,20 +79,13 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".TrainListActivity" />
-
         <activity
             android:name=".ViewAttendanceReport"
-            android:label="Attendance Reports">
-        </activity>
-
+            android:label="Attendance Reports"></activity>
         <activity
             android:name=".EditAttendanceReport"
-            android:label="View Report">
-        </activity>
-
-
-
-
+            android:label="View Report"></activity>
+        <activity android:name=".EditAttendanceReport_RV"></activity>
     </application>
 
 </manifest>
