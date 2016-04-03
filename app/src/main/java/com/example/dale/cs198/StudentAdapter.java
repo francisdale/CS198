@@ -54,24 +54,43 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops");
 
-        final String ID = Integer.toString(s.getId());
-        FilenameFilter IDImgFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                Log.i(TAG, "Filtered ID --> " + ID);
-                return name.startsWith(ID);
-            }
-        };
 
-        File[] fileArr = faceCropsDir.listFiles(IDImgFilter);
-        Log.i(TAG, "File arr size -->" + fileArr.length);
-        if (fileArr.length > 0) {
-            Log.i(TAG, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
-            Bitmap bmImg = BitmapFactory.decodeFile(fileArr[0].getAbsolutePath());
-            holder.studentFace.setImageBitmap(bmImg);
-        } else {
-            Log.i(TAG, "no image");
+        String ID = Integer.toString(s.getId());
+        boolean meron = false;
+        for (File f : faceCropsDir.listFiles()) {
+            if (f.isFile()) {
+                if(f.getName().startsWith(ID+"_0")){
+                    Log.i(TAG, "directory of first occurence -->" + f.getAbsolutePath());
+                    Bitmap bmImg = BitmapFactory.decodeFile(f.getAbsolutePath());
+                    holder.studentFace.setImageBitmap(bmImg);
+                    meron = true;
+                }
+            }
+        }
+
+        if(meron == false){
             holder.studentFace.setImageResource(R.mipmap.ic_launcher);
         }
+
+
+//
+//        FilenameFilter IDImgFilter = new FilenameFilter() {
+//            public boolean accept(File dir, String name) {
+//                Log.i(TAG, "Filtered ID --> " + ID);
+//                return name.startsWith(ID,0);
+//            }
+//        };
+//
+//        File[] fileArr = faceCropsDir.listFiles(IDImgFilter);
+//        Log.i(TAG, "File arr size -->" + fileArr.length);
+//        if (fileArr.length > 0) {
+//            Log.i(TAG, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
+//            Bitmap bmImg = BitmapFactory.decodeFile(fileArr[0].getAbsolutePath());
+//            holder.studentFace.setImageBitmap(bmImg);
+//        } else {
+//            Log.i(TAG, "no image");
+//            holder.studentFace.setImageResource(R.mipmap.ic_launcher);
+//        }
 
     }
 
