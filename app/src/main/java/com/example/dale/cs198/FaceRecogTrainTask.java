@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.bytedeco.javacpp.opencv_core;
@@ -13,11 +12,14 @@ import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
 import org.bytedeco.javacpp.opencv_ml.SVM;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.nio.IntBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
@@ -28,6 +30,7 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
+import static org.bytedeco.javacpp.opencv_ml.TrainData;
 
 ;
 
@@ -63,6 +66,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         dialog.setCanceledOnTouchOutside(false);
         dialog.setMessage("Training recognizer...");
         dialog.show();
+
     }
 
     @Override
@@ -86,8 +90,14 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
+
+        //Unify the names of all crops in CS197
+        gatherAllCrops();
+
         String timeStamp = new SimpleDateFormat("MMddyyy-HHmmss").format(new Date());
         String modelFileName = "eigenModel_" + timeStamp + ".xml";
+
+
 
         //Load training images from trainedCropsDir and untrainedCropsDir
         File trainedCropsFolder = new File(trainedCropsDir);
@@ -104,6 +114,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         };
 
         File[] untrainedCrops = untrainedCropsFolder.listFiles(untrainedCropsDeleteImgFilter);
+
         for(File d : untrainedCrops){
             d.delete();
         }
@@ -211,12 +222,37 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         SVM svm = SVM.create();
         svm.setType(SVM.C_SVC);
         svm.setKernel(SVM.LINEAR);
+        //svm.setP(0.1);
         //svm.setDegree(2);
-        svm.setGamma(3);
-        Log.i(TAG, "Training SVM...");
+        //svm.setGamma(0.00001);
+        TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
+
+
+        /*//Determine k-fold; it should be perfect divisor of the number of training images.
+        int kFold;
+        int kFoldLimit = numTrainingImages/2;
+
+        if(numTrainingImages <= 10){
+            kFold = numTrainingImages;
+        } else {
+            for(kFold = 10; kFold <= kFoldLimit && 0 < (numTrainingImages % kFold); kFold++){
+            }
+            if(kFold == kFoldLimit){
+                for(kFold = 2; kFold < 10 && 0 < (numTrainingImages % kFold); kFold++){
+                }
+                if(kFold == 10) {
+                    kFold = numTrainingImages;
+                }
+            }
+        }*/
+
+        //Log.i(TAG, "kFold selected: " + kFold);
         Log.i(TAG, "Num of rows and cols in data: " + data.rows() + ", " + data.cols());
         Log.i(TAG, "Num of rows and cols in labels: " + labels.rows() + ", " + labels.cols());
-        svm.train(data, ROW_SAMPLE, labels);
+        Log.i(TAG, "Training SVM...");
+        svm.train(td);
+        //svm.trainAuto(td, kFold, SVM.getDefaultGrid(SVM.C), SVM.getDefaultGrid(SVM.GAMMA), SVM.getDefaultGrid(SVM.P), SVM.getDefaultGrid(SVM.NU), SVM.getDefaultGrid(SVM.COEF), SVM.getDefaultGrid(SVM.DEGREE), false);
+        Log.i(TAG, "SVM trained");
         Log.i(TAG, "SVM trained. Saving to svmModel.xml...");
 
         FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.WRITE);
@@ -227,6 +263,10 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.WRITE);
         pca.write(fs);
         fs.release();
+
+        Log.i(TAG, "Type: " + svm.getType() + "\nKernel: " + svm.getKernelType() + "\nGamma: " + svm.getGamma() + "\nC: " + svm.getC() + "\nP: " + svm.getP() + "\nDegree: " + svm.getDegree() + "\ncoef0: " + svm.getCoef0() + "\n\n");
+        Log.i(TAG, "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
+        Log.i(TAG, "Type legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
 
         /*
         //For PCA+KNN recognition:
@@ -268,7 +308,92 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected void onProgressUpdate(Void... progress){
-       TextView tv = (TextView)((MainActivity)c).findViewById(R.id.detectNotification);
+        //TextView tv = (TextView)((TrainActivity)c).findViewById(R.id.detectNotification);
         //tv.setText("Detected " + faceCount + " faces in " + (float) timeElapsed/1000 + "s." );
+    }
+
+    public void gatherAllCrops(){
+
+        final String classesDir = "sdcard/PresentData/Classes/CS 133";
+        String cs197Dir = "sdcard/PresentData/CS133 Classroom Data";
+
+        String allCropsDir = cs197Dir + "/allCrops";
+
+        //Read class list:
+        BufferedReader br;
+        HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+        HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+        String line;
+        String[] details;
+
+        String classDir = classesDir;
+
+        try {
+            br = new BufferedReader(new FileReader(classDir + "/" + new File(classDir).getName() + "_studentList.txt"));
+            while ((line = br.readLine()) != null) {
+                details = line.split(",");
+                //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+            }
+        } catch (Exception e){
+            Log.e(TAG, e.getMessage());
+        }
+
+
+        File[] cs197DirFiles = new File(cs197Dir).listFiles();
+        File[] crops;
+        File tempFile;
+        int id;
+        int secondId;
+        String date;
+        String[] studentNumAndName;
+        String cropNewName;
+        String dayFolderDir;
+
+        new File(allCropsDir).mkdirs();
+
+        FilenameFilter ImgFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return !name.startsWith("delete") && name.endsWith(".jpg");
+            }
+        };
+
+        Log.i(TAG, "Creating the AllCrops folder...");
+        for(File f : cs197DirFiles){
+            if(f.isDirectory() && !f.getName().equals("allCrops")) {
+                Log.i(TAG, "Processing folder " + f.getName() + "...");
+                dayFolderDir = f.getAbsolutePath();
+                crops = new File(dayFolderDir).listFiles(ImgFilter);
+                for (File c : crops) {
+                    id = Integer.parseInt(c.getName().split("_")[0]);
+                    date = f.getName().split("_")[1];
+                    studentNumAndName = studentNumsAndNames.get(id).split(",");
+                    //check which secondaryID is still available:
+                    secondId = 0;
+
+                    /*//For moving to allCrops:
+                    do {
+                        cropNewName = id + "_" + secondId + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "," + studentNumAndName[0] + "_" + date + ".jpg";
+                        tempFile = new File(allCropsDir + "/" + cropNewName);
+                        secondId++;
+                    } while (tempFile.exists());
+
+                    c.renameTo(new File(tempFile.getAbsolutePath()));*/
+
+
+                    //For changing the name of training crops to include names:
+                    do {
+                        cropNewName = id + "_" + secondId + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + ".jpg";
+                        tempFile = new File(dayFolderDir + "/" + cropNewName);
+                        secondId++;
+                    } while (tempFile.exists());
+
+                    c.renameTo(new File(tempFile.getAbsolutePath()));
+                }
+            }
+        }
+        Log.i(TAG, "AllCrops folder complete.");
     }
 }

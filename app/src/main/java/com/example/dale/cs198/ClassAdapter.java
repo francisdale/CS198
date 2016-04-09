@@ -73,7 +73,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
                 public void onClick(View v){
                     Intent cam = new Intent(context, CustomCamera.class);
                     cam.putExtra("detectUsage", FaceDetectTask.ATTENDANCE_USAGE);
-                    cam.putExtra("classNameString", classNameString);
+                    cam.putExtra("classNameString", className.getText().toString());
                     context.startActivity(cam);
                     //pass a mode na activity usage integer = 0;
                     //call FaceDetectTask.ATTENDANCE_USAGE

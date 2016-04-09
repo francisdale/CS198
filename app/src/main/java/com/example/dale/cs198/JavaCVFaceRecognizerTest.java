@@ -277,9 +277,9 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         String currSPath;
         Mat img;
 
-
-
         Log.i(TAG, "recog initialization complete");
+
+
         for(int s = 1; s <= 40; s++) {
             for (int i = 5; i <= 10; i ++, numImg++) {
 
@@ -330,7 +330,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
                 timeStart = System.currentTimeMillis();
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
-                predictedLabel = (int) sfr.predict(pca.project(img));
+                predictedLabel = (int) sfr.predict(pca.project(img)) + 1;
                 timeEnd = System.currentTimeMillis();
                 svmAvgTime += timeEnd - timeStart;
                 if (s == predictedLabel) {
@@ -339,6 +339,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 } else {
                     imwrite(svmOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
                 }
+                Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel);
                 Log.i(TAG, "SVM done");
             }
         }

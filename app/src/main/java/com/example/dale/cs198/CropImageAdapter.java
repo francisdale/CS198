@@ -151,7 +151,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
                             Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
 
-                            //CHECK IF MAY EXISTING CROP NA SI ID SA TRAINED FOLDER
+                            /*//CHECK IF MAY EXISTING CROP NA SI ID SA TRAINED FOLDER
                             File sdCardRoot = Environment.getExternalStorageDirectory();
                             File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
                             int count=0;
@@ -168,38 +168,23 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
                             //RENAME CROP WITH CHOSEN IDNUM
                             File oldfile =new File(filePathOfLabeled);
-                            File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+".jpg");
+                            File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+"_"+label+".jpg");*/
 
-                            if(newfile.exists()){
-                                int newNumId;
-                                for(int i=0;i<=count;i++){
-                                    File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+i+".jpg");
-                                    if(newFilePic.exists()){
+                            File oldfile =new File(filePathOfLabeled);
+                            File sdCardRoot = Environment.getExternalStorageDirectory();
 
+                            for(int i=0;;i++){
+                                File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+i+"_"+label+".jpg");
+                                if(!newFilePic.exists()){
+                                    if (oldfile.renameTo(newFilePic)) {
+                                        faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());
+                                        faceCrops.get(getAdapterPosition()).setPath(newFilePic.getAbsolutePath());
+                                        Log.i(TAG, "Rename succesful");
+                                        Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
+                                    } else {
+                                        Log.i(TAG, "Rename failed");
                                     }
-                                    else{
-                                        newNumId = i;
-                                        File newFilePic2 = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+newNumId+".jpg");
-                                        if (oldfile.renameTo(newFilePic2)) {
-                                            faceCrops.get(getAdapterPosition()).setFileName(newFilePic2.getName());
-                                            faceCrops.get(getAdapterPosition()).setPath(newFilePic2.getAbsolutePath());
-                                            Log.i(TAG, "Rename succesful");
-                                            Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
-                                        } else {
-                                            Log.i(TAG, "Rename failed");
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                            else {
-                                if (oldfile.renameTo(newfile)) {
-                                    faceCrops.get(getAdapterPosition()).setFileName(newfile.getName());
-                                    faceCrops.get(getAdapterPosition()).setPath(newfile.getAbsolutePath());
-                                    Log.i(TAG, "Rename succesful");
-                                    Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
-                                } else {
-                                    Log.i(TAG, "Rename failed");
+                                    break;
                                 }
                             }
                             cropName.setText(label);
