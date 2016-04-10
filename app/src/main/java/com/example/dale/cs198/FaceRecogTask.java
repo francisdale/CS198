@@ -114,8 +114,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             numStudents = attendanceRecord.size();
             publishProgress();
 
-
-            FaceRecognizer efr = createEigenFaceRecognizer(169, 4000.0);
+            Log.i(TAG, "Loading Eigen...");
+            FaceRecognizer efr = createEigenFaceRecognizer(250, 4000);
 
             FilenameFilter eigenModelFilter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -132,10 +132,12 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             timeEnd = System.currentTimeMillis();
             timeElapsed = timeEnd - timeStart;
             Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
+            Log.i(TAG, "Eigen loaded.");
 
 
 
             //For PCA+SVM recognition:
+            Log.i(TAG, "Loading SVM...");
             FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
             SVM sfr = SVM.create();
             sfr.read(fs.root());
@@ -146,7 +148,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             pca.read(fs.root());
             fs.release();
 
-            Log.i(TAG, "SVM and PCA loaded.");
+            Log.i(TAG, "SVM loaded.");
 
 
             Mat mColor;
@@ -215,11 +217,27 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     Log.i(TAG, "Crop saved.");
                 } else if(-1 == predictedLabel){
                     Log.i(TAG, "Non face found.");
-                    imwrite(recordCropsDirPath + "/nonFace_" + predictedLabel + ".jpg", mColor);
+
+                    //Before saving the crop, check which secondaryID is still available:
+                    secondaryID = 0;
+                    do {
+                        f = new File(recordCropsDirPath + "/nonFace_" + secondaryID + ".jpg");
+                        secondaryID++;
+                    } while(f.exists());
+
+                    imwrite(f.getAbsolutePath(), mColor);
                     numUnrecognizedFaces++;
                 } else {
                     Log.i(TAG, "Unrecognized face found.");
-                    imwrite(recordCropsDirPath + "/unrecognizedFace_" + predictedLabel + ".jpg", mColor);
+
+                    //Before saving the crop, check which secondaryID is still available:
+                    secondaryID = 0;
+                    do {
+                        f = new File(recordCropsDirPath + "/unrecognizedFace_" + secondaryID + ".jpg");
+                        secondaryID++;
+                    } while(f.exists());
+
+                    imwrite(f.getAbsolutePath(), mColor);
                     numUnrecognizedFaces++;
                 }
 

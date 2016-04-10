@@ -273,7 +273,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
 
         //For PCA+KNN recognition:
-        FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
+        FaceRecognizer faceRecognizer = createEigenFaceRecognizer(250, threshold);
         //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
 
         //Delete the old eigenModel xml model if there is any
