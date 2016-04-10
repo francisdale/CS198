@@ -31,6 +31,8 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 import static org.bytedeco.javacpp.opencv_ml.TrainData;
+import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 
 ;
 
@@ -46,7 +48,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
     private static final Size dSize = new Size(160, 160);
     int numPrincipalComponents;
-    double threshold = 0.01;
+    double threshold = 4000.0;
 
     long timeStart;
     long timeEnd;
@@ -92,10 +94,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(Void... params) {
 
         //Unify the names of all crops in CS197
-        gatherAllCrops();
+        //gatherAllCrops();
 
         String timeStamp = new SimpleDateFormat("MMddyyy-HHmmss").format(new Date());
-        String modelFileName = "eigenModel_" + timeStamp + ".xml";
+        //String modelFileName = "eigenModel_" + timeStamp + ".xml";
+        String modelFileName = "eigenModel.xml";
 
 
 
@@ -268,7 +271,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
         Log.i(TAG, "Type legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
 
-        /*
+
         //For PCA+KNN recognition:
         FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
         //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
@@ -285,9 +288,8 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         if(modelFileDirFiles.length > 0) {
             modelFileDirFiles[0].delete();
         }
-        */
 
-        /*
+
         Log.i(TAG, "Training Eigenface...");
         timeStart = System.currentTimeMillis();
         faceRecognizer.train(images, labels);
@@ -300,7 +302,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Training model saved.");
         //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);
         //toast.show();
-        */
+
 
         isTrainingSuccess = true;
         return isTrainingSuccess;

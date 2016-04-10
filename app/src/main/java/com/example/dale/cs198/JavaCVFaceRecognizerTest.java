@@ -1,6 +1,5 @@
 package com.example.dale.cs198;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -28,6 +27,9 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     private static final String trainingSetDir = "sdcard/PresentData/att/att_faces";
 
+
+
+
     String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
     String targetDir = "sdcard/PresentData/researchMode/recognitionResults";
 
@@ -48,7 +50,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     int numTrainingImages = 160;
 
-    String filepath;
+
 
     long timeStart;
     long timeEnd;
@@ -72,16 +74,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         Log.i(TAG, "onCreate na ng recognizer");
 
-        Intent intent = getIntent();
-        filepath = intent.getStringExtra("filepath");
 
-        /*
-        String[] stringArray = filepath.split("/");
-        imgName = stringArray[stringArray.length - 1];
-        imgName = imgName.substring(0, imgName.length() - 4);
-        Log.i(TAG, "filepath: " + filepath);
-        Log.i(TAG, "imgName: " + imgName);
-        */
+
         Log.i(TAG, "Creating folders:");
 
         //mkdir does not overwrite the directory if it already exists.
@@ -133,9 +127,9 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         //dialog.dismiss();
     }
 
-    public void recog(){
+    public void recog() {
         Log.i(TAG, "Now in recog(). Loading eigenModel...");
-        FaceRecognizer efr = createEigenFaceRecognizer();
+        FaceRecognizer efr = createEigenFaceRecognizer(159, 4000.0);
         efr.load(modelDir + "/eigenModel.xml");
 
         Log.i(TAG, "eigenModel loaded. Loading SVM...");
@@ -280,8 +274,10 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         Log.i(TAG, "recog initialization complete");
 
 
-        for(int s = 1; s <= 40; s++) {
-            for (int i = 5; i <= 10; i ++, numImg++) {
+
+
+        for (int s = 1; s <= 40; s++) {
+            for (int i = 5; i <= 10; i++, numImg++) {
 
                 Log.i(TAG, "s" + s + " i" + i);
 
@@ -289,48 +285,48 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 int intNumImg = (int) numImg;
 
 
-                timeStart = System.currentTimeMillis();
-                predictedLabel = efr.predict(img);
-                timeEnd = System.currentTimeMillis();
-                eigenAvgTime += timeEnd - timeStart;
-                if (s == predictedLabel) {
-                    imwrite(eigenOutputDirRight + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
-                    eigenNumRight++;
-                } else {
-                    imwrite(eigenOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
-                }
-                Log.i(TAG, "Eigen done");
+            timeStart = System.currentTimeMillis();
+            predictedLabel = efr.predict(img);
+            timeEnd = System.currentTimeMillis();
+            eigenAvgTime += timeEnd - timeStart;
+            if (s == predictedLabel) {
+                imwrite(eigenOutputDirRight + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
+                eigenNumRight++;
+            } else {
+                imwrite(eigenOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
+            }
+                Log.i(TAG, "Eigen prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel);
 
-                /*
-                timeStart = System.currentTimeMillis();
-                predictedLabel = ffr.predict(img);
-                timeEnd = System.currentTimeMillis();
-                fisherAvgTime += timeEnd - timeStart;
-                if (s == predictedLabel) {
-                    imwrite(fisherOutputDirRight + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
-                    fisherNumRight++;
-                } else {
-                    imwrite(fisherOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
-                }
-                Log.i(TAG, "Fisher done");
+            /*
+            timeStart = System.currentTimeMillis();
+            predictedLabel = ffr.predict(img);
+            timeEnd = System.currentTimeMillis();
+            fisherAvgTime += timeEnd - timeStart;
+            if (s == predictedLabel) {
+                imwrite(fisherOutputDirRight + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
+                fisherNumRight++;
+            } else {
+                imwrite(fisherOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
+            }
+            Log.i(TAG, "Fisher done");
 
 
-                timeStart = System.currentTimeMillis();
-                predictedLabel = lfr.predict(img);
-                timeEnd = System.currentTimeMillis();
-                lbphAvgTime += timeEnd - timeStart;
-                if (s == predictedLabel) {
-                    imwrite(lbphOutputDirRight + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
-                    lbphNumRight++;
-                } else {
-                    imwrite(lbphOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
-                }
-                Log.i(TAG, "lbph done");
-                */
+            timeStart = System.currentTimeMillis();
+            predictedLabel = lfr.predict(img);
+            timeEnd = System.currentTimeMillis();
+            lbphAvgTime += timeEnd - timeStart;
+            if (s == predictedLabel) {
+                imwrite(lbphOutputDirRight + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
+                lbphNumRight++;
+            } else {
+                imwrite(lbphOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
+            }
+            Log.i(TAG, "lbph done");
+            */
 
                 timeStart = System.currentTimeMillis();
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
-                predictedLabel = (int) sfr.predict(pca.project(img)) + 1;
+                predictedLabel = (int) sfr.predict(pca.project(img));
                 timeEnd = System.currentTimeMillis();
                 svmAvgTime += timeEnd - timeStart;
                 if (s == predictedLabel) {
@@ -340,83 +336,82 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                     imwrite(svmOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
                 }
                 Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel);
-                Log.i(TAG, "SVM done");
             }
         }
 
 
-        /*
-        //For testing different numbers of PCs:
-        float[] eigenTimes = new float[21];
-        float[] eigenAccuracies = new float[21];
-        int[] numsRight = new int[21];
-        int[] numsFalseNegatives = new int[21];
-        int index = 0;
-        int numImages = 0;
+    /*
+    //For testing different numbers of PCs:
+    float[] eigenTimes = new float[21];
+    float[] eigenAccuracies = new float[21];
+    int[] numsRight = new int[21];
+    int[] numsFalseNegatives = new int[21];
+    int index = 0;
+    int numImages = 0;
 
-        for(int j = 0; j <= 200; j += 10, index++) {
-            efr = createEigenFaceRecognizer();
-            efr.load(modelDir + "/eigenModel_" + j + ".xml");
-            eigenTimes[index] = 0;
-            numsRight[index] = 0;
-            numsFalseNegatives[index] = 0;
-            numImages = 0;
-            for (int s = 1; s <= 40; s++) {
-                for (int i = 5; i <= 10; i++, numImages++) {
+    for(int j = 0; j <= 200; j += 10, index++) {
+        efr = createEigenFaceRecognizer();
+        efr.load(modelDir + "/eigenModel_" + j + ".xml");
+        eigenTimes[index] = 0;
+        numsRight[index] = 0;
+        numsFalseNegatives[index] = 0;
+        numImages = 0;
+        for (int s = 1; s <= 40; s++) {
+            for (int i = 5; i <= 10; i++, numImages++) {
 
-                    Log.i(TAG, "PCs: " + j + ", s" + s + " i" + i);
+                Log.i(TAG, "PCs: " + j + ", s" + s + " i" + i);
 
-                    img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
+                img = imread(trainingSetDir + "/" + s + "_" + i + ".jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
-                    timeStart = System.currentTimeMillis();
-                    predictedLabel = efr.predict(img);
-                    timeEnd = System.currentTimeMillis();
-                    eigenTimes[index] += timeEnd - timeStart;
-                    if (s == predictedLabel) {
-                        numsRight[index]++;
-                    } else if (s == -1){
-                        numsFalseNegatives[index]++;
-                    }
+                timeStart = System.currentTimeMillis();
+                predictedLabel = efr.predict(img);
+                timeEnd = System.currentTimeMillis();
+                eigenTimes[index] += timeEnd - timeStart;
+                if (s == predictedLabel) {
+                    numsRight[index]++;
+                } else if (s == -1){
+                    numsFalseNegatives[index]++;
                 }
             }
-            eigenTimes[index] =  (eigenTimes[index]/(numImages))/1000;
-            eigenAccuracies[index] = ((float) numsRight[index]/numImages) * 100;
+        }
+        eigenTimes[index] =  (eigenTimes[index]/(numImages))/1000;
+        eigenAccuracies[index] = ((float) numsRight[index]/numImages) * 100;
+    }
+
+    TextView numImgViewz = (TextView) findViewById(R.id.numImg);
+    TextView notificationz = (TextView) findViewById(R.id.recogNotification);
+    TextView timesAndAccuraciesTextViewz = (TextView) findViewById(R.id.recogTimesAndAccuraciesTextView);
+
+    try {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(targetDir + "/eigenTimesAndAcccuracies.txt"));
+        Log.i(TAG, "Setting up the text fields");
+        notificationz.setText("Recognition complete.");
+        numImgViewz.setText("Number of Testing Images = " + numImages);
+        bw.write("Recognition complete.\nNumber of Testing Images = " + numImages + "\n\n");
+
+        for(int i = 0; i < 21; i++) {
+            Log.i(TAG, "Writing eigen" + i);
+            timesAndAccuraciesTextViewz.setText(timesAndAccuraciesTextViewz.getText() + "PCs= " + (i*10) + ", avgTime= " + eigenTimes[i] + "s\nacc= " + eigenAccuracies[i]+ "%\nFalse negatives = " + numsFalseNegatives[i] + "\n\n");
+            bw.write("PCs= " + (i*10) + ", avgTime= " + eigenTimes[i] + "s\nacc= " + eigenAccuracies[i]+ "%\nFalse negatives = " + numsFalseNegatives[i] + "\n\n");
         }
 
-        TextView numImgViewz = (TextView) findViewById(R.id.numImg);
-        TextView notificationz = (TextView) findViewById(R.id.recogNotification);
-        TextView timesAndAccuraciesTextViewz = (TextView) findViewById(R.id.recogTimesAndAccuraciesTextView);
+        bw.flush();
+        bw.close();
+    } catch (Exception e){
+        Log.e(TAG, "Exception thrown at JavaCVFaceRecognizerTest: " + e);
+    }
 
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(targetDir + "/eigenTimesAndAcccuracies.txt"));
-            Log.i(TAG, "Setting up the text fields");
-            notificationz.setText("Recognition complete.");
-            numImgViewz.setText("Number of Testing Images = " + numImages);
-            bw.write("Recognition complete.\nNumber of Testing Images = " + numImages + "\n\n");
+    */
 
-            for(int i = 0; i < 21; i++) {
-                Log.i(TAG, "Writing eigen" + i);
-                timesAndAccuraciesTextViewz.setText(timesAndAccuraciesTextViewz.getText() + "PCs= " + (i*10) + ", avgTime= " + eigenTimes[i] + "s\nacc= " + eigenAccuracies[i]+ "%\nFalse negatives = " + numsFalseNegatives[i] + "\n\n");
-                bw.write("PCs= " + (i*10) + ", avgTime= " + eigenTimes[i] + "s\nacc= " + eigenAccuracies[i]+ "%\nFalse negatives = " + numsFalseNegatives[i] + "\n\n");
-            }
+        eigenAvgTime /= numImg * 1000;
+        fisherAvgTime /= numImg * 1000;
+        lbphAvgTime /= numImg * 1000;
+        svmAvgTime /= numImg * 1000;
 
-            bw.flush();
-            bw.close();
-        } catch (Exception e){
-            Log.e(TAG, "Exception thrown at JavaCVFaceRecognizerTest: " + e);
-        }
-
-        */
-
-        eigenAvgTime /= numImg*1000;
-        fisherAvgTime /= numImg*1000;
-        lbphAvgTime /= numImg*1000;
-        svmAvgTime /= numImg*1000;
-
-        eigenPercentAcc = (eigenNumRight/numImg) * 100;
-        fisherPercentAcc = (fisherNumRight/numImg) * 100;
-        lbphPercentAcc = (lbphNumRight/numImg) * 100;
-        svmPercentAcc = (svmNumRight/numImg) * 100;
+        eigenPercentAcc = (eigenNumRight / numImg) * 100;
+        fisherPercentAcc = (fisherNumRight / numImg) * 100;
+        lbphPercentAcc = (lbphNumRight / numImg) * 100;
+        svmPercentAcc = (svmNumRight / numImg) * 100;
 
         TextView numImgView = (TextView) findViewById(R.id.numImg);
         TextView notification = (TextView) findViewById(R.id.recogNotification);
@@ -429,16 +424,18 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         timesAndAccuraciesTextView.setText("Eigen time average = " + eigenAvgTime + "s\nEigen accuracy = " + eigenPercentAcc + "%\n\n");
         timesAndAccuraciesTextView.setText(timesAndAccuraciesTextView.getText() + "SVM time average = " + svmAvgTime + "s\nSVM accuracy = " + svmPercentAcc + "%\n\n");
 
-        /*
-        eigenAccuracy.setText("Eigen accuracy = " + (int)eigenNumRight + "/" + (int)numImg + " = " + eigenPercentAcc + "%");
-        fisherTime.setText("Fisher time average= " + fisherAvgTime + "ms");
-        fisherAccuracy.setText("Fisher accuracy = " + (int)fisherNumRight + "/" + (int)numImg + " = " + fisherPercentAcc + "%");
-        lbphTime.setText("LBPH time average= " + lbphAvgTime + "ms");
-        lbphAccuracy.setText("LBPH accuracy = " + (int)lbphNumRight + "/" + (int)numImg + " = " + lbphPercentAcc + "%");
-        svmTime.setText("SVM time average= " + svmAvgTime + "ms");
-        svmAccuracy.setText("SVM accuracy = " + (int)svmNumRight + "/" + (int)numImg + " = " + svmPercentAcc + "%");
-        */
+    /*
+    eigenAccuracy.setText("Eigen accuracy = " + (int)eigenNumRight + "/" + (int)numImg + " = " + eigenPercentAcc + "%");
+    fisherTime.setText("Fisher time average= " + fisherAvgTime + "ms");
+    fisherAccuracy.setText("Fisher accuracy = " + (int)fisherNumRight + "/" + (int)numImg + " = " + fisherPercentAcc + "%");
+    lbphTime.setText("LBPH time average= " + lbphAvgTime + "ms");
+    lbphAccuracy.setText("LBPH accuracy = " + (int)lbphNumRight + "/" + (int)numImg + " = " + lbphPercentAcc + "%");
+    svmTime.setText("SVM time average= " + svmAvgTime + "ms");
+    svmAccuracy.setText("SVM accuracy = " + (int)svmNumRight + "/" + (int)numImg + " = " + svmPercentAcc + "%");
+    */
 
         Log.i(TAG, "Finique");
     }
+
+
 }

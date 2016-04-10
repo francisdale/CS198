@@ -14,6 +14,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +30,8 @@ import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
+import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 
 /**
  * Created by jedpatrickdatu on 2/15/2016.
@@ -111,8 +114,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             numStudents = attendanceRecord.size();
             publishProgress();
 
-            /*
-            FaceRecognizer efr = createEigenFaceRecognizer();
+
+            FaceRecognizer efr = createEigenFaceRecognizer(169, 4000.0);
 
             FilenameFilter eigenModelFilter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -124,12 +127,13 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
 
             timeStart = System.currentTimeMillis();
-            efr.load(modelFilePath);
+            //efr.load(modelFilePath);
+            efr.load(modelDir + "/eigenModel.xml");
             timeEnd = System.currentTimeMillis();
             timeElapsed = timeEnd - timeStart;
             Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
 
-            */
+
 
             //For PCA+SVM recognition:
             FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
@@ -181,8 +185,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                 timeStart = System.currentTimeMillis();
                 mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
-                predictedLabel = (int)sfr.predict(pca.project(mGray));
-                //predictedLabel = efr.predict(mGray);
+                //predictedLabel = (int)sfr.predict(pca.project(mGray));
+                predictedLabel = efr.predict(mGray);
                 timeEnd = System.currentTimeMillis();
                 timeElapsed = timeEnd - timeStart;
 
@@ -209,6 +213,10 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     //imwrite(recordCropsDirPath + "/" + predictedLabel + ".jpg", mColor);
 
                     Log.i(TAG, "Crop saved.");
+                } else if(-1 == predictedLabel){
+                    Log.i(TAG, "Non face found.");
+                    imwrite(recordCropsDirPath + "/nonFace_" + predictedLabel + ".jpg", mColor);
+                    numUnrecognizedFaces++;
                 } else {
                     Log.i(TAG, "Unrecognized face found.");
                     imwrite(recordCropsDirPath + "/unrecognizedFace_" + predictedLabel + ".jpg", mColor);
