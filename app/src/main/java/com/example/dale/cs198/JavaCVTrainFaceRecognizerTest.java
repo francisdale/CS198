@@ -1,6 +1,5 @@
 package com.example.dale.cs198;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,9 +9,7 @@ import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.nio.IntBuffer;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
@@ -31,9 +28,9 @@ import static org.bytedeco.javacpp.opencv_ml.TrainData;
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String TAG = "testMessage";
     private static final String trainingSetDir = "sdcard/PresentData/att/att_faces";
-    private static final String researchModelDir = "sdcard/PresentData/researchMode/recognizerModels";
+    private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
-    private static double threshold = 4000.0;
+    private static double threshold = 4000;
     private static final Size dSize = new Size(160, 160);
 
     int numTrainingImages = 160;
@@ -45,22 +42,10 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     long timeElapsedSVM;
 
 
-    //For main test:
-    String researchDir = "sdcard/PresentData/researchMode";
-    String modelDir = "sdcard/PresentData";
-    String[] classDataDirs = {researchDir + "/CS133 Classroom Data", researchDir + "/CS197 Classroom Data"};
-    String mainTestResultsDir = researchDir + "/" + "mainTestResults";
-    String isMainTest;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_java_cvtrain_face_recognizer_test);
-
-        Intent intent = getIntent();
-        isMainTest = intent.getStringExtra("isMainTest");
-
         trainAlgorithm();
     }
 
@@ -102,7 +87,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
             Log.i(TAG, "trainedCrops " + counter);
         }*/
 
-        (new File(researchModelDir)).mkdirs();
+        (new File(modelDir)).mkdirs();
 
         //Image resolution92x112
         for(int s = 1; s <= 40; s++){
@@ -183,16 +168,12 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         trainingMat.convertTo(trainingMat, CV_32FC1);
         Log.i(TAG, "Number of images loaded: " + images.size());
 
-
-
         //For training SVM:
         Mat data = new Mat();
         Mat projectedMat;
         Mat temp;
-        int numTrainingMatRows = trainingMat.rows();
-        numPrincipalComponents = numTrainingMatRows - 1;
         PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
-
+        int numTrainingMatRows = trainingMat.rows();
 
         timeStart = System.currentTimeMillis();
         for(int i = 0; i < numTrainingMatRows; i++) {
@@ -214,7 +195,22 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         data.convertTo(data, CV_32FC1);
 
+        Log.i(TAG, "Saving pca to pca.xml...");
+        FileStorage fs = new FileStorage(modelDir + "/pca.xml", FileStorage.WRITE);
+        pca.write(fs);
+        fs.release();
 
+        fs = new FileStorage(modelDir + "/pca.xml", FileStorage.READ);
+
+        Log.i(TAG, "Loading pca.xml...");
+        PCA acp = new PCA();
+
+        acp.read(fs.root());
+        fs.release();
+
+        Log.i(TAG, "loaded mean rows = " + acp.mean().rows() + ", cols = " + acp.mean().cols());
+        Log.i(TAG, "loaded eigenvectors rows = " + acp.eigenvectors().rows() + ", cols = " + acp.eigenvectors().cols());
+        Log.i(TAG, "loaded eigenvalues rows = " + acp.eigenvalues().rows() + ", cols = " + acp.eigenvalues().cols());
 
 
 
@@ -274,6 +270,13 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         Log.i(TAG, "okz4");
 
 
+        File folder = new File(modelDir);
+        if(!folder.exists()){
+            Log.i(TAG, modelDir + " does not exist. Creating...");
+            folder.mkdir();
+        }
+
+
         TextView numImg = (TextView) findViewById(R.id.numImg);
         TextView notification = (TextView) findViewById(R.id.trainingNotification);
         TextView trainTimesTextView = (TextView) findViewById(R.id.trainTimesTextView);
@@ -281,15 +284,17 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         FaceRecognizer faceRecognizer;
 
+
+
         //Eigen Recog:
-        faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
+        faceRecognizer = createEigenFaceRecognizer(250, threshold);
         timeStart = System.currentTimeMillis();
         Log.i(TAG, "Training PCA+KNN...");
         faceRecognizer.train(images, labels);
         timeEnd = System.currentTimeMillis();
         timeElapsed = timeEnd - timeStart;
         trainTimesTextView.setText(trainTimesTextView.getText() + "PCA+KNN : " + ((float) timeElapsed / 1000) + "s\n");
-        faceRecognizer.save(researchModelDir + "/eigenModel.xml");
+        faceRecognizer.save(modelDir + "/eigenModel.xml");
 
 
         //Eigen Recog 20 times:
@@ -369,40 +374,16 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         //svm.save(modelDir + "/svmModel.xml");
 
+        fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.WRITE);
+        svm.write(fs);
+        fs.release();
+
+        SVM mvs = SVM.create();
+        fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.READ);
+        mvs.read(fs.root());
+        fs.release();
 
         notification.setText("Training complete.\nThreshold used = " + threshold);
-
-
-        if (isMainTest == "true") {
-            Log.i(TAG, "Now in mainTestMode. Saving pca to pca.xml...");
-            FileStorage fs = new FileStorage(modelDir + "/pca.xml", FileStorage.WRITE);
-            pca.write(fs);
-            fs.release();
-
-            fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.WRITE);
-            svm.write(fs);
-            fs.release();
-
-            Log.i(TAG, "Save done.");
-
-            try{
-                BufferedWriter bw = new BufferedWriter(new FileWriter(mainTestResultsDir + "/timesAndAccuracies.txt"));
-                for(int i = 0; i < classDataDirs.length; i++) {
-                }
-            } catch (Exception e){
-                Log.e(TAG, e.getMessage());
-            }
-        } else {
-            Log.i(TAG, "Saving pca and svm...");
-            FileStorage fs = new FileStorage(researchModelDir + "/pca.xml", FileStorage.WRITE);
-            pca.write(fs);
-            fs.release();
-
-            fs = new FileStorage(researchModelDir + "/svmModel.xml", FileStorage.WRITE);
-            svm.write(fs);
-            fs.release();
-            Log.i(TAG, "Save done.");
-        }
 
     }
 

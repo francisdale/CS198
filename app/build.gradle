@@ -33,9 +33,6 @@ repositories {
     maven {
         url  "http://dl.bintray.com/lukaville/maven"
     }
-    maven {
-        url "https://jitpack.io"
-    }
 }
 
 
@@ -57,5 +54,4 @@ dependencies {
     compile files('libs/opencv-android-x86.jar')
     compile files('libs/opencv.jar')
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
-    compile 'com.github.sangcomz:FishBun:c2b6fea226'
 }

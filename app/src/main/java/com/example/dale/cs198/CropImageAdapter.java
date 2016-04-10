@@ -174,7 +174,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                             File sdCardRoot = Environment.getExternalStorageDirectory();
 
                             for(int i=0;;i++){
-                                File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+i+"_"+label+".jpg");
+                                File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+label+"_"+i+".jpg");
                                 if(!newFilePic.exists()){
                                     if (oldfile.renameTo(newFilePic)) {
                                         faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());

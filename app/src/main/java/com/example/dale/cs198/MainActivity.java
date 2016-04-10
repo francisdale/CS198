@@ -152,19 +152,13 @@ public class MainActivity extends AppCompatActivity {
     public void dispatchFaceRecogTrainActivityIntent(View view){
         Log.i(TAG, "dispatchFaceRecogTrainActivityIntent");
         Intent faceRecogTrain = new Intent(MainActivity.this,JavaCVTrainFaceRecognizerTest.class);
-        faceRecogTrain.putExtra("isMainTest", "false");
         startActivity(faceRecogTrain);
     }
 
     public void dispatchFaceRecogActivityIntent(View view){
         Intent faceRecog = new Intent(MainActivity.this,JavaCVFaceRecognizerTest.class);
+        faceRecog.putExtra("filepath", selectedImagePath);
         startActivity(faceRecog);
-    }
-
-    public void dispatchMainTestIntent(){
-        Intent mainTest = new Intent(MainActivity.this,JavaCVTrainFaceRecognizerTest.class);
-        mainTest.putExtra("isMainTest", "true");
-        startActivity(mainTest);
     }
 
     @Override
@@ -235,8 +229,6 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onOptionsItemSelected state na");
         return super.onOptionsItemSelected(item);
     }
-
-
 
 
 

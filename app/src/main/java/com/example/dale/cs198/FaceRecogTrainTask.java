@@ -48,7 +48,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
     private static final Size dSize = new Size(160, 160);
     int numPrincipalComponents;
-    double threshold = 4000.0;
+    double threshold = 4000;
 
     long timeStart;
     long timeEnd;
@@ -94,11 +94,10 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(Void... params) {
 
         //Unify the names of all crops in CS197
-        //gatherAllCrops();
+        gatherAllCrops();
 
         String timeStamp = new SimpleDateFormat("MMddyyy-HHmmss").format(new Date());
-        //String modelFileName = "eigenModel_" + timeStamp + ".xml";
-        String modelFileName = "eigenModel.xml";
+        String modelFileName = "eigenModel_" + timeStamp + ".xml";
 
 
 
@@ -140,6 +139,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Mat img;
         IntBuffer labelsBuf = labels.getIntBuffer();
         int label;
+        String[] nameDetails;
         File f;
         int counter = 0;
         int secondaryID;
@@ -149,7 +149,9 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         for (File c : trainedCrops) {
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-            label = Integer.parseInt(c.getName().split("_")[0]);
+
+            nameDetails = c.getName().split("_");
+            label = Integer.parseInt(nameDetails[0]);
 
             resize(img, img, dSize);
 
@@ -167,7 +169,9 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         for(File c : untrainedCrops) {
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-            label = Integer.parseInt(c.getName().split("_")[0]);
+
+            nameDetails = c.getName().split("_");
+            label = Integer.parseInt(nameDetails[0]);
 
             resize(img, img, dSize);
 
@@ -181,7 +185,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             //Before moving the crop to trainedCrops, find a new filename for the crop that does not conflict with a crop already in trainedCrops.
             secondaryID = 0;
             do {
-                f = new File(trainedCropsDir + "/" + label + "_" + secondaryID + ".jpg");
+                f = new File(trainedCropsDir + "/" + label + "_" + nameDetails[1] + "_" + secondaryID + ".jpg");
                 secondaryID++;
             } while(f.exists());
             c.renameTo(f);
@@ -271,7 +275,6 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
         Log.i(TAG, "Type legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
 
-
         //For PCA+KNN recognition:
         FaceRecognizer faceRecognizer = createEigenFaceRecognizer(250, threshold);
         //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
@@ -289,7 +292,6 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             modelFileDirFiles[0].delete();
         }
 
-
         Log.i(TAG, "Training Eigenface...");
         timeStart = System.currentTimeMillis();
         faceRecognizer.train(images, labels);
@@ -298,11 +300,10 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Training completed in " + (float) timeElapsed / 1000 + "s.");
 
         //dialog.setMessage("Saving recognizer...");
-        faceRecognizer.save(modelDir + "/" + modelFileName);
+        faceRecognizer.save(modelDir + "/eigenModel.xml");
         Log.i(TAG, "Training model saved.");
         //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);
         //toast.show();
-
 
         isTrainingSuccess = true;
         return isTrainingSuccess;
@@ -316,8 +317,8 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
     public void gatherAllCrops(){
 
-        final String classesDir = "sdcard/PresentData/Classes/CS 133";
-        String cs197Dir = "sdcard/PresentData/CS133 Classroom Data";
+        final String classesDir = "sdcard/PresentData/Classes/CS 197";
+        String cs197Dir = "sdcard/PresentData/CS197 Classroom Data";
 
         String allCropsDir = cs197Dir + "/allCrops";
 
@@ -377,7 +378,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
                     /*//For moving to allCrops:
                     do {
-                        cropNewName = id + "_" + secondId + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "," + studentNumAndName[0] + "_" + date + ".jpg";
+                        cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "," + studentNumAndName[0] + "_" + date  + "_" + secondId + ".jpg";
                         tempFile = new File(allCropsDir + "/" + cropNewName);
                         secondId++;
                     } while (tempFile.exists());
@@ -387,7 +388,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
                     //For changing the name of training crops to include names:
                     do {
-                        cropNewName = id + "_" + secondId + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + ".jpg";
+                        cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + secondId + ".jpg";
                         tempFile = new File(dayFolderDir + "/" + cropNewName);
                         secondId++;
                     } while (tempFile.exists());

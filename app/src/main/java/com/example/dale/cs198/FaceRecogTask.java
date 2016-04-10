@@ -25,13 +25,13 @@ import java.util.Set;
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
+import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
+import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
-import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
-import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 
 /**
  * Created by jedpatrickdatu on 2/15/2016.
@@ -127,13 +127,11 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
 
             timeStart = System.currentTimeMillis();
-            //efr.load(modelFilePath);
             efr.load(modelDir + "/eigenModel.xml");
             timeEnd = System.currentTimeMillis();
             timeElapsed = timeEnd - timeStart;
             Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
             Log.i(TAG, "Eigen loaded.");
-
 
 
             //For PCA+SVM recognition:
