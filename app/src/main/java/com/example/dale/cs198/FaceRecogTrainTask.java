@@ -94,7 +94,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(Void... params) {
 
         //Unify the names of all crops in CS197
-        gatherAllCrops();
+        //gatherAllCrops();
 
         String timeStamp = new SimpleDateFormat("MMddyyy-HHmmss").format(new Date());
         String modelFileName = "eigenModel_" + timeStamp + ".xml";
@@ -279,7 +279,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         FaceRecognizer faceRecognizer = createEigenFaceRecognizer(250, threshold);
         //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
 
-        //Delete the old eigenModel xml model if there is any
+        /*//Delete the old eigenModel xml model if there is any
         FilenameFilter eigenModelFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
@@ -303,7 +303,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         faceRecognizer.save(modelDir + "/eigenModel.xml");
         Log.i(TAG, "Training model saved.");
         //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);
-        //toast.show();
+        //toast.show();*/
 
         isTrainingSuccess = true;
         return isTrainingSuccess;

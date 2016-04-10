@@ -351,9 +351,9 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         //SVM Recog:
 
         SVM svm = SVM.create();
-        svm.setType(SVM.EPS_SVR);
+        svm.setType(SVM.C_SVC);
         svm.setKernel(SVM.LINEAR);
-        svm.setP(0.01);
+        //svm.setP(0.01);
         //svm.setDegree(2);
         //svm.setGamma(1);
         TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
