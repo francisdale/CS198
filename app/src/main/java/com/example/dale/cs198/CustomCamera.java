@@ -2,6 +2,7 @@ package com.example.dale.cs198;
 
 import android.app.Activity;
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -11,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -112,6 +114,8 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
             @Override
             public void onClick(View v) {
                 dispatchSelectPhotoIntent();
+
+                //showDialogGallery();
             }
         });
 
@@ -176,6 +180,30 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         };
 
         Log.i(TAG, "CustomCamera onCreate done");
+    }
+
+
+    public void showDialogGallery(){
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this,R.style.Theme_Holo_Dialog_Alert);
+        alertBuilder.setMessage("Select Image picking mode")
+                .setCancelable(false)
+                .setPositiveButton("Single Image", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dispatchSelectSinglePhotoIntent();
+                        //Log.i(TAG,studentList.get(getAdapterPosition()).getLastName() + " is " + studentList.get(getAdapterPosition()).isSelected());
+                    }
+                })
+                .setNegativeButton("Multiple Images", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dispatchSelectPhotoIntent();
+                            }
+                        }
+                );
+        AlertDialog alert = alertBuilder.create();
+        //alert.setTitle("Make Student ABSENT");
+        alert.show();
     }
 
     public void refreshGallery(File file) {
@@ -382,6 +410,18 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
         selectFromGallery.setType("image/*");
         selectFromGallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
+        isGalleryOpen = true;
+        startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
+        Toast.makeText(getApplicationContext(), "Select and hold the photos to be analyze.", Toast.LENGTH_SHORT).show();
+        //startActivityForResult(selectFromGallery, SELECT_PHOTO);
+    }
+
+    private void dispatchSelectSinglePhotoIntent() {
+        Log.i(TAG, "DispatchSelectPhotoIntent");
+        Intent selectFromGallery = new Intent(Intent.ACTION_PICK);
+        selectFromGallery.setType("image/*");
+
         selectFromGallery.setAction(Intent.ACTION_GET_CONTENT);
         isGalleryOpen = true;
         startActivityForResult(Intent.createChooser(selectFromGallery, "Select Picture"), SELECT_PHOTO);
