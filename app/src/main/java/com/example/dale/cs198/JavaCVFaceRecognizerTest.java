@@ -274,8 +274,10 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         //Load and recognize AT&T faces
         int predictedLabel;
+        float confidence;
         String currSPath;
         Mat img;
+        Mat projectedImg;
 
         Log.i(TAG, "recog initialization complete");
 
@@ -330,7 +332,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
                 timeStart = System.currentTimeMillis();
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
-                predictedLabel = (int) sfr.predict(pca.project(img)) + 1;
+                projectedImg = pca.project(img);
+                predictedLabel = (int) sfr.predict(projectedImg);
                 timeEnd = System.currentTimeMillis();
                 svmAvgTime += timeEnd - timeStart;
                 if (s == predictedLabel) {
@@ -339,7 +342,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 } else {
                     imwrite(svmOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
                 }
-                Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel);
+                Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel + ", confidence = ");
                 Log.i(TAG, "SVM done");
             }
         }

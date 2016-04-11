@@ -126,12 +126,12 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
 
-            timeStart = System.currentTimeMillis();
+            /*timeStart = System.currentTimeMillis();
             efr.load(modelDir + "/eigenModel.xml");
             timeEnd = System.currentTimeMillis();
             timeElapsed = timeEnd - timeStart;
             Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
-            Log.i(TAG, "Eigen loaded.");
+            Log.i(TAG, "Eigen loaded.");*/
 
 
             //For PCA+SVM recognition:
@@ -185,8 +185,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                 timeStart = System.currentTimeMillis();
                 mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
-                //predictedLabel = (int)sfr.predict(pca.project(mGray));
-                predictedLabel = efr.predict(mGray);
+                predictedLabel = (int)sfr.predict(pca.project(mGray));
+                //predictedLabel = efr.predict(mGray);
                 timeEnd = System.currentTimeMillis();
                 timeElapsed = timeEnd - timeStart;
 
