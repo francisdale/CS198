@@ -70,13 +70,7 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".JavaCVTrainFaceRecognizerTest" />
         <activity android:name=".JavaCVFaceRecognizerTest" />
-        <!--
-             ATTENTION: This was auto-generated to add Google Play services to your project for
-             App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
-        -->
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
+
 
         <activity android:name=".TrainListActivity" />
         <activity
@@ -85,7 +79,8 @@
         <activity
             android:name=".EditAttendanceReport"
             android:label="View Report"></activity>
-        <activity android:name=".EditAttendanceReport_RV"></activity>
+        <activity android:name=".EditAttendanceReport_RV"
+            android:label="View Report"></activity>
     </application>
 
 </manifest>

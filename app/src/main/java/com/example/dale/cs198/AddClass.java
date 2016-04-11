@@ -75,17 +75,7 @@ public class AddClass extends AppCompatActivity {
     String end;
     String name;
 
-
-
-    NotificationManager notificationManager;
-    boolean isActive = false;
-    int notifID = 29;
-
     int n;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
 
 
     @Override

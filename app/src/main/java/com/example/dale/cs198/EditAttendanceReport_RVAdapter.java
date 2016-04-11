@@ -4,14 +4,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,6 +23,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+
 /**
  * Created by DALE on 1/21/2016.
  */
@@ -124,7 +130,6 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
             face = (ImageView)view.findViewById(R.id.student_face);
             detail = (CheckBox)view.findViewById(R.id.report_detail_item);
             studInfo = (TextView)view.findViewById(R.id.student_info);
-
         }
 
         @Override
@@ -134,8 +139,20 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
             Log.i(TAG, "Previous state --> " + previousState);
             Log.i(TAG,"position -->" + getAdapterPosition());
             if (detail.isChecked() == true) {
+
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context,R.style.Theme_Holo_Dialog_Alert);
-                alertBuilder.setMessage("Are you sure that " + studInfo.getText().toString() + " is ABSENT on " + date + " for " + className + " ?")
+
+                String ID = Integer.toString(studentList.get(getAdapterPosition()).getId());
+                String[] x = reportPath.split(Pattern.quote("."));
+                String cropFolder = x[0];
+                Log.i(TAG,"cropFolder --> " + x[0]);
+
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.edit_report_grid_dialog,(ViewGroup) v.findViewById(R.id.layout_root));
+                GridView gridview = (GridView)layout.findViewById(R.id.face_grid);
+                gridview.setAdapter(new ImageAdapter(context,getCropPaths(ID,cropFolder)));
+
+                alertBuilder.setMessage("Are you sure that " + studInfo.getText().toString() + " is ABSENT on " + date + " for " + className + " ?\n")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
@@ -153,14 +170,32 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
                                     }
                                 }
                         );
+
+                alertBuilder.setView(layout);
                 AlertDialog alert = alertBuilder.create();
-                alert.setTitle("Make Student ABSENT");
+                TextView textView = new TextView(context);
+                textView.setTextColor(Color.WHITE);
+                textView.setTextSize(20);
+                textView.setText("\tMake Student ABSENT");
+                alert.setCustomTitle(textView);
+                //alert.setTitle("Make Student ABSENT");
                 alert.show();
 
             }
             if (detail.isChecked() == false) {
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context,R.style.Theme_Holo_Dialog_Alert);
-                alertBuilder.setMessage("Are you sure that " + studInfo.getText().toString() + " is PRESENT on " + date + " for " + className + " ?")
+
+                String ID = Integer.toString(studentList.get(getAdapterPosition()).getId());
+                String[] x = reportPath.split(Pattern.quote("."));
+                String cropFolder = x[0];
+
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.edit_report_grid_dialog,(ViewGroup) v.findViewById(R.id.layout_root));
+                GridView gridview = (GridView)layout.findViewById(R.id.face_grid);
+                gridview.setAdapter(new ImageAdapter(context,getCropPaths(ID,cropFolder)));
+
+
+                alertBuilder.setMessage("Are you sure that " + studInfo.getText().toString() + " is PRESENT on " + date + " for " + className + " ?\n")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
@@ -178,28 +213,47 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
                                     }
                                 }
                         );
+
+
+                alertBuilder.setView(layout);
                 AlertDialog alert = alertBuilder.create();
-                alert.setTitle("Make Student PRESENT");
+                TextView textView = new TextView(context);
+                textView.setTextColor(Color.WHITE);
+                textView.setTextSize(20);
+                textView.setText("\tMake Student PRESENT");
+                alert.setCustomTitle(textView);
+                //alert.setTitle("Make Student PRESENT");
                 alert.show();
             }
 
 
         }
 
+    }
 
+    public ArrayList<String> getCropPaths(String ID,String folderPath){
 
+        ArrayList<String> thePaths = new ArrayList<String>();
 
+        File faceCropsDir = new File(folderPath);
+
+        for (File f : faceCropsDir.listFiles()) {
+            if (f.isFile()) {
+                if(f.getName().startsWith(ID+"_")){
+                    thePaths.add(f.getAbsolutePath());
+                }
+            }
+        }
+
+        return thePaths;
     }
 
 
     public void rewriteReport(ArrayList<StudentItem> students){
-
         int selected;
         try {
             //String dataPath = "sdcard/PresentData/Classes/"+name;
             File classFile = new File(reportPath);
-
-
             selected = 0;
             boolean a = classFile.delete();
             if(a == true){
@@ -223,6 +277,76 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
             e.printStackTrace();
         }
     }
+
+
+
+    public void showDialog(boolean isChecked){
+
+        if(isChecked == true){
+
+        }
+
+
+        if(isChecked == false){
+
+
+        }
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////ADAPTER FOR GRIDVIEW//////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    public class ImageAdapter extends BaseAdapter {
+        private Context context;
+        private LayoutInflater inflater;
+        private ArrayList<String> paths;
+        public ImageAdapter(Context c,ArrayList<String> cropPaths) {
+            inflater = LayoutInflater.from(c);
+            context = c;
+            paths = cropPaths;
+        }
+        public int getCount() {
+            return paths.size();
+        }
+        public Object getItem(int position) {
+            return null;
+        }
+        public long getItemId(int position) {
+            return 0;
+        }
+        // create a new ImageView for each item referenced by the
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {  // if it's not recycled,
+                convertView = inflater.inflate(R.layout.grid_item, null);
+                convertView.setLayoutParams(new GridView.LayoutParams(120, 120));
+                holder = new ViewHolder();
+                holder.crop = (ImageView)convertView.findViewById(R.id.categoryimage);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            holder.crop.setAdjustViewBounds(true);
+            holder.crop.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            //holder.crop.setPadding(8, 8, 8, 8);
+
+            Bitmap bmImg = BitmapFactory.decodeFile(paths.get(position));
+            holder.crop.setImageBitmap(bmImg);
+
+            return convertView;
+        }
+        class ViewHolder {
+            ImageView crop;
+        }
+
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////ADAPTER FOR GRIDVIEW//////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
+
 
 
 
