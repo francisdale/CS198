@@ -21,6 +21,7 @@ import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
 import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
+import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 import static org.bytedeco.javacpp.opencv_ml.TrainData;
@@ -30,7 +31,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String trainingSetDir = "sdcard/PresentData/att/att_faces";
     private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
-    private static double threshold = 4000;
+    private static double threshold = 5000.0;
     private static final Size dSize = new Size(160, 160);
 
     int numTrainingImages = 160;
@@ -94,6 +95,8 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
             for(int i = 1; i <= 4; i++, counter++){
                 img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
                 //resize(img, img, dSize);
+
+                equalizeHist(img, img);
 
                 images.put(counter, img);
                 labelsBuf.put(counter, s);
@@ -287,7 +290,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
 
         //Eigen Recog:
-        faceRecognizer = createEigenFaceRecognizer(250, threshold);
+        faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
         timeStart = System.currentTimeMillis();
         Log.i(TAG, "Training PCA+KNN...");
         faceRecognizer.train(images, labels);

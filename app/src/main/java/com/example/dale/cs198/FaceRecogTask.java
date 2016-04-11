@@ -14,7 +14,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,11 +24,10 @@ import java.util.Set;
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
-import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
+import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 
@@ -44,6 +42,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
     private static final String classesDir = "sdcard/PresentData/Classes";
 
     private static final Size dSize = new Size(160, 160);
+    int numPrincipalComponents = 250;
+    double threshold = 4000.0;
 
     int numStudents;
     int numStudentsPresent = 0;
@@ -114,8 +114,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             numStudents = attendanceRecord.size();
             publishProgress();
 
-            Log.i(TAG, "Loading Eigen...");
-            FaceRecognizer efr = createEigenFaceRecognizer(250, 4000);
+            /*Log.i(TAG, "Loading Eigen...");
+            FaceRecognizer efr = createEigenFaceRecognizer();
 
             FilenameFilter eigenModelFilter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -126,13 +126,12 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
 
-            /*timeStart = System.currentTimeMillis();
+            timeStart = System.currentTimeMillis();
             efr.load(modelDir + "/eigenModel.xml");
             timeEnd = System.currentTimeMillis();
             timeElapsed = timeEnd - timeStart;
-            Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed/1000 + "s.");
+            Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed / 1000 + "s.");
             Log.i(TAG, "Eigen loaded.");*/
-
 
             //For PCA+SVM recognition:
             Log.i(TAG, "Loading SVM...");
@@ -149,8 +148,10 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             Log.i(TAG, "SVM loaded.");
 
 
+
+
+
             Mat mColor;
-            Mat mColorResized;
             Mat mGray;
             int predictedLabel;
             int secondaryID;
@@ -175,12 +176,12 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             while(null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
                 Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
 
-                mColorResized = new Mat();
-                resize(mColor, mColorResized, dSize);
-
                 mGray = new Mat();
-                cvtColor(mColorResized, mGray, CV_BGR2GRAY);
+                cvtColor(mColor, mGray, CV_BGR2GRAY);
                 Log.i(TAG, "Train usage: image converted to grayscale");
+                equalizeHist(mGray, mGray);
+                resize(mGray, mGray, dSize);
+
                 //Recognize faces:
 
                 timeStart = System.currentTimeMillis();
