@@ -19,6 +19,7 @@ import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
+import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 
 
@@ -135,7 +136,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     public void recog(){
         Log.i(TAG, "Now in recog(). Loading eigenModel...");
-        FaceRecognizer efr = createEigenFaceRecognizer(250, 4000);
+        FaceRecognizer efr = createEigenFaceRecognizer();
         efr.load(modelDir + "/eigenModel.xml");
 
         Log.i(TAG, "eigenModel loaded. Loading SVM...");
@@ -290,6 +291,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
                 int intNumImg = (int) numImg;
 
+                equalizeHist(img, img);
+
 
                 timeStart = System.currentTimeMillis();
                 predictedLabel = efr.predict(img);
@@ -342,7 +345,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 } else {
                     imwrite(svmOutputDirWrong + "/" + intNumImg + "_" + s + "_" + predictedLabel + ".jpg", img);
                 }
-                Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel + ", confidence = ");
+                Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel);
                 Log.i(TAG, "SVM done");
             }
         }

@@ -28,13 +28,11 @@ import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
+import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 import static org.bytedeco.javacpp.opencv_ml.TrainData;
-import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
-import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 
-;
 
 /**
  * Created by jedpatrickdatu on 2/12/2016.
@@ -47,8 +45,8 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
     private static final String modelDir = "sdcard/PresentData";
 
     private static final Size dSize = new Size(160, 160);
-    int numPrincipalComponents;
-    double threshold = 4000;
+    int numPrincipalComponents = 250;
+    double threshold = 4000.0;
 
     long timeStart;
     long timeEnd;
@@ -115,6 +113,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             }
         };
 
+
         File[] untrainedCrops = untrainedCropsFolder.listFiles(untrainedCropsDeleteImgFilter);
 
         for(File d : untrainedCrops){
@@ -149,6 +148,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         for (File c : trainedCrops) {
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+            equalizeHist(img, img);
 
             nameDetails = c.getName().split("_");
             label = Integer.parseInt(nameDetails[0]);
@@ -169,6 +169,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         for(File c : untrainedCrops) {
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+            equalizeHist(img, img);
 
             nameDetails = c.getName().split("_");
             label = Integer.parseInt(nameDetails[0]);
@@ -201,7 +202,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         //dialog.setMessage("Training recognizer...");
 
         int numTrainingImages = (int)images.size();
-        numPrincipalComponents = numTrainingImages - 1;
+        //numPrincipalComponents = numTrainingImages - 1;
 
         //For PCA+SVM recognition:
         trainingMat.convertTo(trainingMat, CV_32FC1);
@@ -275,11 +276,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
         Log.i(TAG, "Type legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
 
-        //For PCA+KNN recognition:
-        FaceRecognizer faceRecognizer = createEigenFaceRecognizer(250, threshold);
+        /*//For PCA+KNN recognition:
+        FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
         //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
 
-        /*//Delete the old eigenModel xml model if there is any
+        //Delete the old eigenModel xml model if there is any
         FilenameFilter eigenModelFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
@@ -303,8 +304,8 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         faceRecognizer.save(modelDir + "/eigenModel.xml");
         Log.i(TAG, "Training model saved.");
         //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);
-        //toast.show();*/
-
+        //toast.show();
+*/
         isTrainingSuccess = true;
         return isTrainingSuccess;
     }
