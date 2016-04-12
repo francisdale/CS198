@@ -89,6 +89,9 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         if(holderName[0].equals("delete")){
            holder.cropName.setText("NOT A FACE");
         }
+        if(holderName[0].equals("unrecognizedFace")){
+            holder.cropName.setText("NOT A FACE");
+        }
 
     }
 
