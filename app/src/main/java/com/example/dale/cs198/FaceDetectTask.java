@@ -10,6 +10,8 @@ import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
@@ -183,7 +185,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                             crop = new Mat(mColor, r);
 
-                            imwrite(untrainedCropsDir + "/" + "unlabeled_" + System.currentTimeMillis() + ".jpg", crop);
+                            imwrite(untrainedCropsDir + "/" + "unlabeled_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", crop);
                         }
                     } else {
                         numFaces = 0;
