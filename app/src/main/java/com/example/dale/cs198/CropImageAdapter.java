@@ -174,7 +174,17 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                             File oldfile =new File(filePathOfLabeled);
                             File sdCardRoot = Environment.getExternalStorageDirectory();
 
-                            for(int i=0;;i++){
+                            File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+label+"_"+System.currentTimeMillis()+".jpg");
+                            if (oldfile.renameTo(newFilePic)) {
+                                faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());
+                                faceCrops.get(getAdapterPosition()).setPath(newFilePic.getAbsolutePath());
+                                Log.i(TAG, "Rename succesful");
+                                Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
+                            } else {
+                                Log.i(TAG, "Rename failed");
+                            }
+
+                            /*for(int i=0;;i++){
                                 File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+label+"_"+i+".jpg");
                                 if(!newFilePic.exists()){
                                     if (oldfile.renameTo(newFilePic)) {
@@ -187,7 +197,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                                     }
                                     break;
                                 }
-                            }
+                            }*/
                             cropName.setText(label);
                             nameDialog.dismiss();
                         }

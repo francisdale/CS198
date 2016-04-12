@@ -156,7 +156,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             int predictedLabel;
             int secondaryID;
             File f;
-            String studentNameAndNum;
+            String studentName;
             String[] temp;
 
             Log.i(TAG, "FaceRecogTask: Initialization complete.");
@@ -201,7 +201,11 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                         Log.i(TAG, "predictedLabel attendance was marked.");
                     }
 
-                    //Before saving the crop, check which secondaryID is still available:
+                    temp = studentNumsAndNames.get(predictedLabel).split(",");
+                    studentName = temp[1] + "," + temp[2];
+                    imwrite(recordCropsDirPath + "/" + predictedLabel + "_" + studentName + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", mColor);
+
+                    /*//Before saving the crop, check which secondaryID is still available:
                     secondaryID = 0;
                     do {
                         temp = studentNumsAndNames.get(predictedLabel).split(",");
@@ -210,33 +214,35 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                         secondaryID++;
                     } while(f.exists());
 
-                    imwrite(f.getAbsolutePath(), mColor);
-                    //imwrite(recordCropsDirPath + "/" + predictedLabel + ".jpg", mColor);
+                    imwrite(f.getAbsolutePath(), mColor);*/
 
                     Log.i(TAG, "Crop saved.");
                 } else if(-1 == predictedLabel){
                     Log.i(TAG, "Non face found.");
 
-                    //Before saving the crop, check which secondaryID is still available:
+                    imwrite(recordCropsDirPath + "/nonFace_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", mColor);
+
+                    /*//Before saving the crop, check which secondaryID is still available:
                     secondaryID = 0;
                     do {
                         f = new File(recordCropsDirPath + "/nonFace_" + secondaryID + ".jpg");
                         secondaryID++;
                     } while(f.exists());
 
-                    imwrite(f.getAbsolutePath(), mColor);
+                    imwrite(f.getAbsolutePath(), mColor);*/
                     numUnrecognizedFaces++;
                 } else {
                     Log.i(TAG, "Unrecognized face found.");
 
-                    //Before saving the crop, check which secondaryID is still available:
+                    imwrite(recordCropsDirPath + "/unrecognizedFace_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", mColor);
+                    /*//Before saving the crop, check which secondaryID is still available:
                     secondaryID = 0;
-                    do {
+                        do {
                         f = new File(recordCropsDirPath + "/unrecognizedFace_" + secondaryID + ".jpg");
                         secondaryID++;
                     } while(f.exists());
 
-                    imwrite(f.getAbsolutePath(), mColor);
+                    imwrite(f.getAbsolutePath(), mColor);*/
                     numUnrecognizedFaces++;
                 }
 

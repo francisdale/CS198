@@ -183,12 +183,13 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             img.reshape(1, 1).convertTo(img, CV_32FC1);
             trainingMat.push_back(img);
 
-            //Before moving the crop to trainedCrops, find a new filename for the crop that does not conflict with a crop already in trainedCrops.
+            f = new File(trainedCropsDir + "/" + label + "_" + nameDetails[1] + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg");
+            /*//Before moving the crop to trainedCrops, find a new filename for the crop that does not conflict with a crop already in trainedCrops.
             secondaryID = 0;
             do {
                 f = new File(trainedCropsDir + "/" + label + "_" + nameDetails[1] + "_" + secondaryID + ".jpg");
                 secondaryID++;
-            } while(f.exists());
+            } while(f.exists());*/
             c.renameTo(f);
 
             img.deallocate();
