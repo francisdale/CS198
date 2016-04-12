@@ -58,9 +58,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         this.context = context;
         labelArr = new String[faceCrops.size()];
         copyFaceCrops = new ArrayList<CropImageItem>(faceCrops);
-
         readMasterList();
-
 
     }
 

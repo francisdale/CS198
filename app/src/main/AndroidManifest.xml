@@ -70,17 +70,26 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".JavaCVTrainFaceRecognizerTest" />
         <activity android:name=".JavaCVFaceRecognizerTest" />
-
-
         <activity android:name=".TrainListActivity" />
         <activity
             android:name=".ViewAttendanceReport"
-            android:label="Attendance Reports"></activity>
+            android:label="Attendance Reports" />
         <activity
             android:name=".EditAttendanceReport"
-            android:label="View Report"></activity>
-        <activity android:name=".EditAttendanceReport_RV"
-            android:label="View Report"></activity>
+            android:label="View Report" />
+        <activity
+            android:name=".EditAttendanceReport_RV"
+            android:label="View Report" />
+
+        <activity android:name=".ViewTrainedCrops"
+            android:label="Trained Crops"
+            android:parentActivityName=".TrainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".TrainActivity" />
+        </activity>
+
+
     </application>
 
 </manifest>
