@@ -2,11 +2,11 @@ package com.example.dale.cs198;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -15,8 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.nbsp.materialfilepicker.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -152,14 +150,36 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
                         String cropFolder = x[0];
 
                         File sdCardRoot = Environment.getExternalStorageDirectory();
-                        File untrainedCrops = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/");
+                        File untrainedCrops = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
                         File reportCrops = new File(cropFolder);
 
 
                         Message msg = handler.obtainMessage();
-                        File[] fileArr = reportCrops.listFiles();
 
-                        boolean meron = false;
+                        //Before moving the crop to untrainedCrops, find a new filename for the crop that does not conflict with a crop already in untrainedCrops.
+                        String[] fNameDetails;
+                        int secondaryID;
+                        File destFile;
+                        String firstPartName;
+                        for (File f : reportCrops.listFiles()) {
+                            fNameDetails = f.getName().split("_");
+                            firstPartName = fNameDetails[0] + "_" + fNameDetails[1];
+                            secondaryID = 0;
+
+                            do {
+                                destFile = new File(untrainedCrops + "/" + firstPartName + "_" + secondaryID + ".jpg");
+                                secondaryID++;
+                            } while(destFile.exists());
+
+                            try {
+                                copyFile(f, destFile);
+                            }catch(IOException e){
+                                Log.e(TAG, e.getMessage());
+                            }
+
+                        }
+
+                        /*boolean meron = false;
                         for (File f : reportCrops.listFiles()) {
                             if (f.isFile()) {
                                 for (File file : untrainedCrops.listFiles()) {
@@ -173,13 +193,13 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
                                 }
                                 if(meron == false){
                                     try {
-                                        copyFile(new File(f.getAbsolutePath()), new File(untrainedCrops, f.getName()));
+                                        copyFile(new File(f.getAbsolutePath()), new File(untrainedCrops, "/" + f.getName()));
                                     }catch(IOException e){
                                         e.printStackTrace();
                                     }
                                 }
                             }
-                        }
+                        }*/
 
                         dialog.dismiss();
                         msg.arg1 = 1;

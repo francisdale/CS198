@@ -1,6 +1,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_relabelAndGather"
+        android:title="Relabel and gather"
+        app:showAsAction="never" ></item>
+
+    <item
+        android:id="@+id/action_testFaceDetect"
+        android:title="Test face detect"
+        app:showAsAction="never" ></item>
+
+    <item
+        android:id="@+id/action_testRecogTrain"
+        android:title="Test recog train"
+        app:showAsAction="never" ></item>
+
+    <item
+        android:id="@+id/action_testRecog"
+        android:title="Test recog"
+        app:showAsAction="never" ></item>
+
 </menu>

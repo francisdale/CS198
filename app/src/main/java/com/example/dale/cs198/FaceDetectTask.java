@@ -10,8 +10,6 @@ import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
@@ -89,8 +87,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             Mat crop;
             RectVector faces;
             Rect r;
-            Rect roi;
             int numFaces;
+            int secondaryID = 0;
+            File f;
 
 
             if (usageType == ATTENDANCE_USAGE){
@@ -185,7 +184,13 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                             crop = new Mat(mColor, r);
 
-                            imwrite(untrainedCropsDir + "/" + "unlabeled_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", crop);
+                            //Before moving the crop to untrainedCrops, find a new filename for the crop that does not conflict with a crop already in untrainedCrops.
+                            secondaryID = 0;
+                            do {
+                                f = new File(untrainedCropsDir + "/unlabeled_" + secondaryID + ".jpg");
+                                secondaryID++;
+                            } while(f.exists());
+                            imwrite(f.getAbsolutePath(), crop);
                         }
                     } else {
                         numFaces = 0;

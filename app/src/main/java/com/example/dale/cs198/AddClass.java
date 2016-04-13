@@ -2,7 +2,6 @@ package com.example.dale.cs198;
 
 import android.app.AlarmManager;
 import android.app.Dialog;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -315,19 +314,15 @@ public class AddClass extends AppCompatActivity {
     int generateClassFile(String fileName) {
         try {
             String classDir = classesDir + "/" + fileName;
-            String dataPath = classDir + "/attendanceReports";
 
-            File classFolder = new File(dataPath);
+            File classFolder = new File(classDir);
             if(!classFolder.exists()){
-                Log.i(TAG, dataPath + " does not exist. Creating...");
+                Log.i(TAG, classDir + " does not exist. Creating...");
                 classFolder.mkdirs();
             }
 
             File classFile = new File(classDir, fileName + "_studentList" + ".txt");
             FileWriter writer = new FileWriter(classFile);
-
-
-            (new File(dataPath + "/"+ fileName+"/attendanceReports")).mkdirs();
 
             selected = 0;
             for (int i = 0; i < studentList.size(); i++) {

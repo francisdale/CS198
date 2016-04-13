@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,18 +58,20 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
 
         String a[] = name.split("\\.");
         File sdCardRoot = Environment.getExternalStorageDirectory();
-        File faceCropsDir = new File(sdCardRoot, "PresentData/Classes/"+className + "/attendanceReports/" + a[0]);
+        File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops");
+        //File faceCropsDir = new File(sdCardRoot, "PresentData/Classes/"+className + "/attendanceReports/" + a[0]);
 
 
         String ID = Integer.toString(s.getId());
         boolean meron = false;
         for (File f : faceCropsDir.listFiles()) {
             if (f.isFile()) {
-                if(f.getName().startsWith(ID+"_0")){
+                if(f.getName().startsWith(ID) && f.getName().endsWith("_0.jpg")){
                     Log.i(TAG, "directory of first occurence -->" + f.getAbsolutePath());
                     Bitmap bmImg = BitmapFactory.decodeFile(f.getAbsolutePath());
                     holder.face.setImageBitmap(bmImg);
                     meron = true;
+                    break;
                 }
             }
         }

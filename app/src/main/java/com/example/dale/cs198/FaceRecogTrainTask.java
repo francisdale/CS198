@@ -11,15 +11,13 @@ import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
 import org.bytedeco.javacpp.opencv_ml.SVM;
+import org.bytedeco.javacpp.opencv_superres.SuperResolution;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.nio.IntBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
@@ -109,7 +107,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         FilenameFilter untrainedCropsDeleteImgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 name = name.toLowerCase();
-                return name.startsWith("delete") || name.startsWith("unlabeled");
+                return name.startsWith("-1") || name.startsWith("unlabeled");
             }
         };
 
@@ -142,6 +140,8 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         File f;
         int counter = 0;
         int secondaryID;
+
+        SuperResolution sr;
 
         //For SVM:
         Mat trainingMat = new Mat();
@@ -183,13 +183,12 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             img.reshape(1, 1).convertTo(img, CV_32FC1);
             trainingMat.push_back(img);
 
-            f = new File(trainedCropsDir + "/" + label + "_" + nameDetails[1] + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg");
-            /*//Before moving the crop to trainedCrops, find a new filename for the crop that does not conflict with a crop already in trainedCrops.
+            //Before moving the crop to trainedCrops, find a new filename for the crop that does not conflict with a crop already in trainedCrops.
             secondaryID = 0;
             do {
                 f = new File(trainedCropsDir + "/" + label + "_" + nameDetails[1] + "_" + secondaryID + ".jpg");
                 secondaryID++;
-            } while(f.exists());*/
+            } while(f.exists());
             c.renameTo(f);
 
             img.deallocate();
@@ -233,7 +232,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         svm.setKernel(SVM.LINEAR);
         //svm.setP(0.1);
         //svm.setDegree(2);
-        //svm.setGamma(0.00001);
+        //svm.setGamma(3);
         TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
 
 
@@ -317,88 +316,4 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         //tv.setText("Detected " + faceCount + " faces in " + (float) timeElapsed/1000 + "s." );
     }
 
-    public void gatherAllCrops(){
-
-        final String classesDir = "sdcard/PresentData/Classes/CS 197";
-        String cs197Dir = "sdcard/PresentData/CS197 Classroom Data";
-
-        String allCropsDir = cs197Dir + "/allCrops";
-
-        //Read class list:
-        BufferedReader br;
-        HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
-        HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
-        String line;
-        String[] details;
-
-        String classDir = classesDir;
-
-        try {
-            br = new BufferedReader(new FileReader(classDir + "/" + new File(classDir).getName() + "_studentList.txt"));
-            while ((line = br.readLine()) != null) {
-                details = line.split(",");
-                //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
-                attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
-                studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
-            }
-        } catch (Exception e){
-            Log.e(TAG, e.getMessage());
-        }
-
-
-        File[] cs197DirFiles = new File(cs197Dir).listFiles();
-        File[] crops;
-        File tempFile;
-        int id;
-        int secondId;
-        String date;
-        String[] studentNumAndName;
-        String cropNewName;
-        String dayFolderDir;
-
-        new File(allCropsDir).mkdirs();
-
-        FilenameFilter ImgFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                name = name.toLowerCase();
-                return !name.startsWith("delete") && name.endsWith(".jpg");
-            }
-        };
-
-        Log.i(TAG, "Creating the AllCrops folder...");
-        for(File f : cs197DirFiles){
-            if(f.isDirectory() && !f.getName().equals("allCrops")) {
-                Log.i(TAG, "Processing folder " + f.getName() + "...");
-                dayFolderDir = f.getAbsolutePath();
-                crops = new File(dayFolderDir).listFiles(ImgFilter);
-                for (File c : crops) {
-                    id = Integer.parseInt(c.getName().split("_")[0]);
-                    date = f.getName().split("_")[1];
-                    studentNumAndName = studentNumsAndNames.get(id).split(",");
-                    //check which secondaryID is still available:
-                    secondId = 0;
-
-                    /*//For moving to allCrops:
-                    do {
-                        cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "," + studentNumAndName[0] + "_" + date  + "_" + secondId + ".jpg";
-                        tempFile = new File(allCropsDir + "/" + cropNewName);
-                        secondId++;
-                    } while (tempFile.exists());
-
-                    c.renameTo(new File(tempFile.getAbsolutePath()));*/
-
-
-                    //For changing the name of training crops to include names:
-                    do {
-                        cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + secondId + ".jpg";
-                        tempFile = new File(dayFolderDir + "/" + cropNewName);
-                        secondId++;
-                    } while (tempFile.exists());
-
-                    c.renameTo(new File(tempFile.getAbsolutePath()));
-                }
-            }
-        }
-        Log.i(TAG, "AllCrops folder complete.");
-    }
 }

@@ -33,6 +33,8 @@ import java.util.Collections;
 public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.CropImageViewHolder> {
 
 
+    private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
+
     ArrayList<CropImageItem> faceCrops = new ArrayList<CropImageItem>();
     ArrayList<CropImageItem> copyFaceCrops;
     ArrayList<Integer> ids = new ArrayList<>();
@@ -87,10 +89,10 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             holder.cropName.setText(labelArr[position]);
         }
         if(holderName[0].equals("delete")){
-           holder.cropName.setText("NOT A FACE");
+           holder.cropName.setText("DELETE");
         }
-        if(holderName[0].equals("unrecognizedFace")){
-            holder.cropName.setText("NOT A FACE");
+        if(holderName[0].equals("nonFace")){
+            holder.cropName.setText("NONFACE");
         }
 
     }
@@ -130,6 +132,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         public void onClick(View v) {
             //Toast.makeText(context.getApplicationContext(), "Tapped on " + cropName.getText().toString(), Toast.LENGTH_LONG).show();
 
+
             namesList = new ListView(context.getApplicationContext());
             ArrayAdapter<String> namesListAdapter = new ArrayAdapter<String>(context.getApplicationContext(),R.layout.names_dialog_layout,R.id.dialogName,names);
             namesList.setAdapter(namesListAdapter);
@@ -138,11 +141,67 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         ViewGroup viewGroup = (ViewGroup) view;
                         dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
-                        //label is the name of the cro
-                        //Log.i(TAG,"");
-                        //Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
-                        if(dialogName.getText().toString().equals("NOT A FACE") == false){
-                            String idAndName[] =  dialogName.getText().toString().split("-");
+                        String prefix = dialogName.getText().toString();
+                        if(prefix.equals("NONFACE")) {
+                            String fileNameOfLabeled = faceCrops.get(getAdapterPosition()).getFileName();
+                            String filePathOfLabeled = faceCrops.get(getAdapterPosition()).getPath();
+
+                            Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\nPath:"+filePathOfLabeled);
+
+
+                            File oldfile =new File(filePathOfLabeled);
+                            File sdCardRoot = Environment.getExternalStorageDirectory();
+                            File newFilePic;
+
+                            for(int i=0;;i++){
+                                newFilePic =new File(untrainedCropsDir+"/0_nonFace_"+i+".jpg");
+                                if(!newFilePic.exists()){
+                                    if (oldfile.renameTo(newFilePic)) {
+                                        faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());
+                                        faceCrops.get(getAdapterPosition()).setPath(newFilePic.getAbsolutePath());
+                                        Log.i(TAG, "Rename succesful");
+                                        Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
+                                    } else {
+                                        Log.i(TAG, "Rename failed");
+                                    }
+                                    break;
+                                }
+                            }
+
+                            cropName.setText(label);
+                            nameDialog.dismiss();
+
+                        } else if(prefix.equals("DELETE")){
+                            String fileNameOfLabeled = faceCrops.get(getAdapterPosition()).getFileName();
+                            String filePathOfLabeled = faceCrops.get(getAdapterPosition()).getPath();
+
+                            Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
+
+
+                            File oldfile =new File(filePathOfLabeled);
+                            File sdCardRoot = Environment.getExternalStorageDirectory();
+                            File newFilePic;
+
+                            for(int i=0;;i++){
+                                newFilePic =new File(untrainedCropsDir+"/-1_delete_"+i+".jpg");
+                                if(!newFilePic.exists()){
+                                    if (oldfile.renameTo(newFilePic)) {
+                                        faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());
+                                        faceCrops.get(getAdapterPosition()).setPath(newFilePic.getAbsolutePath());
+                                        Log.i(TAG, "Rename succesful");
+                                        Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
+                                    } else {
+                                        Log.i(TAG, "Rename failed");
+                                    }
+                                    break;
+                                }
+                            }
+
+                            cropName.setText(label);
+                            nameDialog.dismiss();
+
+                        } else {
+                            String idAndName[] =  prefix.split("-");
                             label = idAndName[1];
                             int idNum = Integer.parseInt(idAndName[0]);
 
@@ -175,20 +234,13 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
                             File oldfile =new File(filePathOfLabeled);
                             File sdCardRoot = Environment.getExternalStorageDirectory();
+                            File newFilePic;
 
-                            File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+label+"_"+System.currentTimeMillis()+".jpg");
-                            if (oldfile.renameTo(newFilePic)) {
-                                faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());
-                                faceCrops.get(getAdapterPosition()).setPath(newFilePic.getAbsolutePath());
-                                Log.i(TAG, "Rename succesful");
-                                Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
-                            } else {
-                                Log.i(TAG, "Rename failed");
-                            }
-
-                            /*for(int i=0;;i++){
-                                File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+label+"_"+i+".jpg");
+                            for(int i=0;;i++){
+                                newFilePic = new File(untrainedCropsDir+"/"+idNum+"_"+label+"_"+i+".jpg");
                                 if(!newFilePic.exists()){
+                                    Log.i(TAG, "Old name: " + filePathOfLabeled);
+                                    Log.i(TAG, "Upcoming new name: " + newFilePic.getAbsolutePath());
                                     if (oldfile.renameTo(newFilePic)) {
                                         faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());
                                         faceCrops.get(getAdapterPosition()).setPath(newFilePic.getAbsolutePath());
@@ -199,36 +251,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                                     }
                                     break;
                                 }
-                            }*/
-                            cropName.setText(label);
-                            nameDialog.dismiss();
-                        }
-
-                        else{
-                            label = dialogName.getText().toString();
-
-                            String fileNameOfNotFace = faceCrops.get(getAdapterPosition()).getFileName();
-                            String filePathOfNotFace = faceCrops.get(getAdapterPosition()).getPath();
-
-                            File sdCardRoot = Environment.getExternalStorageDirectory();
-                            File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
-                            Log.i(TAG,"");
-                            Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
-
-                            File oldfile = new File(filePathOfNotFace);
-                            File newfile = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+"delete_"+fileNameOfNotFace);
-
-                            if(oldfile.renameTo(newfile)){
-                                faceCrops.get(getAdapterPosition()).setFileName(newfile.getName());
-                                faceCrops.get(getAdapterPosition()).setPath(newfile.getAbsolutePath());
-                                Log.i(TAG, "Rename succesful");
-                                Log.i(TAG,"The renamed file is: "+ faceCrops.get(getAdapterPosition()).getFileName()+"\n"+ faceCrops.get(getAdapterPosition()).getPath());
                             }
-                            else{
-                                Log.i(TAG, "Rename failed");
-                            }
-
-
                             cropName.setText(label);
                             nameDialog.dismiss();
                         }
@@ -365,7 +388,8 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             String[] details;
-            names.add("NOT A FACE");
+            names.add("DELETE");
+            names.add("NONFACE");
             while ((line = br.readLine()) != null) {
                 details = line.split(",");
                 names.add(details[0]+"-"+details[2]+", "+details[3]);

@@ -1,5 +1,6 @@
 package com.example.dale.cs198;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -14,9 +15,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -36,7 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
 
-    //for debugging lang yung mga may LOG
+    private ProgressDialog dialog;
+    String dialogMessage;
+    String[] testClassNames = {"CS 197", "CS 133"};
+    final String testClassDataDir = "sdcard/PresentData/researchMode";
 
     @Override
     //came from activity template
@@ -220,14 +228,123 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.action_relabelAndGather) {
+            dialogMessage = "Relabeling and gathering class pics...";
+            relabelAndGather();
+        } else if (id == R.id.action_testFaceDetect) {
+            dialogMessage = "Testing face detection...";
+            testFaceDetect();
+        } else if (id == R.id.action_testRecogTrain) {
+            dialogMessage = "Testing recog training...";
+            testRecogTrain();
+        } else if (id == R.id.action_testRecog) {
+            dialogMessage = "Testing recog...";
+            testRecog();
         }
         //git test
         //To infinity and beyond
         //another comment for testing
         Log.i(TAG, "onOptionsItemSelected state na");
         return super.onOptionsItemSelected(item);
+    }
+
+    public void relabelAndGather(){
+        String classDataDir;
+        String allCropsDir;
+        String classListFilePath;
+
+        for(int i = 0; i < testClassNames.length; i++) {
+            classDataDir = testClassDataDir +"/" + testClassNames[i] + " Classroom Data";
+            allCropsDir = classDataDir + "/allCrops";
+            classListFilePath = classDataDir + "/" + testClassNames[i] + "_studentList.txt";
+
+            //Read class list:
+            BufferedReader br;
+            HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+            HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+            String line;
+            String[] details;
+
+            try {
+                br = new BufferedReader(new FileReader(classListFilePath));
+                while ((line = br.readLine()) != null) {
+                    details = line.split(",");
+                    //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                    attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                    studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                }
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
+
+
+            File[] cs197DirFiles = new File(classDataDir).listFiles();
+            File[] crops;
+            File tempFile;
+            int id;
+            int secondId;
+            String date;
+            String[] studentNumAndName;
+            String cropNewName;
+            String dayFolderDir;
+
+            new File(allCropsDir).mkdirs();
+
+            FilenameFilter ImgFilter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    name = name.toLowerCase();
+                    return !name.startsWith("delete") && name.endsWith(".jpg");
+                }
+            };
+
+            Log.i(TAG, "Creating the AllCrops folder...");
+            for (File f : cs197DirFiles) {
+                if (f.isDirectory() && !f.getName().equals("allCrops")) {
+                    Log.i(TAG, "Processing folder " + f.getName() + "...");
+                    dayFolderDir = f.getAbsolutePath();
+                    crops = new File(dayFolderDir).listFiles(ImgFilter);
+                    for (File c : crops) {
+                        id = Integer.parseInt(c.getName().split("_")[0]);
+                        date = f.getName().split("_")[1];
+                        studentNumAndName = studentNumsAndNames.get(id).split(",");
+                        //check which secondaryID is still available:
+                        secondId = 0;
+
+                    /*//For moving to allCrops:
+                    do {
+                        cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "," + studentNumAndName[0] + "_" + date  + "_" + secondId + ".jpg";
+                        tempFile = new File(allCropsDir + "/" + cropNewName);
+                        secondId++;
+                    } while (tempFile.exists());
+
+                    c.renameTo(new File(tempFile.getAbsolutePath()));*/
+
+
+                        //For changing the name of training crops to include names:
+                        do {
+                            cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + secondId + ".jpg";
+                            tempFile = new File(dayFolderDir + "/" + cropNewName);
+                            secondId++;
+                        } while (tempFile.exists());
+
+                        c.renameTo(new File(tempFile.getAbsolutePath()));
+                    }
+                }
+            }
+        }
+        Log.i(TAG, "Relabelling and gathering complete.");
+    }
+
+    public void testFaceDetect(){
+
+    }
+
+    public void testRecogTrain(){
+
+    }
+
+    public void testRecog(){
+
     }
 
 

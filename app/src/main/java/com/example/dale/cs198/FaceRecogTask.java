@@ -90,6 +90,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             File recordFile = new File(recordFilePath);
 
             if(!recordFile.exists()){
+                Log.i(TAG, "Record doesn't exist yet. Creating...");
                 recordCropsDirFile.mkdirs();
                 br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
                 while((line = br.readLine()) != null){
@@ -99,6 +100,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
                 }
             } else {
+                Log.i(TAG, "Record exists. Loading...");
                 br = new BufferedReader(new FileReader(recordFile));
                 while((line = br.readLine()) != null){
                     details = line.split(",");
@@ -110,6 +112,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     }
                 }
             }
+
 
             numStudents = attendanceRecord.size();
             publishProgress();
@@ -147,10 +150,6 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             Log.i(TAG, "SVM loaded.");
 
-
-
-
-
             Mat mColor;
             Mat mGray;
             int predictedLabel;
@@ -160,7 +159,6 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             String[] temp;
 
             Log.i(TAG, "FaceRecogTask: Initialization complete.");
-
             /*
             //For testing with AT&T database:
             File[] testCrops = new File("sdcard/PresentData/att/att_faces_labeled_cropped_testing_jpg").listFiles();
@@ -187,6 +185,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 timeStart = System.currentTimeMillis();
                 mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
                 predictedLabel = (int)sfr.predict(pca.project(mGray));
+
                 //predictedLabel = efr.predict(mGray);
                 timeEnd = System.currentTimeMillis();
                 timeElapsed = timeEnd - timeStart;
@@ -203,47 +202,31 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                     temp = studentNumsAndNames.get(predictedLabel).split(",");
                     studentName = temp[1] + "," + temp[2];
-                    imwrite(recordCropsDirPath + "/" + predictedLabel + "_" + studentName + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", mColor);
-
-                    /*//Before saving the crop, check which secondaryID is still available:
+                    //Before saving the crop, check which secondaryID is still available:
                     secondaryID = 0;
                     do {
                         temp = studentNumsAndNames.get(predictedLabel).split(",");
-                        studentNameAndNum = temp[1] + "," + temp[2] + "," + temp[0];
-                        f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + secondaryID + "_" + studentNameAndNum + ".jpg");
+                        studentName = temp[1] + "," + temp[2];
+                        f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
                         secondaryID++;
                     } while(f.exists());
 
-                    imwrite(f.getAbsolutePath(), mColor);*/
+                    imwrite(f.getAbsolutePath(), mColor);
 
                     Log.i(TAG, "Crop saved.");
-                } else if(-1 == predictedLabel){
+                } else if(0 == predictedLabel || -1 == predictedLabel){
                     Log.i(TAG, "Non face found.");
 
-                    imwrite(recordCropsDirPath + "/nonFace_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", mColor);
-
-                    /*//Before saving the crop, check which secondaryID is still available:
+                    //Before saving the crop, check which secondaryID is still available:
                     secondaryID = 0;
                     do {
-                        f = new File(recordCropsDirPath + "/nonFace_" + secondaryID + ".jpg");
+                        f = new File(recordCropsDirPath + "/0_nonFace_" + secondaryID + ".jpg");
                         secondaryID++;
                     } while(f.exists());
 
-                    imwrite(f.getAbsolutePath(), mColor);*/
+                    imwrite(f.getAbsolutePath(), mColor);
                     numUnrecognizedFaces++;
-                } else {
-                    Log.i(TAG, "Unrecognized face found.");
 
-                    imwrite(recordCropsDirPath + "/unrecognizedFace_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".jpg", mColor);
-                    /*//Before saving the crop, check which secondaryID is still available:
-                    secondaryID = 0;
-                        do {
-                        f = new File(recordCropsDirPath + "/unrecognizedFace_" + secondaryID + ".jpg");
-                        secondaryID++;
-                    } while(f.exists());
-
-                    imwrite(f.getAbsolutePath(), mColor);*/
-                    numUnrecognizedFaces++;
                 }
 
                 mColor.deallocate();
@@ -286,7 +269,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onProgressUpdate(Void... progress){
         if(td.isUIOpen()) {
-            tv.setText(numStudentsPresent + "/" + numStudents + ", u" + numUnrecognizedFaces);
+            tv.setText(numStudentsPresent + "/" + numStudents + ", n" + numUnrecognizedFaces);
         }
     }
 }
