@@ -33,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
+    String[] testClassNames = {"CS 197", "CS 133"};
+    final String testClassDataDir = "sdcard/PresentData/researchMode";
+
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int SELECT_PHOTO = 2;
     private static final int FACE_DETECT = 3;
@@ -46,10 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
 
-    private ProgressDialog dialog;
-    String dialogMessage;
-    String[] testClassNames = {"CS 197", "CS 133"};
-    final String testClassDataDir = "sdcard/PresentData/researchMode";
+
 
     @Override
     //came from activity template
@@ -231,34 +231,57 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setIndeterminate(true);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_relabelAndGather) {
-            dialogMessage = "Relabeling and gathering class pics...";
+            dialog.setMessage("Relabeling and gathering class pics...");
+            dialog.show();
+
             relabelAndGather();
+
         } else if (id == R.id.action_testFaceDetect) {
-            dialogMessage = "Testing face detection...";
+            dialog.setMessage("Testing face detection...");
+            dialog.show();
+
             testFaceDetect();
+
         } else if (id == R.id.action_testRecogTrain) {
-            dialogMessage = "Testing recog training...";
+            dialog.setMessage("Testing recog training...");
+            dialog.show();
+
             testRecogTrain();
         } else if (id == R.id.action_testRecog) {
-            dialogMessage = "Testing recog...";
+            dialog.setMessage("Testing recog...");
+            dialog.show();
+
             testRecog();
         }
+
+        if (dialog.isShowing()) {
+            dialog.dismiss();
+        }
+
         //git test
         //To infinity and beyond
         //another comment for testing
-        Log.i(TAG, "onOptionsItemSelected state na");
         return super.onOptionsItemSelected(item);
     }
 
     public void relabelAndGather(){
+
+
         String classDataDir;
         String allCropsDir;
         String classListFilePath;
 
         for(int i = 0; i < testClassNames.length; i++) {
+            Log.i(TAG, "Loop " + i);
             classDataDir = testClassDataDir +"/" + testClassNames[i] + " Classroom Data";
             allCropsDir = classDataDir + "/allCrops";
             classListFilePath = classDataDir + "/" + testClassNames[i] + "_studentList.txt";
@@ -269,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
             HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
             String line;
             String[] details;
+
 
             try {
                 br = new BufferedReader(new FileReader(classListFilePath));
@@ -293,7 +317,11 @@ public class MainActivity extends AppCompatActivity {
             String cropNewName;
             String dayFolderDir;
             String[] folderNameDetails;
+            String[] cNameDetails;
+            String cFirstPartName;
 
+            //Delete any existing allCrops folder then recreate it:
+            DirectoryDeleter.deleteDir(new File(allCropsDir));
             new File(allCropsDir).mkdirs();
 
             FilenameFilter ImgFilter = new FilenameFilter() {
@@ -313,15 +341,11 @@ public class MainActivity extends AppCompatActivity {
                     date = folderNameDetails[1];
 
                     for (File c : crops) {
-                        id = Integer.parseInt(c.getName().split("_")[0]);
-
-                        studentNumAndName = studentNumsAndNames.get(id).split(",");
-                        //check which secondaryID is still available:
-                        secondId = 0;
-
                         //Changing the filenames of training crops to the right format:
 
-                        if(c.getName().startsWith("delete")){
+
+                        if(c.getName().startsWith("0_") || c.getName().startsWith("delete")){
+                            secondId = 0;
                             do {
                                 cropNewName = "0_nonFace_" + secondId + ".jpg";
                                 tempFile = new File(dayFolderDir + "/" + cropNewName);
@@ -329,6 +353,11 @@ public class MainActivity extends AppCompatActivity {
                             } while (tempFile.exists());
 
                         } else {
+                            Log.i(TAG, "Handling id: " + c.getName().split("_")[0]);
+                            id = Integer.parseInt(c.getName().split("_")[0]);
+                            studentNumAndName = studentNumsAndNames.get(id).split(",");
+
+                            secondId = 0;
                             do {
                                 cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + secondId + ".jpg";
                                 tempFile = new File(dayFolderDir + "/" + cropNewName);
@@ -336,17 +365,22 @@ public class MainActivity extends AppCompatActivity {
                             } while (tempFile.exists());
                         }
 
-                        c.renameTo(new File(tempFile.getAbsolutePath()));
+                        c.renameTo(tempFile);
+
+                        c = tempFile;
+                        cNameDetails = c.getName().split("_");
+                        cFirstPartName = cNameDetails[0] + "_" + cNameDetails[1] + "_" + date + "_";
 
                         //For copying the new crop to allCrops:
+                        secondId = 0;
                         do {
-                            cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + date  + "_" + secondId + ".jpg";
+                            cropNewName = cFirstPartName + secondId + ".jpg";
                             tempFile = new File(allCropsDir + "/" + cropNewName);
                             secondId++;
                         } while (tempFile.exists());
 
                         try {
-                            copyFile(c, new File(tempFile.getAbsolutePath()));
+                            copyFile(c, tempFile);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
