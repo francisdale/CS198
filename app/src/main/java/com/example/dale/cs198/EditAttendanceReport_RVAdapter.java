@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -62,21 +63,27 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
         //File faceCropsDir = new File(sdCardRoot, "PresentData/Classes/"+className + "/attendanceReports/" + a[0]);
 
 
-        String ID = Integer.toString(s.getId());
-        boolean meron = false;
-        for (File f : faceCropsDir.listFiles()) {
-            if (f.isFile()) {
-                if(f.getName().startsWith(ID) && f.getName().endsWith("_0.jpg")){
-                    Log.i(TAG, "directory of first occurence -->" + f.getAbsolutePath());
-                    Bitmap bmImg = BitmapFactory.decodeFile(f.getAbsolutePath());
-                    holder.face.setImageBitmap(bmImg);
-                    meron = true;
-                    break;
-                }
+        final String ID = Integer.toString(s.getId());
+        FilenameFilter cropFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return name.startsWith(ID + "_");
+            }
+        };
+        File [] faceCrops = faceCropsDir.listFiles(cropFilter);
+
+        int index;
+
+        for (index = 0; index < faceCrops.length; index++) {
+            if (faceCrops[index].isFile()) {
+                Log.i(TAG, "directory of first occurence -->" + faceCrops[index].getAbsolutePath());
+                Bitmap bmImg = BitmapFactory.decodeFile(faceCrops[index].getAbsolutePath());
+                holder.face.setImageBitmap(bmImg);
+                break;
             }
         }
 
-        if(meron == false){
+        if(index == faceCrops.length){
             holder.face.setImageResource(R.mipmap.ic_launcher);
         }
 

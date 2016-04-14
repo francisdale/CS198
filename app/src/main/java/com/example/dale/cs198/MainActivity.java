@@ -17,8 +17,13 @@ import android.widget.ImageView;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -278,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-            File[] cs197DirFiles = new File(classDataDir).listFiles();
+            File[] classDataDirFiles = new File(classDataDir).listFiles();
             File[] crops;
             File tempFile;
             int id;
@@ -287,47 +292,67 @@ public class MainActivity extends AppCompatActivity {
             String[] studentNumAndName;
             String cropNewName;
             String dayFolderDir;
+            String[] folderNameDetails;
 
             new File(allCropsDir).mkdirs();
 
             FilenameFilter ImgFilter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     name = name.toLowerCase();
-                    return !name.startsWith("delete") && name.endsWith(".jpg");
+                    return name.endsWith(".jpg");
                 }
             };
 
             Log.i(TAG, "Creating the AllCrops folder...");
-            for (File f : cs197DirFiles) {
-                if (f.isDirectory() && !f.getName().equals("allCrops")) {
+            for (File f : classDataDirFiles) {
+                folderNameDetails = f.getName().split("_");
+                if (f.isDirectory() && 3 == folderNameDetails.length) {
                     Log.i(TAG, "Processing folder " + f.getName() + "...");
                     dayFolderDir = f.getAbsolutePath();
                     crops = new File(dayFolderDir).listFiles(ImgFilter);
+                    date = folderNameDetails[1];
+
                     for (File c : crops) {
                         id = Integer.parseInt(c.getName().split("_")[0]);
-                        date = f.getName().split("_")[1];
+
                         studentNumAndName = studentNumsAndNames.get(id).split(",");
                         //check which secondaryID is still available:
                         secondId = 0;
 
-                    /*//For moving to allCrops:
-                    do {
-                        cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "," + studentNumAndName[0] + "_" + date  + "_" + secondId + ".jpg";
-                        tempFile = new File(allCropsDir + "/" + cropNewName);
-                        secondId++;
-                    } while (tempFile.exists());
+                        //Changing the filenames of training crops to the right format:
 
-                    c.renameTo(new File(tempFile.getAbsolutePath()));*/
+                        if(c.getName().startsWith("delete")){
+                            do {
+                                cropNewName = "0_nonFace_" + secondId + ".jpg";
+                                tempFile = new File(dayFolderDir + "/" + cropNewName);
+                                secondId++;
+                            } while (tempFile.exists());
 
+                        } else {
+                            do {
+                                cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + secondId + ".jpg";
+                                tempFile = new File(dayFolderDir + "/" + cropNewName);
+                                secondId++;
+                            } while (tempFile.exists());
+                        }
 
-                        //For changing the name of training crops to include names:
+                        c.renameTo(new File(tempFile.getAbsolutePath()));
+
+                        //For copying the new crop to allCrops:
                         do {
-                            cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + secondId + ".jpg";
-                            tempFile = new File(dayFolderDir + "/" + cropNewName);
+                            cropNewName = id + "_" + studentNumAndName[1] + "," + studentNumAndName[2] + "_" + date  + "_" + secondId + ".jpg";
+                            tempFile = new File(allCropsDir + "/" + cropNewName);
                             secondId++;
                         } while (tempFile.exists());
 
-                        c.renameTo(new File(tempFile.getAbsolutePath()));
+                        try {
+                            copyFile(c, new File(tempFile.getAbsolutePath()));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+
+
                     }
                 }
             }
@@ -345,6 +370,23 @@ public class MainActivity extends AppCompatActivity {
 
     public void testRecog(){
 
+    }
+
+    private static void copyFile(File source, File dest) throws IOException {
+        InputStream input = null;
+        OutputStream output = null;
+        try {
+            input = new FileInputStream(source);
+            output = new FileOutputStream(dest);
+            byte[] buf = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = input.read(buf)) > 0) {
+                output.write(buf, 0, bytesRead);
+            }
+        } finally {
+            input.close();
+            output.close();
+        }
     }
 
 

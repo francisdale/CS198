@@ -78,19 +78,19 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
         String holderName[] = c.getFileName().split("_");
 
-        if(holderName[0].length()<=2){
-            String nameInfo[] = names.get(Integer.parseInt(holderName[0])).split("-");
-            holder.cropName.setText(nameInfo[1]);
-        }
+
         //1-12-7
         if(holderName[0].equals("unlabeled")){
             holder.cropName.setText(labelArr[position]);
-        }
-        if(holderName[0].equals("delete")){
-           holder.cropName.setText("DELETE");
-        }
-        if(holderName[0].equals("nonFace")){
-            holder.cropName.setText("NONFACE");
+        }else if(holderName[0].equals("0")){
+           holder.cropName.setText("NONFACE");
+        }else if(holderName[0].equals("-1")){
+            holder.cropName.setText("DELETE");
+        }else{
+            Log.i(TAG, "Labeled crop detected. Labeling the view...");
+            String nameInfo[] = names.get(Integer.parseInt(holderName[0]) + 1).split("-");
+            Log.i(TAG, "Crop file label: " + holderName[0] + ", Upcoming label on view: " + nameInfo[1]);
+            holder.cropName.setText(nameInfo[1]);
         }
 
     }
@@ -166,7 +166,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                                 }
                             }
 
-                            cropName.setText(label);
+                            cropName.setText(prefix);
                             nameDialog.dismiss();
 
                         } else if(prefix.equals("DELETE")){
@@ -195,7 +195,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                                 }
                             }
 
-                            cropName.setText(label);
+                            cropName.setText(prefix);
                             nameDialog.dismiss();
 
                         } else {
@@ -299,7 +299,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
         File oldfile;
         File newfile;
-        CropImageItem rename;
         final String fileNameOfRemoved = temp.getFileName();
         String filePathOfRemoved = temp.getPath();
         Log.i(TAG,"TO BE DELETED: "+fileNameOfRemoved+"\n"+filePathOfRemoved);
