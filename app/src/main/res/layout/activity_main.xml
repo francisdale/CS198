@@ -103,7 +103,7 @@
                 android:background="#5aad1a"
                 android:textColor="#ffffff"
                 android:text="@string/train"
-                android:id="@+id/train"
+                android:id="@+id/view_non_face"
                 android:onClick="dispatchFaceRecogTrainActivityIntent"
                 android:layout_weight="0.5" />
 

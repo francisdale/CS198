@@ -1,18 +1,31 @@
 package com.example.dale.cs198;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,8 +63,11 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
     ArrayList<StudentItem> presentStudents = new ArrayList<StudentItem>();
     ArrayList<StudentItem> absentStudents = new ArrayList<StudentItem>();
     ArrayList<StudentItem> allStudents = new ArrayList<StudentItem>();
+    ArrayList<String> nonFaces = new ArrayList<String>();
     TextView note;
     TextView classNameTextView;
+
+    Button viewNonFaces;
 
     RecyclerView recyclerView;
     RecyclerView.Adapter adapter;
@@ -69,6 +86,15 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
         reportPath = intent.getStringExtra("reportPath");
 
         note = (TextView)findViewById(R.id.note);
+        viewNonFaces = (Button)findViewById(R.id.view_non_face);
+
+        viewNonFaces.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNonFaces(v);
+            }
+        });
+
 
         classNameTextView = (TextView)findViewById(R.id.report_name);
         Log.i(TAG, "report name --> " + name);
@@ -275,6 +301,117 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
             allStudents.add(presentStudents.get(i));
         }
     }
+
+    public void showNonFaces(View v){
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(EditAttendanceReport_RV.this,R.style.Theme_Holo_Dialog_Alert);
+
+        String[] x = reportPath.split(Pattern.quote("."));
+        String cropFolder = x[0];
+        Log.i(TAG,"cropFolder --> " + x[0]);
+
+        //POPULATE pathList from the cropped faces files from sdCard/PresentData/faceCrops folder
+        File faceCropsDir = new File(x[0]);
+
+        FilenameFilter nonFaceCropsImgFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return name.startsWith("0_");
+            }
+        };
+
+        int i=0;
+        Log.i(TAG,"facecropsdir --> " + faceCropsDir.getAbsolutePath());
+
+        Log.i(TAG,"facecropsdir --> " + faceCropsDir.isDirectory());
+
+        for (File f : faceCropsDir.listFiles()) {
+            if (f.isFile()) {
+                if(f.getName().startsWith("0_nonface")){
+                    nonFaces.add(f.getAbsolutePath());
+                }
+            }
+        }
+
+        LayoutInflater inflater = (LayoutInflater) EditAttendanceReport_RV.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.edit_report_grid_dialog,(ViewGroup) v.findViewById(R.id.layout_root));
+        GridView gridview = (GridView)layout.findViewById(R.id.face_grid);
+        gridview.setAdapter(new ImageAdapter(EditAttendanceReport_RV.this,nonFaces));
+
+        alertBuilder.setMessage("Non Faces for " + date)
+                .setCancelable(false)
+                .setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        }
+                );
+
+        alertBuilder.setView(layout);
+        AlertDialog alert = alertBuilder.create();
+        TextView textView = new TextView(EditAttendanceReport_RV.this);
+        textView.setTextColor(Color.WHITE);
+        textView.setTextSize(20);
+        //textView.setText("\tNon Faces");
+        alert.setCustomTitle(textView);
+        alert.setTitle("Non Faces");
+        alert.show();
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////ADAPTER FOR GRIDVIEW//////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    public class ImageAdapter extends BaseAdapter {
+        private Context context;
+        private LayoutInflater inflater;
+        private ArrayList<String> paths;
+        public ImageAdapter(Context c,ArrayList<String> cropPaths) {
+            inflater = LayoutInflater.from(c);
+            context = c;
+            paths = cropPaths;
+        }
+        public int getCount() {
+            return paths.size();
+        }
+        public Object getItem(int position) {
+            return null;
+        }
+        public long getItemId(int position) {
+            return 0;
+        }
+        // create a new ImageView for each item referenced by the
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {  // if it's not recycled,
+                convertView = inflater.inflate(R.layout.grid_item, null);
+                convertView.setLayoutParams(new GridView.LayoutParams(120, 120));
+                holder = new ViewHolder();
+                holder.crop = (ImageView)convertView.findViewById(R.id.categoryimage);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            holder.crop.setAdjustViewBounds(true);
+            holder.crop.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            //holder.crop.setPadding(8, 8, 8, 8);
+
+            Bitmap bmImg = BitmapFactory.decodeFile(paths.get(position));
+            holder.crop.setImageBitmap(bmImg);
+
+            return convertView;
+        }
+        class ViewHolder {
+            ImageView crop;
+        }
+
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////ADAPTER FOR GRIDVIEW//////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
+
 
 
 }

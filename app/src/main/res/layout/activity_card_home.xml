@@ -38,7 +38,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Train"
-            android:id="@+id/train"
+            android:id="@+id/view_non_face"
             android:layout_marginRight="4dp"
             android:background="@drawable/blue_button"
             android:textColor="#ffffff"

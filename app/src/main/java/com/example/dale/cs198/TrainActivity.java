@@ -116,6 +116,10 @@ public class TrainActivity extends AppCompatActivity {
             }
         };
 
+        Log.i(TAG,"facecropsdir --> " + faceCropsDir.getAbsolutePath());
+
+        Log.i(TAG,"facecropsdir --> " + faceCropsDir.isDirectory());
+
         int i=0;
         for (File f : faceCropsDir.listFiles(untrainedCropsImgFilter)) {
             if (f.isFile()) {
