@@ -1,6 +1,5 @@
 package com.example.dale.cs198;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -231,41 +230,25 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialog.setIndeterminate(true);
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
 
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_relabelAndGather) {
-            dialog.setMessage("Relabeling and gathering class pics...");
-            dialog.show();
 
             relabelAndGather();
 
         } else if (id == R.id.action_testFaceDetect) {
-            dialog.setMessage("Testing face detection...");
-            dialog.show();
 
             testFaceDetect();
 
         } else if (id == R.id.action_testRecogTrain) {
-            dialog.setMessage("Testing recog training...");
-            dialog.show();
 
             testRecogTrain();
         } else if (id == R.id.action_testRecog) {
-            dialog.setMessage("Testing recog...");
-            dialog.show();
 
             testRecog();
         }
 
-        if (dialog.isShowing()) {
-            dialog.dismiss();
-        }
 
         //git test
         //To infinity and beyond
