@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    String[] testClassNames = {"CS 197", "CS 133"};
+    String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19", "CS 133,1,6,7,10"};
     final String testClassDataDir = "sdcard/PresentData/researchMode";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
@@ -261,13 +261,25 @@ public class MainActivity extends AppCompatActivity {
 
         String classDataDir;
         String allCropsDir;
+        String trainingCropsDir;
         String classListFilePath;
+        String[] testClassDetails;
+        String className;
+        int trainStart;
+        int trainEnd;
 
-        for(int i = 0; i < testClassNames.length; i++) {
+        for(int i = 0; i < testClassNamesAndDataSplits.length; i++) {
             Log.i(TAG, "Loop " + i);
-            classDataDir = testClassDataDir +"/" + testClassNames[i] + " Classroom Data";
+            testClassDetails = testClassNamesAndDataSplits[i].split(",");
+            className = testClassDetails[0];
+            trainStart = Integer.parseInt(testClassDetails[1]);
+            trainEnd = Integer.parseInt(testClassDetails[2]);
+
+
+            classDataDir = testClassDataDir +"/" + className + " Classroom Data";
             allCropsDir = classDataDir + "/allCrops";
-            classListFilePath = classDataDir + "/" + testClassNames[i] + "_studentList.txt";
+            trainingCropsDir = classDataDir + "/trainingCrops";
+            classListFilePath = classDataDir + "/" + className + "_studentList.txt";
 
             //Read class list:
             BufferedReader br;
@@ -295,6 +307,7 @@ public class MainActivity extends AppCompatActivity {
             File tempFile;
             int id;
             int secondId;
+            int folderNum;
             String date;
             String[] studentNumAndName;
             String cropNewName;
@@ -303,9 +316,12 @@ public class MainActivity extends AppCompatActivity {
             String[] cNameDetails;
             String cFirstPartName;
 
-            //Delete any existing allCrops folder then recreate it:
+            //Clear old folders and then recreate them:
             DirectoryDeleter.deleteDir(new File(allCropsDir));
             new File(allCropsDir).mkdirs();
+
+            DirectoryDeleter.deleteDir(new File(trainingCropsDir));
+            new File(trainingCropsDir).mkdirs();
 
             FilenameFilter ImgFilter = new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -317,10 +333,12 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "Creating the AllCrops folder...");
             for (File f : classDataDirFiles) {
                 folderNameDetails = f.getName().split("_");
+
                 if (f.isDirectory() && 3 == folderNameDetails.length) {
                     Log.i(TAG, "Processing folder " + f.getName() + "...");
                     dayFolderDir = f.getAbsolutePath();
                     crops = new File(dayFolderDir).listFiles(ImgFilter);
+                    folderNum = Integer.parseInt(folderNameDetails[0]);
                     date = folderNameDetails[1];
 
                     for (File c : crops) {
@@ -368,7 +386,22 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
+                        //For copying the new crop to trainingCrops or testingCrops:
+                        if(folderNum >= trainStart && folderNum <= trainEnd){
+                            secondId = 0;
+                            do {
+                                cropNewName = cFirstPartName + secondId + ".jpg";
+                                tempFile = new File(trainingCropsDir + "/" + cropNewName);
+                                secondId++;
+                            } while (tempFile.exists());
 
+                            try {
+                                copyFile(c, tempFile);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
 
                     }
                 }

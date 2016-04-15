@@ -229,10 +229,10 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         data.convertTo(data, CV_32FC1);
         SVM svm = SVM.create();
         svm.setType(SVM.C_SVC);
-        svm.setKernel(SVM.LINEAR);
+        svm.setKernel(SVM.POLY);
         //svm.setP(0.1);
-        //svm.setDegree(2);
-        //svm.setGamma(3);
+        svm.setDegree(2);
+        svm.setGamma(0.00001);
         TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
 
 
