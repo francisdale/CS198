@@ -85,7 +85,7 @@ public class CardHome extends AppCompatActivity{
         }
 
         addClass = (Button)findViewById(R.id.addClass);
-        train = (Button)findViewById(R.id.train);
+        train = (Button)findViewById(R.id.view_non_face);
 
         addClass.setOnClickListener(
                 new Button.OnClickListener() {
