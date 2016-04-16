@@ -40,7 +40,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
     private static final String TAG = "testMessage";
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
     private static final String trainedCropsDir = "sdcard/PresentData/faceDatabase/trainedCrops";
-    private static final String modelDir = "sdcard/PresentData";
+    private static final String modelDir = "sdcard/PresentData/recognizerModels";
 
     private static final Size dSize = new Size(160, 160);
     int numPrincipalComponents = 250;
@@ -91,6 +91,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         //Unify the names of all crops in CS197
         //gatherAllCrops();
+
+        File tempF = new File(modelDir);
+        if(!tempF.exists()){
+            tempF.mkdirs();
+        }
 
         String timeStamp = new SimpleDateFormat("MMddyyy-HHmmss").format(new Date());
         String modelFileName = "eigenModel_" + timeStamp + ".xml";
@@ -170,6 +175,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         for(File c : untrainedCrops) {
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
             equalizeHist(img, img);
+            //GaussianBlur(img, img, new Size(32, 32), 0);
 
             nameDetails = c.getName().split("_");
             label = Integer.parseInt(nameDetails[0]);

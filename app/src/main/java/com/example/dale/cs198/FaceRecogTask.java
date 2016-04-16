@@ -38,8 +38,14 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "testMessage";
 
-    private static final String modelDir = "sdcard/PresentData";
+    private static final String modelDir = "sdcard/PresentData/recognizerModels";
     private static final String classesDir = "sdcard/PresentData/Classes";
+    private static final String testResultsDir = "sdcard/PresentData/researchMode/faceRecogTestResults";
+    private static final String masterListPath = "sdcard/PresentData/Master List.txt";
+
+    static final int ATTENDANCE_USAGE = 0;
+    private static final int TEST_USAGE = 2;
+    int usageType;
 
     private static final Size dSize = new Size(160, 160);
     int numPrincipalComponents = 250;
@@ -55,14 +61,22 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
     TaskData td;
     Context c;
     String className;
+    String testAlgo;
 
     TextView tv;
 
-    public FaceRecogTask(TaskData td, Context c, String className){
+    public FaceRecogTask(TaskData td, Context c, String className, int usageType){
         this.td = td;
         this.c = c;
         this.className = className;
+        this.usageType = usageType;
         tv = (TextView)((CustomCamera)c).findViewById(R.id.attendanceCounter);
+    }
+
+    public FaceRecogTask(TaskData td, int usageType, String testAlgos){
+        this.td = td;
+        this.testAlgo = testAlgo;
+        this.usageType = TEST_USAGE;
     }
 
     @Override
@@ -71,94 +85,97 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
         Log.i(TAG, "FaceRecogTask started.");
         try {
 
-            //Read class list:
-            BufferedReader br;
-            HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
-            HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
-            String line;
-            String[] details;
-            String timeStamp = new SimpleDateFormat("MMddyyyy").format(new Date());
-            //String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
+            if (usageType == ATTENDANCE_USAGE) {
+                //Read class list:
+                BufferedReader br;
+                HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+                HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+                String line;
+                String[] details;
+                String timeStamp = new SimpleDateFormat("MMddyyyy").format(new Date());
+                //String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
-            String classDir = classesDir + "/" + className;
-            String recordsDir = classDir + "/attendanceReports";
-            //Filename of record is <className>_<date>.txt
-            String recordCropsDirPath = recordsDir + "/" + className + "_" + timeStamp;
-            String recordFilePath = recordCropsDirPath + ".txt";
-            File recordCropsDirFile = new File (recordCropsDirPath);
-            File recordFile = new File(recordFilePath);
+                String classDir = classesDir + "/" + className;
+                String recordsDir = classDir + "/attendanceReports";
+                //Filename of record is <className>_<date>.txt
+                String recordCropsDirPath = recordsDir + "/" + className + "_" + timeStamp;
+                String recordFilePath = recordCropsDirPath + ".txt";
+                File recordCropsDirFile = new File(recordCropsDirPath);
+                File recordFile = new File(recordFilePath);
 
-            if(!recordFile.exists()){
-                Log.i(TAG, "Record doesn't exist yet. Creating...");
-                recordCropsDirFile.mkdirs();
-                br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
-                while((line = br.readLine()) != null){
-                    details = line.split(",");
-                    //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
-                    attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
-                    studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
-                }
-            } else {
-                Log.i(TAG, "Record exists. Loading...");
-                br = new BufferedReader(new FileReader(recordFile));
-                while((line = br.readLine()) != null){
-                    details = line.split(",");
-                    //a line in an attendance record text file has the syntax: <id>,<studentNumber>,<lastname>,<firstname>,<attendance>
-                    attendanceRecord.put(Integer.parseInt(details[0]), Integer.parseInt(details[4])); //(id, attendance)
-                    studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
-                    if(details[4] == "1"){
-                        numStudentsPresent++;
+                if (!recordFile.exists()) {
+                    Log.i(TAG, "Record doesn't exist yet. Creating...");
+                    recordCropsDirFile.mkdirs();
+                    br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
+                    while ((line = br.readLine()) != null) {
+                        details = line.split(",");
+                        //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                        attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                        studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                    }
+                } else {
+                    Log.i(TAG, "Record exists. Loading...");
+                    br = new BufferedReader(new FileReader(recordFile));
+                    while ((line = br.readLine()) != null) {
+                        details = line.split(",");
+                        //a line in an attendance record text file has the syntax: <id>,<studentNumber>,<lastname>,<firstname>,<attendance>
+                        attendanceRecord.put(Integer.parseInt(details[0]), Integer.parseInt(details[4])); //(id, attendance)
+                        studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                        if (details[4].equals("1")) {
+                            numStudentsPresent++;
+                        }
                     }
                 }
-            }
 
 
-            numStudents = attendanceRecord.size();
-            publishProgress();
+                numStudents = attendanceRecord.size();
+                publishProgress();
 
-            /*Log.i(TAG, "Loading Eigen...");
-            FaceRecognizer efr = createEigenFaceRecognizer();
+                /*Log.i(TAG, "Loading Eigen...");
+                FaceRecognizer efr = createEigenFaceRecognizer();
 
-            FilenameFilter eigenModelFilter = new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    name = name.toLowerCase();
-                    return name.startsWith("eigenModel") || name.endsWith(".xml");
-                }
-            };
+                FilenameFilter eigenModelFilter = new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        name = name.toLowerCase();
+                        return name.startsWith("eigenModel") || name.endsWith(".xml");
+                    }
+                };
 
-            String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
+                String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
 
-            timeStart = System.currentTimeMillis();
-            efr.load(modelDir + "/eigenModel.xml");
-            timeEnd = System.currentTimeMillis();
-            timeElapsed = timeEnd - timeStart;
-            Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed / 1000 + "s.");
-            Log.i(TAG, "Eigen loaded.");*/
+                timeStart = System.currentTimeMillis();
+                efr.load(modelDir + "/eigenModel.xml");
+                timeEnd = System.currentTimeMillis();
+                timeElapsed = timeEnd - timeStart;
+                Log.i(TAG, "Recognizer model loaded in " + (float) timeElapsed / 1000 + "s.");
+                Log.i(TAG, "Eigen loaded.");*/
 
-            //For PCA+SVM recognition:
-            Log.i(TAG, "Loading SVM...");
-            FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
-            SVM sfr = SVM.create();
-            sfr.read(fs.root());
-            fs.release();
+                //For PCA+SVM recognition:
 
-            fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
-            PCA pca = new PCA();
-            pca.read(fs.root());
-            fs.release();
 
-            Log.i(TAG, "SVM loaded.");
+                Log.i(TAG, "Loading SVM...");
+                FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
+                SVM sfr = SVM.create();
+                sfr.read(fs.root());
+                fs.release();
 
-            Mat mColor;
-            Mat mGray;
-            int predictedLabel;
-            int secondaryID;
-            File f;
-            String studentName;
-            String[] temp;
+                fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+                PCA pca = new PCA();
+                pca.read(fs.root());
+                fs.release();
 
-            Log.i(TAG, "FaceRecogTask: Initialization complete.");
+                Log.i(TAG, "SVM loaded.");
+
+                Mat mColor;
+                Mat mGray;
+                int predictedLabel;
+                int secondaryID;
+                File f;
+                String studentName;
+                String[] temp;
+
+                Log.i(TAG, "FaceRecogTask: Initialization complete.");
             /*
             //For testing with AT&T database:
             File[] testCrops = new File("sdcard/PresentData/att/att_faces_labeled_cropped_testing_jpg").listFiles();
@@ -170,101 +187,134 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             }
             */
 
-            //Resize input mats to same size as mats in train.
-            while(null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
-                Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
+                //Resize input mats to same size as mats in train.
+                while (null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
+                    Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
 
-                mGray = new Mat();
-                cvtColor(mColor, mGray, CV_BGR2GRAY);
-                Log.i(TAG, "Train usage: image converted to grayscale");
-                equalizeHist(mGray, mGray);
-                resize(mGray, mGray, dSize);
+                    mGray = new Mat();
+                    cvtColor(mColor, mGray, CV_BGR2GRAY);
+                    Log.i(TAG, "Train usage: image converted to grayscale");
+                    equalizeHist(mGray, mGray);
+                    resize(mGray, mGray, dSize);
 
-                //Recognize faces:
+                    //Recognize faces:
 
-                timeStart = System.currentTimeMillis();
-                mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
-                predictedLabel = (int)sfr.predict(pca.project(mGray));
+                    timeStart = System.currentTimeMillis();
+                    mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+                    predictedLabel = (int) sfr.predict(pca.project(mGray));
 
-                //predictedLabel = efr.predict(mGray);
-                timeEnd = System.currentTimeMillis();
-                timeElapsed = timeEnd - timeStart;
+                    //predictedLabel = efr.predict(mGray);
+                    timeEnd = System.currentTimeMillis();
+                    timeElapsed = timeEnd - timeStart;
 
-                Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+                    Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
-                if(attendanceRecord.containsKey(predictedLabel)){
-                    Log.i(TAG, "predictedLabel was found in the classlist.");
-                    if(0 == attendanceRecord.get(predictedLabel)) {
-                        attendanceRecord.put(predictedLabel, 1);
-                        numStudentsPresent++;
-                        Log.i(TAG, "predictedLabel attendance was marked.");
-                    }
+                    if (attendanceRecord.containsKey(predictedLabel)) {
+                        Log.i(TAG, "predictedLabel was found in the classlist.");
+                        if (0 == attendanceRecord.get(predictedLabel)) {
+                            attendanceRecord.put(predictedLabel, 1);
+                            numStudentsPresent++;
+                            Log.i(TAG, "predictedLabel attendance was marked.");
+                        }
 
-                    temp = studentNumsAndNames.get(predictedLabel).split(",");
-                    studentName = temp[1] + "," + temp[2];
-                    //Before saving the crop, check which secondaryID is still available:
-                    secondaryID = 0;
-                    do {
                         temp = studentNumsAndNames.get(predictedLabel).split(",");
                         studentName = temp[1] + "," + temp[2];
-                        f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
-                        secondaryID++;
-                    } while(f.exists());
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            temp = studentNumsAndNames.get(predictedLabel).split(",");
+                            studentName = temp[1] + "," + temp[2];
+                            f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
 
-                    imwrite(f.getAbsolutePath(), mColor);
+                        imwrite(f.getAbsolutePath(), mColor);
 
-                    Log.i(TAG, "Crop saved.");
-                } else if(0 == predictedLabel || -1 == predictedLabel){
-                    Log.i(TAG, "Non face found.");
+                        Log.i(TAG, "Crop saved.");
+                    } else if (0 == predictedLabel || -1 == predictedLabel) {
+                        Log.i(TAG, "Non face found.");
 
-                    //Before saving the crop, check which secondaryID is still available:
-                    secondaryID = 0;
-                    do {
-                        f = new File(recordCropsDirPath + "/0_nonFace_" + secondaryID + ".jpg");
-                        secondaryID++;
-                    } while(f.exists());
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            f = new File(recordCropsDirPath + "/0_nonFace_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
 
-                    imwrite(f.getAbsolutePath(), mColor);
-                    numUnrecognizedFaces++;
+                        imwrite(f.getAbsolutePath(), mColor);
+                        numUnrecognizedFaces++;
+
+                    }
+
+                    mColor.deallocate();
+                    mGray.deallocate();
+
+                    publishProgress();
+                    Log.i(TAG, "FaceRecogTask: Progress published.");
+                    //}
 
                 }
 
-                mColor.deallocate();
-                mGray.deallocate();
+                //Thread has been signalled to die at this point; time to write the attendance report .txt file.
+                BufferedWriter bw = new BufferedWriter(new FileWriter(recordFile));
+                Set attendanceSet = attendanceRecord.entrySet();
+                Set nameSet = studentNumsAndNames.entrySet();
+                Iterator ai = attendanceSet.iterator();
+                Iterator ni = nameSet.iterator();
+                Entry ae;
+                Entry ne;
+                Log.i(TAG, "Recog: Writing and saving attendance record...");
+                // Display elements
+                while (ai.hasNext()) {
+                    ae = (Entry) ai.next();
+                    ne = (Entry) ni.next();
+                    bw.write(ae.getKey() + "," + ne.getValue() + "," + ae.getValue() + "\n");
+                }
 
-                publishProgress();
-                Log.i(TAG, "FaceRecogTask: Progress published.");
-                //}
+                bw.flush();
+                bw.close();
+
+            } else if(usageType == TEST_USAGE){
+
+                HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+                HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+                String line;
+                String[] details;
+                String[] testAlgoDetails = testAlgo.split("_");
+                String testResultsForAlgoDir = testResultsDir + "/" + testAlgo;
+
+                File folder = new File(testResultsForAlgoDir);
+                if (folder.exists()) {
+                    DirectoryDeleter.deleteDir(folder);
+                }
+                folder.mkdirs();
+
+                File testRecordFilesDir = new File(testResultsForAlgoDir + "/attendanceRecordsOutput");
+                //File trueRecordFile = new File(recordFilePath);
+
+                BufferedReader br = new BufferedReader(new FileReader(masterListPath));
+                while ((line = br.readLine()) != null) {
+                    details = line.split(",");
+                    //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                    attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                    studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                }
+
+                numStudents = attendanceRecord.size();
 
             }
 
-            //Thread has been signalled to die at this point; time to write the attendance report .txt file.
-            BufferedWriter bw = new BufferedWriter(new FileWriter(recordFile));
-            Set attendanceSet = attendanceRecord.entrySet();
-            Set nameSet = studentNumsAndNames.entrySet();
-            Iterator ai = attendanceSet.iterator();
-            Iterator ni = nameSet.iterator();
-            Entry ae;
-            Entry ne;
-            Log.i(TAG, "Recog: Writing and saving attendance record...");
-            // Display elements
-            while(ai.hasNext()) {
-                ae = (Entry)ai.next();
-                ne = (Entry)ni.next();
-                bw.write(ae.getKey() + "," + ne.getValue() + "," + ae.getValue() + "\n");
+            }catch(Exception e){
+                e.printStackTrace();
+                Log.e(TAG, "Exception thrown at FaceRecogTask: " + e);
             }
+            Log.i(TAG, "Closing FaceRecogTask thread.");
 
-            bw.flush();
-            bw.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, "Exception thrown at FaceRecogTask: " + e);
+            return null;
         }
-        Log.i(TAG, "Closing FaceRecogTask thread.");
 
-        return null;
-    }
+
+
 
     @Override
     protected void onProgressUpdate(Void... progress){

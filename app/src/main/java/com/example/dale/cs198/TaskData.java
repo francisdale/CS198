@@ -10,17 +10,53 @@ import static org.bytedeco.javacpp.opencv_core.Mat;
  * Created by jedpatrickdatu on 2/10/2016.
  */
 public class TaskData {
+    private static final String TAG = "testMessage";
 
-    public static final String detectOutputDir = "cs198/detectedFaces";
     ThreadSafeQueue<Mat> detectQueue = new ThreadSafeQueue<Mat>();
     ThreadSafeQueue<Mat> recogQueue = new ThreadSafeQueue<Mat>();
-    ThreadSafeQueue<String> pathQueue = new ThreadSafeQueue<String>();
     private boolean isMainThreadRunning = true;
 
     public synchronized void setThreadsToDie(){
         isMainThreadRunning = false;
         detectQueue.setNoMoreMatsComing();
         recogQueue.setNoMoreMatsComing();
+    }
+
+    public void faceDetectThreadAnnounceDeath() {
+        synchronized(detectQueue) {
+            detectQueue.notifyAll();
+        }
+    }
+
+    public void facerecogThreadAnnounceDeath() {
+        synchronized(recogQueue) {
+            recogQueue.notifyAll();
+        }
+    }
+
+    public void mainThreadWaitsForDetectThreadToDie() {
+        synchronized(detectQueue) {
+            try {
+                Log.i(TAG, "Waiting for face detect thread to die...");
+                detectQueue.wait();
+                Log.i(TAG, "Face detect thread is dead!");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public void mainThreadWaitsForRecogThreadToDie() {
+        synchronized(recogQueue) {
+            try {
+                Log.i(TAG, "Waiting for face recog thread to die...");
+                recogQueue.wait();
+                Log.i(TAG, "Face recog thread is dead!");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public synchronized boolean isUIOpen(){
@@ -87,8 +123,6 @@ class ThreadSafeQueue<E>{
             mq.notifyAll();
         }
     }
-
-
 
 }
 

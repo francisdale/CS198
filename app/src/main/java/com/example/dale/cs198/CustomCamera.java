@@ -40,7 +40,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     private static final String TAG = "testMessage";
     private final String tempImgDir = "sdcard/PresentData/temp.jpg";
     private static final int SELECT_PHOTO = 2;
-    private int MODE;
+    int detectUsage;
 
     TextView status;
     ImageButton capture;
@@ -49,7 +49,7 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
 
-    int detectUsage;
+    int taskUsage;
     String className;
 
     Camera camera;
@@ -95,12 +95,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         td = new TaskData();
-        fd = new FaceDetectTask(td, this, detectUsage);
+        fd = new FaceDetectTask(td, this, taskUsage);
 
-        if (detectUsage == FaceDetectTask.ATTENDANCE_USAGE) {
+        if (taskUsage == FaceRecogTask.ATTENDANCE_USAGE) {
             className = intent.getStringExtra("classNameString");
             status.setText(className);
-            fr = new FaceRecogTask(td, this, className);
+            fr = new FaceRecogTask(td, this, className, taskUsage);
         }
 
         capture.setOnClickListener(new View.OnClickListener() {

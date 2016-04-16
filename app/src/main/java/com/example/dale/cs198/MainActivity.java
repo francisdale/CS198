@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -161,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(faceDetect);
     }
 
-    public void dispatchFaceRecogTrainActivityIntent(View view){
+    public void dispatchFaceRecogTrainActivityIntent(View view) {
         Log.i(TAG, "dispatchFaceRecogTrainActivityIntent");
         Intent faceRecogTrain = new Intent(MainActivity.this,JavaCVTrainFaceRecognizerTest.class);
         startActivity(faceRecogTrain);
@@ -411,7 +412,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testFaceDetect(){
+        Log.i(TAG, "Now in testFaceDetect.");
+        String[] testClassDetails;
+        String className;
+        File dataFolder;
+        FilenameFilter imgFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                name = name.toLowerCase();
+                return name.endsWith(".jpg");
+            }
+        };
+        File[] testImages;
+        TaskData td;
 
+        for(int i = 0; i < testClassNamesAndDataSplits.length; i++) {
+            Log.i(TAG, "testFaceDetect loop " + i);
+            testClassDetails = testClassNamesAndDataSplits[i].split(",");
+            className = testClassDetails[0];
+            dataFolder = new File(testClassDataDir +"/" + className + " Classroom Data");
+            testImages = dataFolder.listFiles(imgFilter);
+
+            td = new TaskData();
+
+            FaceDetectTask fd = new FaceDetectTask(td, FaceDetectTask.TEST_USAGE);
+            fd.execute();
+
+            int y = 0;
+            Log.i(TAG, "Face detect thread executed.");
+            Log.i(TAG, "Number of images: " + testImages.length + ".Populating detectQueue...");
+            for(File f : testImages){
+                td.detectQueue.add(imread(f.getAbsolutePath()));
+                y++;
+                Log.i(TAG, "Populating detectQueue loop " + y);
+            }
+            Log.i(TAG, "detectQueue populated.");
+
+            td.setThreadsToDie();
+
+            Log.i(TAG, "Waiting for face detect thread to finish...");
+            td.mainThreadWaitsForDetectThreadToDie();
+            Log.i(TAG, "Face detect thread finished. Goodbye!");
+        }
     }
 
     public void testRecogTrain(){

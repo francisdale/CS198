@@ -7,16 +7,24 @@ import android.widget.TextView;
 
 import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 
+import static org.bytedeco.javacpp.opencv_core.CvScalar;
+import static org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_core.Mat;
 import static org.bytedeco.javacpp.opencv_core.Rect;
 import static org.bytedeco.javacpp.opencv_core.RectVector;
 import static org.bytedeco.javacpp.opencv_core.Size;
+import static org.bytedeco.javacpp.opencv_core.cvPoint;
+import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_AA;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
+import static org.bytedeco.javacpp.opencv_imgproc.cvRectangle;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
 /**
@@ -28,9 +36,11 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
     private static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
+    private static final String testResultsDir = "sdcard/PresentData/researchMode/faceDetectTestResults";
 
     static final int ATTENDANCE_USAGE = 0;
     static final int TRAIN_USAGE = 1;
+    static final int TEST_USAGE = 2;
 
     //Face detection parameters:
     double scaleFactor = 1.1;
@@ -58,10 +68,15 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
         tv = (TextView) ((CustomCamera) c).findViewById(R.id.detectionCounter);
     }
 
+    public FaceDetectTask(TaskData td, int usageType){
+        this.td = td;
+        this.c = c;
+        this.usageType = usageType;
+    }
 
     @Override
     protected Void doInBackground(Void... params) {
-        Log.i(TAG, "FaceDetectTask doInBackground start with context " + c.toString());
+        Log.i(TAG, "FaceDetectTask doInBackground start");
         try {
             //Initialize face detector:
             File cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
@@ -147,11 +162,13 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     publishProgress();
                 }
                 Log.i(TAG, "Attendance camera UI closed. Goodbye!");
+
             } else if(usageType == TRAIN_USAGE){
+
                 Log.i(TAG, "Now in Train Usage ");
                 File folder = new File(untrainedCropsDir);
                 if(folder.exists()==false){
-                    folder.mkdir();
+                    folder.mkdirs();
                 }
 
 
@@ -242,7 +259,78 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 }
 
                 Log.i(TAG, "Train camera UI closed. Goodbye!");
+
+            } else if(usageType == TEST_USAGE) {
+                Log.i(TAG, "Now in face detect task Test Usage ");
+
+                File folder = new File(testResultsDir);
+                if (folder.exists()) {
+                    DirectoryDeleter.deleteDir(folder);
+                }
+                folder.mkdirs();
+
+                IplImage imgColor;
+                int x;
+                int y;
+
+                while (null != (mColor = td.detectQueue.poll())) {
+                    imgCount++;
+                    mGray = new Mat();
+                    cvtColor(mColor, mGray, CV_BGR2GRAY);
+                    faces = new RectVector();
+
+                    //Detect faces:
+                    Log.i(TAG, "Detecting...");
+                    timeStart = System.currentTimeMillis();
+                    faceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
+                    timeEnd = System.currentTimeMillis();
+                    timeElapsed = timeEnd - timeStart;
+
+                    mGray.release();
+
+                    imgColor = new IplImage(mColor);
+
+                    numFaces = (int) faces.size();
+
+                    if (numFaces > 0) {//check if faces is not empty; an empty r means no face was really detected
+                        //Crop faces:
+
+                        Log.i(TAG, "Detection complete. Found " + numFaces + " faces. Cropping...");
+
+                        for (int i = 0; i < numFaces; i++) {
+                            r = faces.get(i);
+                            x = r.x();
+                            y = r.y();
+
+                            cvRectangle(imgColor, cvPoint(x, y), cvPoint((x + r.width()), (y + r.height())), CvScalar.GREEN, 6, CV_AA, 0);
+
+                            crop = new Mat(mColor, r);
+
+                            //Before moving the crop to untrainedCrops, find a new filename for the crop that does not conflict with a crop already in untrainedCrops.
+                            secondaryID = 0;
+                            do {
+                                f = new File(testResultsDir + "/" + secondaryID + ".jpg");
+                                secondaryID++;
+                            } while (f.exists());
+                            cvSaveImage(f.getAbsolutePath(), imgColor);
+                        }
+                    } else {
+                        numFaces = 0;
+                    }
+
+                    faceCount += numFaces;
+
+                    Log.i(TAG, "Test: Faces cropped.");
+                }
+
+                //Write down number of faces detected:
+                BufferedWriter bw = new BufferedWriter(new FileWriter(testResultsDir + "/" + faceCount + " faces detected.txt"));
+                bw.flush();
+                bw.close();
+
+                td.faceDetectThreadAnnounceDeath();
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "Exception thrown at FaceDetectTask: " + e);
