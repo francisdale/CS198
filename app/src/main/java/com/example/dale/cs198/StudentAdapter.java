@@ -1,11 +1,8 @@
 package com.example.dale.cs198;
 
-import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,10 +18,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by DALE on 1/26/2016.
@@ -55,9 +49,9 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops");
 
 
-        String ID = Integer.toString(s.getId());
-        boolean meron = false;
-        for (File f : faceCropsDir.listFiles()) {
+        final String ID = Integer.toString(s.getId());
+
+        /*for (File f : faceCropsDir.listFiles()) {
             if (f.isFile()) {
                 if(f.getName().startsWith(ID+"_0")){
                     Log.i(TAG, "directory of first occurence -->" + f.getAbsolutePath());
@@ -70,27 +64,28 @@ public class StudentAdapter extends RecyclerView.Adapter<StudentAdapter.StudentV
 
         if(meron == false){
             holder.studentFace.setImageResource(R.mipmap.ic_launcher);
+        }*/
+
+
+
+        FilenameFilter IDImgFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                Log.i(TAG, "Filtered ID --> " + ID);
+                return name.startsWith(ID + "_");
+            }
+        };
+
+        File[] fileArr = faceCropsDir.listFiles(IDImgFilter);
+        Log.i(TAG, "File arr size -->" + fileArr.length);
+        if (fileArr.length > 0) {
+            Log.i(TAG, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
+            Bitmap bmImg = BitmapFactory.decodeFile(fileArr[0].getAbsolutePath());
+            holder.studentFace.setImageBitmap(bmImg);
+        } else {
+            Log.i(TAG, "no image");
+            holder.studentFace.setImageResource(R.mipmap.ic_launcher);
         }
 
-
-//
-//        FilenameFilter IDImgFilter = new FilenameFilter() {
-//            public boolean accept(File dir, String name) {
-//                Log.i(TAG, "Filtered ID --> " + ID);
-//                return name.startsWith(ID,0);
-//            }
-//        };
-//
-//        File[] fileArr = faceCropsDir.listFiles(IDImgFilter);
-//        Log.i(TAG, "File arr size -->" + fileArr.length);
-//        if (fileArr.length > 0) {
-//            Log.i(TAG, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
-//            Bitmap bmImg = BitmapFactory.decodeFile(fileArr[0].getAbsolutePath());
-//            holder.studentFace.setImageBitmap(bmImg);
-//        } else {
-//            Log.i(TAG, "no image");
-//            holder.studentFace.setImageResource(R.mipmap.ic_launcher);
-//        }
 
     }
 

@@ -189,7 +189,13 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
                         String firstPartName;
                         for (File f : reportCrops.listFiles()) {
                             fNameDetails = f.getName().split("_");
-                            firstPartName = fNameDetails[0] + "_" + fNameDetails[1];
+
+                            if(fNameDetails.equals("unlabeled")){
+                                firstPartName = "unlabeled";
+                            } else {
+                                firstPartName = fNameDetails[0] + "_" + fNameDetails[1];
+                            }
+
                             secondaryID = 0;
 
                             do {
@@ -324,11 +330,9 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
 
         Log.i(TAG,"facecropsdir --> " + faceCropsDir.isDirectory());
 
-        for (File f : faceCropsDir.listFiles()) {
+        for (File f : faceCropsDir.listFiles(nonFaceCropsImgFilter)) {
             if (f.isFile()) {
-                if(f.getName().startsWith("0_nonface")){
-                    nonFaces.add(f.getAbsolutePath());
-                }
+                nonFaces.add(f.getAbsolutePath());
             }
         }
 

@@ -3,29 +3,22 @@ package com.example.dale.cs198;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * Created by DALE on 1/21/2016.
@@ -76,19 +69,16 @@ public class ViewTrainedCropsAdapter extends RecyclerView.Adapter<ViewTrainedCro
 
         String holderName[] = c.getFileName().split("_");
 
-        if(holderName[0].length()<=2){
+        if (holderName[0].equals("0")) {
+            holder.cropName.setText("NONFACE");
+        } else if (holderName[0].equals("unlabeled_")){
+            holder.cropName.setText("");
+        } else {
             String nameInfo[] = names.get(Integer.parseInt(holderName[0])).split("-");
             holder.cropName.setText(nameInfo[1]);
         }
-        if(holderName[0].equals("unlabeled")){
-            holder.cropName.setText(labelArr[position]);
-        }
-        if(holderName[0].equals("delete")){
-            holder.cropName.setText("NOT A FACE");
-        }
-        if(holderName[0].equals("unrecognizedFace")){
-            holder.cropName.setText("NOT A FACE");
-        }
+
+
 
     }
 

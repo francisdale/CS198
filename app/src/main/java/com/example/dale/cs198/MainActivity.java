@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -413,6 +412,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void testFaceDetect(){
         Log.i(TAG, "Now in testFaceDetect.");
+
+        TaskData td = new TaskData();
+
+        FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.TEST_USAGE);
+        fd.execute();
+        /*
         String[] testClassDetails;
         String className;
         File dataFolder;
@@ -434,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
 
             td = new TaskData();
 
-            FaceDetectTask fd = new FaceDetectTask(td, FaceDetectTask.TEST_USAGE);
+            FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.TEST_USAGE);
             fd.execute();
 
             int y = 0;
@@ -452,7 +457,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "Waiting for face detect thread to finish...");
             td.mainThreadWaitsForDetectThreadToDie();
             Log.i(TAG, "Face detect thread finished. Goodbye!");
-        }
+        }*/
     }
 
     public void testRecogTrain(){

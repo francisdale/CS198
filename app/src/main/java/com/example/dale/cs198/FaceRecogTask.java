@@ -6,7 +6,6 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 
 import java.io.BufferedReader;
@@ -22,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
+import static org.bytedeco.javacpp.opencv_core.FileStorage;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
@@ -30,6 +30,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
+import static org.bytedeco.javacpp.opencv_photo.fastNlMeansDenoising;
 
 /**
  * Created by jedpatrickdatu on 2/15/2016.
@@ -38,9 +39,11 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     private static final String TAG = "testMessage";
 
+
     private static final String modelDir = "sdcard/PresentData/recognizerModels";
     private static final String classesDir = "sdcard/PresentData/Classes";
     private static final String testResultsDir = "sdcard/PresentData/researchMode/faceRecogTestResults";
+    private static final String testModelsDir = "sdcard/PresentData/researchMode/testRecogModels";
     private static final String masterListPath = "sdcard/PresentData/Master List.txt";
 
     static final int ATTENDANCE_USAGE = 0;
@@ -49,7 +52,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     private static final Size dSize = new Size(160, 160);
     int numPrincipalComponents = 250;
-    double threshold = 4000.0;
+    double threshold = 10000.0;
 
     int numStudents;
     int numStudentsPresent = 0;
@@ -152,8 +155,6 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 Log.i(TAG, "Eigen loaded.");*/
 
                 //For PCA+SVM recognition:
-
-
                 Log.i(TAG, "Loading SVM...");
                 FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
                 SVM sfr = SVM.create();
@@ -164,6 +165,21 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 PCA pca = new PCA();
                 pca.read(fs.root());
                 fs.release();
+
+                Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+                Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+                Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+
+                Mat cw = sfr.getClassWeights();
+                Log.i(TAG, "cw rows: " + cw.rows() + ", cw cols: " + cw.cols());
+
+
+                /*//One class svm:
+                fs = new FileStorage(modelDir + "/svmModelOneClass.xml", opencv_core.FileStorage.READ);
+                SVM sfrOneClass = SVM.create();
+                sfrOneClass.read(fs.root());
+                fs.release();*/
+
 
                 Log.i(TAG, "SVM loaded.");
 
@@ -187,25 +203,50 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             }
             */
 
+                /*//For testing with CS 197 april 08:
+
+                FilenameFilter imgFilter = new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        name = name.toLowerCase();
+                        return !name.startsWith("0_") && name.endsWith(".jpg");
+                    }
+                };
+
+                File[] testCrops = new File("sdcard/PresentData/researchMode/CS 197 Classroom Data/15_20160330_6").listFiles(imgFilter);
+                for (File c : testCrops) {
+                    td.recogQueue.add(imread(c.getAbsolutePath()));
+                }*/
+
                 //Resize input mats to same size as mats in train.
                 while (null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
                     Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
 
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
+
                     Log.i(TAG, "Train usage: image converted to grayscale");
+
                     equalizeHist(mGray, mGray);
+                    fastNlMeansDenoising(mGray,mGray);
                     resize(mGray, mGray, dSize);
-
-                    //Recognize faces:
-
-                    timeStart = System.currentTimeMillis();
                     mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+
                     predictedLabel = (int) sfr.predict(pca.project(mGray));
 
-                    //predictedLabel = efr.predict(mGray);
-                    timeEnd = System.currentTimeMillis();
-                    timeElapsed = timeEnd - timeStart;
+                    /*//Recognize faces:
+                    if(1 == (predictedLabel = (int)sfrOneClass.predict(pca.project(mGray)))) {
+                        Log.i(TAG, "One class svm: " + predictedLabel);
+                        timeStart = System.currentTimeMillis();
+
+                        predictedLabel = (int) sfr.predict(pca.project(mGray));
+
+                        //predictedLabel = efr.predict(mGray);
+                        timeEnd = System.currentTimeMillis();
+                        timeElapsed = timeEnd - timeStart;
+                    } else {
+                        Log.i(TAG, "One class svm: " + predictedLabel);
+                        predictedLabel = 0;
+                    }*/
 
                     Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
@@ -231,13 +272,26 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                         imwrite(f.getAbsolutePath(), mColor);
 
                         Log.i(TAG, "Crop saved.");
-                    } else if (0 == predictedLabel || -1 == predictedLabel) {
+                    } else if (0 == predictedLabel) {
                         Log.i(TAG, "Non face found.");
 
                         //Before saving the crop, check which secondaryID is still available:
                         secondaryID = 0;
                         do {
                             f = new File(recordCropsDirPath + "/0_nonFace_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
+
+                        imwrite(f.getAbsolutePath(), mColor);
+                        numUnrecognizedFaces++;
+
+                    } else {
+                        Log.i(TAG, "Urecognized face found.");
+
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            f = new File(recordCropsDirPath + "/unlabeled_" + secondaryID + ".jpg");
                             secondaryID++;
                         } while (f.exists());
 
@@ -288,6 +342,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     DirectoryDeleter.deleteDir(folder);
                 }
                 folder.mkdirs();
+
+
 
                 File testRecordFilesDir = new File(testResultsForAlgoDir + "/attendanceRecordsOutput");
                 //File trueRecordFile = new File(recordFilePath);
