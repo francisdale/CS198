@@ -10,7 +10,9 @@ import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.nio.IntBuffer;
 import java.text.SimpleDateFormat;
@@ -30,7 +32,6 @@ import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 import static org.bytedeco.javacpp.opencv_ml.TrainData;
-import static org.bytedeco.javacpp.opencv_photo.fastNlMeansDenoising;
 
 
 /**
@@ -184,7 +185,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
             img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
             equalizeHist(img, img);
-            fastNlMeansDenoising(img, img);
+            //fastNlMeansDenoising(mGray,mGray);
             resize(img, img, dSize);
 
             nameDetails = c.getName().split("_");
@@ -198,7 +199,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             }*/
 
             labelsBuf.put(counter, label);
-            labelsOneClassBuf.put(counter, 1);
+            //labelsOneClassBuf.put(counter, 1);
             images.put(counter, img);
 
             //For SVM:
@@ -269,7 +270,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             }*/
 
             labelsBuf.put(counter, label);
-            labelsOneClassBuf.put(counter, 1);
+            //labelsOneClassBuf.put(counter, 1);
             images.put(counter, img);
 
             //For SVM:
@@ -327,10 +328,10 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         data.convertTo(data, CV_32FC1);
         SVM svm = SVM.create();
         svm.setType(SVM.C_SVC);
-        svm.setKernel(SVM.POLY);
+        svm.setKernel(SVM.LINEAR);
         //svm.setP(0.1);
-        svm.setDegree(2);
-        svm.setGamma(0.00001);
+        //svm.setDegree(2);
+        //svm.setGamma(0.00001);
         TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
 
         /*Mat cw = new Mat(numTotalCrops, 1, CV_32SC1);
@@ -364,6 +365,19 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.WRITE);
         pca.write(fs);
         fs.release();
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(modelDir + "/svmParams.txt"));
+            bw.write("Type: " + svm.getType() + "\nKernel: " + svm.getKernelType() + "\nGamma: " + svm.getGamma() + "\nC: " + svm.getC() + "\nP: " + svm.getP() + "\nDegree: " + svm.getDegree() + "\ncoef0: " + svm.getCoef0() + "\n\n");
+            bw.write("\nKernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
+            bw.write("\nType legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
+
+            bw.flush();
+            bw.close();
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
 
         Log.i(TAG, "Type: " + svm.getType() + "\nKernel: " + svm.getKernelType() + "\nGamma: " + svm.getGamma() + "\nC: " + svm.getC() + "\nP: " + svm.getP() + "\nDegree: " + svm.getDegree() + "\ncoef0: " + svm.getCoef0() + "\n\n");
         Log.i(TAG, "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");

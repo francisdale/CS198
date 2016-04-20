@@ -32,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19", "CS 133,1,6,7,10"};
+    String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19"};
+    //String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19", "CS 133,1,6,7,10"};
     final String testClassDataDir = "sdcard/PresentData/researchMode";
 
     private static final int REQUEST_TAKE_PHOTO = 1;

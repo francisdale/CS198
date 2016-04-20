@@ -30,7 +30,6 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
-import static org.bytedeco.javacpp.opencv_photo.fastNlMeansDenoising;
 
 /**
  * Created by jedpatrickdatu on 2/15/2016.
@@ -227,7 +226,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     Log.i(TAG, "Train usage: image converted to grayscale");
 
                     equalizeHist(mGray, mGray);
-                    fastNlMeansDenoising(mGray,mGray);
+                    //fastNlMeansDenoising(mGray,mGray);
                     resize(mGray, mGray, dSize);
                     mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
 

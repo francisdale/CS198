@@ -23,14 +23,13 @@ import static org.bytedeco.javacpp.opencv_core.RectVector;
 import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_core.cvPoint;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_AA;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvRectangle;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
-import static org.bytedeco.javacpp.opencv_photo.fastNlMeansDenoising;
 
 /**
  * Created by jedpatrickdatu on 2/10/2016.
@@ -151,7 +150,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
                     equalizeHist(mGray, mGray);
-                    fastNlMeansDenoising(mGray, mGray);
+                    //fastNlMeansDenoising(mGray, mGray);
 
                     faces = new RectVector();
 
@@ -205,6 +204,8 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     imgCount++;
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
+                    equalizeHist(mGray, mGray);
+
                     faces = new RectVector();
 
                     //Detect faces:
@@ -321,9 +322,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
 
                 for (int i = 0; i < testClassNamesAndDataSplits.length; i++) {
-                    Log.i(TAG, "Running test on class + " + testClassNamesAndDataSplits[i] + "...");
+                    Log.i(TAG, "Running test on class " + testClassNamesAndDataSplits[i] + "...");
                     dataFolderDir = testClassDataDir + "/" + testClassNamesAndDataSplits[i] + " Classroom Data";
-                    resultsFolderDir = dataFolderDir + "/greenBoxesHaar20HEDenoise";
+                    resultsFolderDir = dataFolderDir + "/greenBoxesHaar20";
                     dataFolder = new File(dataFolderDir);
                     resultsFolder = new File(resultsFolderDir);
 
@@ -346,17 +347,17 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         mGray = new Mat();
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
 
-                        timeStart = System.currentTimeMillis();
+                        /*timeStart = System.currentTimeMillis();
                         equalizeHist(mGray, mGray);
                         timeEnd = System.currentTimeMillis();
                         timeElapsed = timeEnd - timeStart;
-                        avgHETime += timeElapsed;
+                        avgHETime += timeElapsed;*/
 
-                        timeStart = System.currentTimeMillis();
+                        /*timeStart = System.currentTimeMillis();
                         fastNlMeansDenoising(mGray, mGray);
                         timeEnd = System.currentTimeMillis();
                         timeElapsed = timeEnd - timeStart;
-                        avgDenoiseTime += timeElapsed;
+                        avgDenoiseTime += timeElapsed;*/
 
 
                         faces = new RectVector();
@@ -389,11 +390,11 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                                 //crop = new Mat(mColor, r);
                             }
-                            newImgName = imgFile.getName() + "_" + numFaces + "facesDetected_" + (float) timeElapsed / 1000 + "sec.jpg";
-                            cvSaveImage(resultsFolderDir + "/" + newImgName, imgColor);
                         } else {
                             numFaces = 0;
                         }
+                        newImgName = imgFile.getName() + "_" + numFaces + "facesDetected_" + (float) timeElapsed / 1000 + "sec.jpg";
+                        cvSaveImage(resultsFolderDir + "/" + newImgName, imgColor);
 
                         numFacesInClass += numFaces;
 
@@ -402,12 +403,12 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                     }
                     avgTime = (avgTime / numImagesInClass) / 1000;
-                    avgHETime = (avgHETime / numImagesInClass) / 1000;
-                    avgDenoiseTime = (avgDenoiseTime / numImagesInClass) / 1000;
+                    /*avgHETime = (avgHETime / numImagesInClass) / 1000;*/
+                    //avgDenoiseTime = (avgDenoiseTime / numImagesInClass) / 1000;
 
                     //Write down number of faces detected:
                     BufferedWriter bw = new BufferedWriter(new FileWriter(resultsFolderDir + "/totalResults.txt"));
-                    bw.write(numFacesInClass + " total faces detected in an average of " + avgTime + " seconds for each image.\n" + numImagesInClass + " images were used.\nAverage histogram equalization time is " + avgHETime + " seconds.\nAverage denoise time is " + avgDenoiseTime + " seconds.");
+                    bw.write(numFacesInClass + " total faces detected in an average of " + avgTime + " seconds for each image.\n" + numImagesInClass + " images were used.");//\nAverage histogram equalization time is " + avgHETime + " seconds.");//\nAverage denoise time is " + avgDenoiseTime + " seconds.");
                     bw.flush();
                     bw.close();
                 }
