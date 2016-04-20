@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
@@ -14,7 +16,6 @@ import java.nio.IntBuffer;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
-import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
@@ -25,16 +26,17 @@ import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 import static org.bytedeco.javacpp.opencv_ml.TrainData;
+import static org.bytedeco.javacpp.opencv_core.subtract;
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String TAG = "testMessage";
     private static final String trainingSetDir = "sdcard/PresentData/att/att_faces";
     private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
-    private static double threshold = 5000.0;
+    private static double threshold = 10000.0;
     private static final Size dSize = new Size(160, 160);
 
-    int numTrainingImages = 160;
+    int numTrainingImages = 200;
     int numPrincipalComponents = 250;
 
     long timeStart;
@@ -59,40 +61,16 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         int counter = 0;
         Mat img;
 
+
+
         //For SVM:
         Mat trainingMat = new Mat();
-
-        /*//For training with classroom data:
-        File trainedCropsFolder = new File("sdcard/PresentData/faceDatabase/trainedCrops");
-        File[] trainedCrops = trainedCropsFolder.listFiles();
-        images = new MatVector(trainedCrops.length);
-        labels = new Mat(trainedCrops.length, 1, CV_32SC1);
-
-        labelsBuf = labels.getIntBuffer();
-        int label;
-        for (File c : trainedCrops) {
-            img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-            label = Integer.parseInt(c.getName().split("_")[0]);
-
-            resize(img, img, dSize);
-
-            labelsBuf.put(counter, label);
-            images.put(counter, img);
-
-            //For SVM:
-            img.reshape(1, 1).convertTo(img, CV_32FC1);
-            trainingMat.push_back(img);
-
-            img.deallocate();
-            counter++;
-            Log.i(TAG, "trainedCrops " + counter);
-        }*/
 
         (new File(modelDir)).mkdirs();
 
         //Image resolution92x112
         for(int s = 1; s <= 40; s++){
-            for(int i = 1; i <= 4; i++, counter++){
+            for(int i = 1; i <= 10; i += 2, counter++){
                 img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
                 //resize(img, img, dSize);
 
@@ -109,6 +87,31 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
                 Log.i(TAG, "s" + s + " i" + i);
             }
         }
+
+        //Form kernelMat:
+        Mat kernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
+        FloatBufferIndexer kI = kernelMat.createIndexer();
+        int iLimit = numTrainingImages - 1;
+
+        for(int i = 0; i < iLimit; i++){
+            for(int j = i+1; j < numTrainingImages; j++){
+                kI.put(i,j,(float)Math.pow(trainingMat.row(i).dot(trainingMat.row(j)), 2));
+            }
+        }
+
+        Mat finalKernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
+        FloatBufferIndexer fkI = finalKernelMat.createIndexer();
+        Mat differenceMat = new Mat();
+
+        for(int i = 0; i < iLimit; i++){
+            for(int j = i+1; j < numTrainingImages; j++){
+                subtract(kernelMat,kernelMat,differenceMat);
+                //fkI.put(i,j,);
+            }
+        }
+
+        kernelMat.deallocate();
+
 
 
         /*
@@ -175,7 +178,12 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         Mat data = new Mat();
         Mat projectedMat;
         Mat temp;
-        PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+
+        FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+        PCA pca = new PCA();
+        pca.read(pfs.root());
+        pfs.release();
+        //PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
         int numTrainingMatRows = trainingMat.rows();
 
         timeStart = System.currentTimeMillis();
@@ -202,18 +210,6 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         FileStorage fs = new FileStorage(modelDir + "/pca.xml", FileStorage.WRITE);
         pca.write(fs);
         fs.release();
-
-        fs = new FileStorage(modelDir + "/pca.xml", FileStorage.READ);
-
-        Log.i(TAG, "Loading pca.xml...");
-        PCA acp = new PCA();
-
-        acp.read(fs.root());
-        fs.release();
-
-        Log.i(TAG, "loaded mean rows = " + acp.mean().rows() + ", cols = " + acp.mean().cols());
-        Log.i(TAG, "loaded eigenvectors rows = " + acp.eigenvectors().rows() + ", cols = " + acp.eigenvectors().cols());
-        Log.i(TAG, "loaded eigenvalues rows = " + acp.eigenvalues().rows() + ", cols = " + acp.eigenvalues().cols());
 
 
 
@@ -355,9 +351,9 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         SVM svm = SVM.create();
         svm.setType(SVM.C_SVC);
-        svm.setKernel(SVM.LINEAR);
+        //svm.setKernel(SVM.RBF);
         //svm.setP(0.01);
-        //svm.setDegree(2);
+        //svm.setDegree(3);
         //svm.setGamma(1);
         TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
         notification.setText("Training SVM...");

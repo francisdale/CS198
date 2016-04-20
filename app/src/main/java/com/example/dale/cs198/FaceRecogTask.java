@@ -137,14 +137,14 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 /*Log.i(TAG, "Loading Eigen...");
                 FaceRecognizer efr = createEigenFaceRecognizer();
 
-                FilenameFilter eigenModelFilter = new FilenameFilter() {
+                *//*FilenameFilter eigenModelFilter = new FilenameFilter() {
                     public boolean accept(File dir, String name) {
                         name = name.toLowerCase();
                         return name.startsWith("eigenModel") || name.endsWith(".xml");
                     }
                 };
 
-                String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();
+                String modelFilePath = ((new File(modelDir)).listFiles(eigenModelFilter))[0].getAbsolutePath();*//*
 
                 timeStart = System.currentTimeMillis();
                 efr.load(modelDir + "/eigenModel.xml");
@@ -231,6 +231,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
 
                     predictedLabel = (int) sfr.predict(pca.project(mGray));
+                    //predictedLabel = efr.predict(mGray);
 
                     /*//Recognize faces:
                     if(1 == (predictedLabel = (int)sfrOneClass.predict(pca.project(mGray)))) {

@@ -32,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19"};
+    String[] testClassNamesAndDataSplits = {"CS 133,1,8,9,10"};
+    //String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19"};
     //String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19", "CS 133,1,6,7,10"};
     final String testClassDataDir = "sdcard/PresentData/researchMode";
 
@@ -277,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
             trainEnd = Integer.parseInt(testClassDetails[2]);
 
 
-            classDataDir = testClassDataDir +"/" + className + " Classroom Data";
+            classDataDir = testClassDataDir +"/" + className + " Classroom Data Haar20HE";
             allCropsDir = classDataDir + "/allCrops";
             trainingCropsDir = classDataDir + "/trainingCrops";
             classListFilePath = classDataDir + "/" + className + "_studentList.txt";

@@ -47,7 +47,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
     String svmOutputDirRight = targetDir + "/svmRecog/right";
     String svmOutputDirWrong = targetDir + "/svmRecog/wrong";
 
-    int numTrainingImages = 160;
+    int numTrainingImages = 200;
 
     String filepath;
 
@@ -284,7 +284,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
 
         for(int s = 1; s <= 40; s++) {
-            for (int i = 5; i <= 10; i ++, numImg++) {
+            for (int i = 2; i <= 10; i += 2, numImg++) {
 
                 Log.i(TAG, "s" + s + " i" + i);
 

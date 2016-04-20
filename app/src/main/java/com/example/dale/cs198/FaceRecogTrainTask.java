@@ -304,11 +304,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Mat projectedMat;
         Mat temp;
 
-        /*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+        FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
         PCA pca = new PCA();
         pca.read(pfs.root());
-        pfs.release();*/
-        PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+        pfs.release();
+        //PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
 
         for (int i = 0; i < numTrainingImages; i++) {
             projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
@@ -404,37 +404,37 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         svmOneClass.write(fs);
         fs.release();*/
 
-        /*For PCA+KNN recognition:
-        FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
-        //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
 
-        //Delete the old eigenModel xml model if there is any
-        FilenameFilter eigenModelFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                name = name.toLowerCase();
-                return name.startsWith("eigenModel") && name.endsWith(".xml");
-            }
-        };
-
-        File[] modelFileDirFiles = (new File(modelDir)).listFiles(eigenModelFilter);
-        if(modelFileDirFiles.length > 0) {
-            modelFileDirFiles[0].delete();
-        }
-
-
-        /*
-        Log.i(TAG, "Training Eigenface...");
-        timeStart = System.currentTimeMillis();
-        faceRecognizer.train(images, labels);
-        timeEnd = System.currentTimeMillis();
-        timeElapsed = timeEnd - timeStart;
-        Log.i(TAG, "Training completed in " + (float) timeElapsed / 1000 + "s.");
-
-        //dialog.setMessage("Saving recognizer...");
-        faceRecognizer.save(modelDir + "/eigenModel.xml");
-        Log.i(TAG, "Training model saved.");
-        //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);
-        //toast.show();*/
+//        //For PCA+KNN recognition:
+//        FaceRecognizer faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
+//        //FaceRecognizer faceRecognizer = createEigenFaceRecognizer();
+//
+//        /*//Delete the old eigenModel xml model if there is any
+//        FilenameFilter eigenModelFilter = new FilenameFilter() {
+//            public boolean accept(File dir, String name) {
+//                name = name.toLowerCase();
+//                return name.startsWith("eigenModel") && name.endsWith(".xml");
+//            }
+//        };
+//
+//        File[] modelFileDirFiles = (new File(modelDir)).listFiles(eigenModelFilter);
+//        if(modelFileDirFiles.length > 0) {
+//            modelFileDirFiles[0].delete();
+//        }*/
+//
+//
+//        Log.i(TAG, "Training Eigenface...");
+//        timeStart = System.currentTimeMillis();
+//        faceRecognizer.train(images, labels);
+//        timeEnd = System.currentTimeMillis();
+//        timeElapsed = timeEnd - timeStart;
+//        Log.i(TAG, "Training completed in " + (float) timeElapsed / 1000 + "s.");
+//
+//        //dialog.setMessage("Saving recognizer...");
+//        faceRecognizer.save(modelDir + "/eigenModel.xml");
+//        Log.i(TAG, "Training model saved.");
+//        //toast = Toast.makeText(c, "Training complete.", Toast.LENGTH_SHORT);
+//        //toast.show();
 
 
 
