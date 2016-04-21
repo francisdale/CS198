@@ -304,11 +304,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Mat projectedMat;
         Mat temp;
 
-        FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+        /*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
         PCA pca = new PCA();
         pca.read(pfs.root());
-        pfs.release();
-        //PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+        pfs.release();*/
+        PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
 
         for (int i = 0; i < numTrainingImages; i++) {
             projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
@@ -321,6 +321,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             data.push_back(projectedMat);
         }
 
+        Log.i(TAG, "Data now has num of rows, cols :" + data.rows() + ", " + data.cols());
         Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
         Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
         Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());

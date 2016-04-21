@@ -6,13 +6,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 
 import java.io.File;
+import java.nio.IntBuffer;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
+import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
 import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
@@ -283,6 +286,33 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         Log.i(TAG, "recog initialization complete");
 
 
+        opencv_core.MatVector images = new opencv_core.MatVector(numTrainingImages);
+        Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
+        IntBuffer labelsBuf = labels.getIntBuffer();
+        int counter = 0;
+
+        Mat trainingMat = new Mat();
+
+        //Image resolution92x112
+        for(int s = 1; s <= 40; s++){
+            for(int i = 1; i <= 10; i += 2, counter++){
+                img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
+                //resize(img, img, dSize);
+
+                equalizeHist(img, img);
+
+                images.put(counter, img);
+                labelsBuf.put(counter, s);
+
+                img.reshape(1, 1).convertTo(img, CV_32FC1);
+                trainingMat.push_back(img);
+
+                img.deallocate();
+
+                Log.i(TAG, "s" + s + " i" + i);
+            }
+        }
+
         for(int s = 1; s <= 40; s++) {
             for (int i = 2; i <= 10; i += 2, numImg++) {
 
@@ -333,10 +363,43 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 Log.i(TAG, "lbph done");
                 */
 
-                timeStart = System.currentTimeMillis();
+
+
+                /*for(int i = 0; i < numTrainingImages; i++){
+                    for(int j = 0; j < i; j++){
+                        kI.put(i,j,kI.get(j,i));
+                        //oI.put(i,j,1);
+                    }
+                    for(int k = i; k < numTrainingImages; k++){
+                        kI.put(i,k,(float)Math.pow(trainingMat.row(i).dot(trainingMat.row(k)), 2));
+                        //oI.put(i,k,1);
+                    }
+                }*/
+
+                //Kernel PCA:
+
+                Mat eVectors = pca.eigenvectors();
+                FloatBufferIndexer eI = eVectors.createIndexer();
+                Mat projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
+                FloatBufferIndexer pI = projectedMat.createIndexer();
+                float val;
+
+                Log.i(TAG, "eVectors rows: " + eVectors.rows() + ", cols: " + eVectors.cols() + ", at row 200, col 200: " + eI.get(199, 199));
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
-                projectedImg = pca.project(img);
-                predictedLabel = (int) sfr.predict(projectedImg);
+
+                for(int q = 0; q < numTrainingImages; q++){
+                    val = 0;
+                    for(int a = 0; a < numTrainingImages; a++){
+                        val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(img), 2);
+                    }
+                    pI.put(0,q,val);
+                }
+
+                timeStart = System.currentTimeMillis();
+                predictedLabel = (int) sfr.predict(projectedMat);
+
+                /*projectedImg = pca.project(img);
+                predictedLabel = (int) sfr.predict(projectedImg);*/
                 timeEnd = System.currentTimeMillis();
                 svmAvgTime += timeEnd - timeStart;
                 if (s == predictedLabel) {
@@ -347,6 +410,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 }
                 Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel);
                 Log.i(TAG, "SVM done");
+
+                projectedMat.deallocate();
             }
         }
 

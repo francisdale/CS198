@@ -6,7 +6,6 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
-import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
@@ -16,6 +15,7 @@ import java.nio.IntBuffer;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
+import static org.bytedeco.javacpp.opencv_core.CV_PCA_DATA_AS_ROW;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
 import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
@@ -26,7 +26,6 @@ import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 import static org.bytedeco.javacpp.opencv_ml.TrainData;
-import static org.bytedeco.javacpp.opencv_core.subtract;
 
 public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String TAG = "testMessage";
@@ -89,24 +88,54 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         }
 
         //Form kernelMat:
+
+        Log.i(TAG, "Calculating kernelMat...");
         Mat kernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
         FloatBufferIndexer kI = kernelMat.createIndexer();
-        int iLimit = numTrainingImages - 1;
 
-        for(int i = 0; i < iLimit; i++){
-            for(int j = i+1; j < numTrainingImages; j++){
-                kI.put(i,j,(float)Math.pow(trainingMat.row(i).dot(trainingMat.row(j)), 2));
+        //Also create and fill oneMat with 1's along the way:
+//        Mat oneMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
+//        FloatBufferIndexer oI = oneMat.createIndexer();
+
+        //int iLimit = numTrainingImages - 1;
+
+        //The matrix is a mirror along the diagonal, so to reduce computation, copy already computed answers to slots that require the value.
+        for(int i = 0; i < numTrainingImages; i++){
+            for(int j = 0; j < i; j++){
+                kI.put(i,j,kI.get(j,i));
+                //oI.put(i,j,1);
+            }
+            for(int k = i; k < numTrainingImages; k++){
+                kI.put(i,k,(float)Math.pow(trainingMat.row(i).dot(trainingMat.row(k)), 2));
+                //oI.put(i,k,1);
             }
         }
 
+        Log.i(TAG, "Calculating finalKernelMat...");
         Mat finalKernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
         FloatBufferIndexer fkI = finalKernelMat.createIndexer();
-        Mat differenceMat = new Mat();
+        float subA;
+        float subB;
+        float addC;
+        double numTrainingImagesSquared = Math.pow(numTrainingImages, 2);
 
-        for(int i = 0; i < iLimit; i++){
-            for(int j = i+1; j < numTrainingImages; j++){
-                subtract(kernelMat,kernelMat,differenceMat);
-                //fkI.put(i,j,);
+        for(int i = 0; i < numTrainingImages; i++){
+            for(int j = 0; j < numTrainingImages; j++){
+                subA = 0;
+                subB = 0;
+                addC = 0;
+                for(int Mn = 0; Mn < numTrainingImages; Mn++){
+                    subA += kI.get(Mn,j);
+                    subB += kI.get(i,Mn);
+                    for(int N = 0; N < numTrainingImages; N++){
+                        addC += kI.get(Mn,N);
+                    }
+                }
+                subA /= numTrainingImages;
+                subB /= numTrainingImages;
+                addC /= numTrainingImagesSquared;
+
+                fkI.put(i,j, kI.get(i,j) - subA - subB + addC);
             }
         }
 
@@ -179,11 +208,11 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         Mat projectedMat;
         Mat temp;
 
-        FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+        /*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
         PCA pca = new PCA();
         pca.read(pfs.root());
-        pfs.release();
-        //PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+        pfs.release();*//*
+        PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
         int numTrainingMatRows = trainingMat.rows();
 
         timeStart = System.currentTimeMillis();
@@ -192,6 +221,29 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
             Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
             pca.project(trainingMat.row(i), projectedMat);
             temp = pca.project(trainingMat.row(i));
+
+            Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
+            Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
+            data.push_back(projectedMat);
+        }
+        timeEnd = System.currentTimeMillis();
+        timeElapsedSVM = timeEnd - timeStart;
+
+        Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+        Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+        Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());*/
+
+
+        //Kernel PCA:
+        PCA pca = new PCA(finalKernelMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+        int numTrainingMatRows = finalKernelMat.rows();
+
+        timeStart = System.currentTimeMillis();
+        for(int i = 0; i < numTrainingMatRows; i++) {
+            projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
+            Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
+            pca.project(finalKernelMat.row(i), projectedMat);
+            temp = pca.project(finalKernelMat.row(i));
 
             Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
             Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
@@ -351,7 +403,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         SVM svm = SVM.create();
         svm.setType(SVM.C_SVC);
-        //svm.setKernel(SVM.RBF);
+        svm.setKernel(SVM.LINEAR);
         //svm.setP(0.01);
         //svm.setDegree(3);
         //svm.setGamma(1);
