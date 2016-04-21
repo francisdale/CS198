@@ -23,6 +23,7 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 
 
@@ -297,7 +298,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         for(int s = 1; s <= 40; s++){
             for(int i = 1; i <= 10; i += 2, counter++){
                 img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
-                //resize(img, img, dSize);
+                resize(img, img, new opencv_core.Size(23,28));
+
 
                 equalizeHist(img, img);
 
@@ -320,7 +322,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
                 img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
                 int intNumImg = (int) numImg;
-
+                resize(img, img, new opencv_core.Size(23,28));
                 equalizeHist(img, img);
 
 
@@ -384,7 +386,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 FloatBufferIndexer pI = projectedMat.createIndexer();
                 float val;
 
-                Log.i(TAG, "eVectors rows: " + eVectors.rows() + ", cols: " + eVectors.cols() + ", at row 200, col 200: " + eI.get(199, 199));
+                Log.i(TAG, "eVectors rows: " + eVectors.rows() + ", cols: " + eVectors.cols() + ", at (199,0): " + eI.get(199, 0) + ", at (0,199): " + eI.get(0,199));
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
 
                 for(int q = 0; q < numTrainingImages; q++){

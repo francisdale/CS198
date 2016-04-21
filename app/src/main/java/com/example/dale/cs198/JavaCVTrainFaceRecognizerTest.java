@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
@@ -23,6 +24,7 @@ import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
 import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
 import static org.bytedeco.javacpp.opencv_ml.ROW_SAMPLE;
 import static org.bytedeco.javacpp.opencv_ml.SVM;
 import static org.bytedeco.javacpp.opencv_ml.TrainData;
@@ -60,7 +62,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         int counter = 0;
         Mat img;
 
-
+        
 
         //For SVM:
         Mat trainingMat = new Mat();
@@ -71,7 +73,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         for(int s = 1; s <= 40; s++){
             for(int i = 1; i <= 10; i += 2, counter++){
                 img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
-                //resize(img, img, dSize);
+                resize(img, img, new opencv_core.Size(23,28));
 
                 equalizeHist(img, img);
 
@@ -92,12 +94,6 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         Log.i(TAG, "Calculating kernelMat...");
         Mat kernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
         FloatBufferIndexer kI = kernelMat.createIndexer();
-
-        //Also create and fill oneMat with 1's along the way:
-//        Mat oneMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
-//        FloatBufferIndexer oI = oneMat.createIndexer();
-
-        //int iLimit = numTrainingImages - 1;
 
         //The matrix is a mirror along the diagonal, so to reduce computation, copy already computed answers to slots that require the value.
         for(int i = 0; i < numTrainingImages; i++){
@@ -238,16 +234,27 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         PCA pca = new PCA(finalKernelMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
         int numTrainingMatRows = finalKernelMat.rows();
 
+        Mat eVectors = pca.eigenvectors();
+        FloatBufferIndexer eI = eVectors.createIndexer();
+        FloatBufferIndexer pI;
+        float val;
+
         timeStart = System.currentTimeMillis();
         for(int i = 0; i < numTrainingMatRows; i++) {
-            projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
-            Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
-            pca.project(finalKernelMat.row(i), projectedMat);
-            temp = pca.project(finalKernelMat.row(i));
+            projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
+            pI = projectedMat.createIndexer();
 
-            Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
-            Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
+            Log.i(TAG, "Loop " + i);
+
+            for(int q = 0; q < numTrainingImages; q++){
+                val = 0;
+                for(int a = 0; a < numTrainingImages; a++){
+                    val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(trainingMat.row(i)), 2);
+                }
+                pI.put(0,q,val);
+            }
             data.push_back(projectedMat);
+            projectedMat.deallocate();
         }
         timeEnd = System.currentTimeMillis();
         timeElapsedSVM = timeEnd - timeStart;

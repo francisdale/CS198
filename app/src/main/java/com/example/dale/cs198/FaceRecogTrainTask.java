@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
@@ -293,21 +294,70 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         Log.i(TAG, "Number of images loaded: " + images.size());
 
-        //dialog.setMessage("Training recognizer...");
-
         int numTrainingImages = (int) images.size();
+
+        //Form kernelMat:
+
+        Log.i(TAG, "Calculating kernelMat...");
+        Mat kernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
+        FloatBufferIndexer kI = kernelMat.createIndexer();
+
+        //The matrix is a mirror along the diagonal, so to reduce computation, copy already computed answers to slots that require the value.
+        for(int i = 0; i < numTrainingImages; i++){
+            for(int j = 0; j < i; j++){
+                kI.put(i,j,kI.get(j,i));
+                //oI.put(i,j,1);
+            }
+            for(int k = i; k < numTrainingImages; k++){
+                kI.put(i,k,(float)Math.pow(trainingMat.row(i).dot(trainingMat.row(k)), 2));
+                //oI.put(i,k,1);
+            }
+        }
+
+        Log.i(TAG, "Calculating finalKernelMat...");
+        Mat finalKernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
+        FloatBufferIndexer fkI = finalKernelMat.createIndexer();
+        float subA;
+        float subB;
+        float addC;
+        double numTrainingImagesSquared = Math.pow(numTrainingImages, 2);
+
+        for(int i = 0; i < numTrainingImages; i++){
+            for(int j = 0; j < numTrainingImages; j++){
+                subA = 0;
+                subB = 0;
+                addC = 0;
+                for(int Mn = 0; Mn < numTrainingImages; Mn++){
+                    subA += kI.get(Mn,j);
+                    subB += kI.get(i,Mn);
+                    for(int N = 0; N < numTrainingImages; N++){
+                        addC += kI.get(Mn,N);
+                    }
+                }
+                subA /= numTrainingImages;
+                subB /= numTrainingImages;
+                addC /= numTrainingImagesSquared;
+
+                fkI.put(i,j, kI.get(i,j) - subA - subB + addC);
+            }
+        }
+
+        kernelMat.deallocate();
+
+
+
         //numPrincipalComponents = numTrainingImages - 1;
 
-        //For PCA+SVM recognition:
+        /*//For PCA+SVM recognition:
         trainingMat.convertTo(trainingMat, CV_32FC1);
         Mat data = new Mat();
         Mat projectedMat;
         Mat temp;
 
-        /*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+        *//*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
         PCA pca = new PCA();
         pca.read(pfs.root());
-        pfs.release();*/
+        pfs.release();*//*
         PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
 
         for (int i = 0; i < numTrainingImages; i++) {
@@ -324,7 +374,43 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Data now has num of rows, cols :" + data.rows() + ", " + data.cols());
         Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
         Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+        Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());*/
+
+        //Kernel PCA:
+        trainingMat.convertTo(trainingMat, CV_32FC1);
+        Mat data = new Mat();
+        Mat projectedMat;
+
+        PCA pca = new PCA(finalKernelMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+        int numTrainingMatRows = finalKernelMat.rows();
+
+        Mat eVectors = pca.eigenvectors();
+        FloatBufferIndexer eI = eVectors.createIndexer();
+        FloatBufferIndexer pI;
+        float val;
+
+        timeStart = System.currentTimeMillis();
+        for(int i = 0; i < numTrainingMatRows; i++) {
+            projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
+            pI = projectedMat.createIndexer();
+
+            Log.i(TAG, "Loop " + i);
+
+            for(int q = 0; q < numTrainingImages; q++){
+                val = 0;
+                for(int a = 0; a < numTrainingImages; a++){
+                    val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(trainingMat.row(i)), 2);
+                }
+                pI.put(0,q,val);
+            }
+            data.push_back(projectedMat);
+            projectedMat.deallocate();
+        }
+
+        Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+        Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
         Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+
 
         data.convertTo(data, CV_32FC1);
         SVM svm = SVM.create();

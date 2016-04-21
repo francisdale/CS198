@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.Mat;
 
@@ -24,6 +25,8 @@ import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.FileStorage;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
+import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
+import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
@@ -169,9 +172,6 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
                 Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
 
-                Mat cw = sfr.getClassWeights();
-                Log.i(TAG, "cw rows: " + cw.rows() + ", cw cols: " + cw.cols());
-
 
                 /*//One class svm:
                 fs = new FileStorage(modelDir + "/svmModelOneClass.xml", opencv_core.FileStorage.READ);
@@ -217,6 +217,34 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 }*/
 
                 //Resize input mats to same size as mats in train.
+
+
+                //For KPCA:
+                String trainedCropsDir = "sdcard/PresentData/faceDatabase/trainedCrops";
+                File trainedCropsFolder = new File(trainedCropsDir);
+                File[] trainedCrops = trainedCropsFolder.listFiles();
+                Mat trainingMat = new Mat();
+                Mat img;
+                int counter = 0;
+
+                for (File c : trainedCrops) {
+
+                    img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+                    equalizeHist(img, img);
+                    resize(img, img, dSize);
+
+                    //fastNlMeansDenoising(mGray,mGray);
+
+                    //For SVM:
+                    img.reshape(1, 1).convertTo(img, CV_32FC1);
+                    trainingMat.push_back(img);
+
+                    img.deallocate();
+                    counter++;
+                    Log.i(TAG, "trainedCrops " + counter);
+                }
+                int numTrainingImages = counter;
+
                 while (null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
                     Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
 
@@ -230,7 +258,27 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     resize(mGray, mGray, dSize);
                     mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
 
-                    predictedLabel = (int) sfr.predict(pca.project(mGray));
+                    //KPCA:
+                    Mat eVectors = pca.eigenvectors();
+                    FloatBufferIndexer eI = eVectors.createIndexer();
+                    Mat projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
+                    FloatBufferIndexer pI = projectedMat.createIndexer();
+                    float val;
+
+
+
+                    Log.i(TAG, "eVectors rows: " + eVectors.rows() + ", cols: " + eVectors.cols() + ", at (199,0): " + eI.get(199, 0) + ", at (0,199): " + eI.get(0, 199));
+
+                    for(int q = 0; q < numTrainingImages; q++){
+                        val = 0;
+                        for(int a = 0; a < numTrainingImages; a++){
+                            val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(mGray), 2);
+                        }
+                        pI.put(0,q,val);
+                    }
+
+                    predictedLabel = (int) sfr.predict(projectedMat);
+                    //predictedLabel = (int) sfr.predict(pca.project(mGray));
                     //predictedLabel = efr.predict(mGray);
 
                     /*//Recognize faces:
