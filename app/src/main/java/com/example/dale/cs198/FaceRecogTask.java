@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.Mat;
 
@@ -25,8 +24,6 @@ import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.FileStorage;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_core.Size;
-import static org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE;
-import static org.bytedeco.javacpp.opencv_imgcodecs.imread;
 import static org.bytedeco.javacpp.opencv_imgcodecs.imwrite;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
@@ -50,9 +47,11 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
     static final int ATTENDANCE_USAGE = 0;
     private static final int TEST_USAGE = 2;
+    static final int TESTTIME_USAGE = 3;
+    static final int CREATEDATASET_USAGE = 4;
     int usageType;
 
-    private static final Size dSize = new Size(160, 160);
+    private static final Size dSize = new Size(64, 64);
     int numPrincipalComponents = 250;
     double threshold = 10000.0;
 
@@ -78,11 +77,13 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
         tv = (TextView)((CustomCamera)c).findViewById(R.id.attendanceCounter);
     }
 
-    public FaceRecogTask(TaskData td, int usageType, String testAlgos){
+    public FaceRecogTask(TaskData td, String className, int usageType){
         this.td = td;
-        this.testAlgo = testAlgo;
-        this.usageType = TEST_USAGE;
+        this.c = c;
+        this.className = className;
+        this.usageType = usageType;
     }
+
 
     @Override
     protected Void doInBackground(Void... params) {
@@ -191,59 +192,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 String[] temp;
 
                 Log.i(TAG, "FaceRecogTask: Initialization complete.");
-            /*
-            //For testing with AT&T database:
-            File[] testCrops = new File("sdcard/PresentData/att/att_faces_labeled_cropped_testing_jpg").listFiles();
-            int count = 0;
-            for(File c : testCrops){
-                td.detectQueue.add(imread(c.getAbsolutePath()));
-                count++;
-                Log.i(TAG, count + " images added.");
-            }
-            */
 
-                /*//For testing with CS 197 april 08:
-
-                FilenameFilter imgFilter = new FilenameFilter() {
-                    public boolean accept(File dir, String name) {
-                        name = name.toLowerCase();
-                        return !name.startsWith("0_") && name.endsWith(".jpg");
-                    }
-                };
-
-                File[] testCrops = new File("sdcard/PresentData/researchMode/CS 197 Classroom Data/15_20160330_6").listFiles(imgFilter);
-                for (File c : testCrops) {
-                    td.recogQueue.add(imread(c.getAbsolutePath()));
-                }*/
-
-                //Resize input mats to same size as mats in train.
-
-
-                //For KPCA:
-                String trainedCropsDir = "sdcard/PresentData/faceDatabase/trainedCrops";
-                File trainedCropsFolder = new File(trainedCropsDir);
-                File[] trainedCrops = trainedCropsFolder.listFiles();
-                Mat trainingMat = new Mat();
-                Mat img;
-                int counter = 0;
-
-                for (File c : trainedCrops) {
-
-                    img = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-                    equalizeHist(img, img);
-                    resize(img, img, dSize);
-
-                    //fastNlMeansDenoising(mGray,mGray);
-
-                    //For SVM:
-                    img.reshape(1, 1).convertTo(img, CV_32FC1);
-                    trainingMat.push_back(img);
-
-                    img.deallocate();
-                    counter++;
-                    Log.i(TAG, "trainedCrops " + counter);
-                }
-                int numTrainingImages = counter;
 
                 while (null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
                     Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
@@ -258,27 +207,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     resize(mGray, mGray, dSize);
                     mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
 
-                    //KPCA:
-                    Mat eVectors = pca.eigenvectors();
-                    FloatBufferIndexer eI = eVectors.createIndexer();
-                    Mat projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
-                    FloatBufferIndexer pI = projectedMat.createIndexer();
-                    float val;
-
-
-
-                    Log.i(TAG, "eVectors rows: " + eVectors.rows() + ", cols: " + eVectors.cols() + ", at (199,0): " + eI.get(199, 0) + ", at (0,199): " + eI.get(0, 199));
-
-                    for(int q = 0; q < numTrainingImages; q++){
-                        val = 0;
-                        for(int a = 0; a < numTrainingImages; a++){
-                            val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(mGray), 2);
-                        }
-                        pI.put(0,q,val);
-                    }
-
-                    predictedLabel = (int) sfr.predict(projectedMat);
-                    //predictedLabel = (int) sfr.predict(pca.project(mGray));
+                    predictedLabel = (int) sfr.predict(pca.project(mGray));
                     //predictedLabel = efr.predict(mGray);
 
                     /*//Recognize faces:
@@ -348,8 +277,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                     }
 
-                    mColor.deallocate();
-                    mGray.deallocate();
+                    mColor.release();
+                    mGray.release();
 
                     publishProgress();
                     Log.i(TAG, "FaceRecogTask: Progress published.");
@@ -406,16 +335,424 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                 numStudents = attendanceRecord.size();
 
+            } else if (usageType == TESTTIME_USAGE) {
+
+                //Read class list:
+                BufferedReader br;
+                HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+                HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+                String line;
+                String[] details;
+                String timeStamp = new SimpleDateFormat("MMddyyyy").format(new Date());
+                //String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+                String classDir = classesDir + "/" + className;
+                String recordsDir = classDir + "/attendanceReports";
+                //Filename of record is <className>_<date>.txt
+                String recordCropsDirPath = recordsDir + "/" + className + "_" + timeStamp;
+                String recordFilePath = recordCropsDirPath + ".txt";
+                File recordCropsDirFile = new File(recordCropsDirPath);
+                File recordFile = new File(recordFilePath);
+
+                if (!recordFile.exists()) {
+                    Log.i(TAG, "Record doesn't exist yet. Creating...");
+                    recordCropsDirFile.mkdirs();
+                    br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
+                    while ((line = br.readLine()) != null) {
+                        details = line.split(",");
+                        //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                        attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                        studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                    }
+                } else {
+                    Log.i(TAG, "Record exists. Loading...");
+                    br = new BufferedReader(new FileReader(recordFile));
+                    while ((line = br.readLine()) != null) {
+                        details = line.split(",");
+                        //a line in an attendance record text file has the syntax: <id>,<studentNumber>,<lastname>,<firstname>,<attendance>
+                        attendanceRecord.put(Integer.parseInt(details[0]), Integer.parseInt(details[4])); //(id, attendance)
+                        studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                        if (details[4].equals("1")) {
+                            numStudentsPresent++;
+                        }
+                    }
+                }
+
+
+                numStudents = attendanceRecord.size();
+
+                //For PCA+SVM recognition:
+                Log.i(TAG, "Loading SVM...");
+                FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
+                SVM sfr = SVM.create();
+                sfr.read(fs.root());
+                fs.release();
+
+                fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+                PCA pca = new PCA();
+                pca.read(fs.root());
+                fs.release();
+
+                Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+                Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+                Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+
+
+                Log.i(TAG, "SVM loaded.");
+
+                Mat mColor;
+                Mat mGray;
+                int predictedLabel;
+                int secondaryID;
+                File f;
+                String studentName;
+                String[] temp;
+
+                Log.i(TAG, "FaceRecogTask: Initialization complete.");
+
+
+                while (null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
+                    Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
+
+                    mGray = new Mat();
+                    cvtColor(mColor, mGray, CV_BGR2GRAY);
+
+                    Log.i(TAG, "Train usage: image converted to grayscale");
+
+                    equalizeHist(mGray, mGray);
+                    //fastNlMeansDenoising(mGray,mGray);
+                    resize(mGray, mGray, dSize);
+                    mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+
+
+                    predictedLabel = (int) sfr.predict(pca.project(mGray));
+                    //predictedLabel = efr.predict(mGray);
+
+                    /*//Recognize faces:
+                    if(1 == (predictedLabel = (int)sfrOneClass.predict(pca.project(mGray)))) {
+                        Log.i(TAG, "One class svm: " + predictedLabel);
+                        timeStart = System.currentTimeMillis();
+
+                        predictedLabel = (int) sfr.predict(pca.project(mGray));
+
+                        //predictedLabel = efr.predict(mGray);
+                        timeEnd = System.currentTimeMillis();
+                        timeElapsed = timeEnd - timeStart;
+                    } else {
+                        Log.i(TAG, "One class svm: " + predictedLabel);
+                        predictedLabel = 0;
+                    }*/
+
+                    Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+
+                    if (attendanceRecord.containsKey(predictedLabel)) {
+                        Log.i(TAG, "predictedLabel was found in the classlist.");
+                        if (0 == attendanceRecord.get(predictedLabel)) {
+                            attendanceRecord.put(predictedLabel, 1);
+                            numStudentsPresent++;
+                            Log.i(TAG, "predictedLabel attendance was marked.");
+                        }
+
+                        temp = studentNumsAndNames.get(predictedLabel).split(",");
+                        studentName = temp[1] + "," + temp[2];
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            temp = studentNumsAndNames.get(predictedLabel).split(",");
+                            studentName = temp[1] + "," + temp[2];
+                            f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
+
+                        imwrite(f.getAbsolutePath(), mColor);
+
+                        Log.i(TAG, "Crop saved.");
+                    } else if (0 == predictedLabel) {
+                        Log.i(TAG, "Non face found.");
+
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            f = new File(recordCropsDirPath + "/0_nonFace_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
+
+                        imwrite(f.getAbsolutePath(), mColor);
+                        numUnrecognizedFaces++;
+
+                    } else {
+                        Log.i(TAG, "Urecognized face found.");
+
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            f = new File(recordCropsDirPath + "/unlabeled_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
+
+                        imwrite(f.getAbsolutePath(), mColor);
+                        numUnrecognizedFaces++;
+
+                    }
+
+                    mColor.release();
+                    mGray.release();
+
+                    Log.i(TAG, "FaceRecogTask: Progress published.");
+                    //}
+
+                }
+
+                //Thread has been signalled to die at this point; time to write the attendance report .txt file.
+                BufferedWriter bw = new BufferedWriter(new FileWriter(recordFile));
+                Set attendanceSet = attendanceRecord.entrySet();
+                Set nameSet = studentNumsAndNames.entrySet();
+                Iterator ai = attendanceSet.iterator();
+                Iterator ni = nameSet.iterator();
+                Entry ae;
+                Entry ne;
+                Log.i(TAG, "Recog: Writing and saving attendance record...");
+                // Display elements
+                while (ai.hasNext()) {
+                    ae = (Entry) ai.next();
+                    ne = (Entry) ni.next();
+                    bw.write(ae.getKey() + "," + ne.getValue() + "," + ae.getValue() + "\n");
+                }
+
+                bw.flush();
+                bw.close();
+
+                Log.i(TAG, "Time test reading and writing:");
+                //Time Test:
+                timeEnd = System.currentTimeMillis();
+                BufferedReader brr = new BufferedReader(new FileReader("sdcard/PresentData/researchMode/timeTest.txt"));
+                String[] timeDetails = brr.readLine().split("_");
+                Log.i(TAG, "Read line " + timeDetails[0] + "_" + timeDetails[1]);
+                timeStart = Long.parseLong(timeDetails[0]);
+                timeElapsed = timeEnd - timeStart;
+                int numTestImgs = Integer.parseInt(timeDetails[1]);
+                brr.close();
+
+                BufferedWriter bww = new BufferedWriter(new FileWriter("sdcard/PresentData/researchMode/timeTest.txt"));
+                bww.write("Total time for detecting and recognizing " + numTestImgs + " images: " + (float) timeElapsed/1000 + "seconds\nAvg time = " + (float) timeElapsed / (1000 * numTestImgs) + " seconds.");
+                bww.flush();
+                bww.close();
+
+                Log.i(TAG, "Time test recog done.");
+            } else if (usageType == CREATEDATASET_USAGE) {
+
+                //Read class list:
+                BufferedReader br;
+                HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+                HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+                String line;
+                String[] details;
+                String timeStamp = new SimpleDateFormat("MMddyyyy").format(new Date());
+                //String timeStamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+                String classDir = classesDir + "/" + className;
+                String recordsDir = classDir + "/attendanceReports";
+                //Filename of record is <className>_<date>.txt
+                String recordCropsDirPath = recordsDir + "/" + className + "_" + timeStamp;
+                String recordFilePath = recordCropsDirPath + ".txt";
+                File recordCropsDirFile = new File(recordCropsDirPath);
+                File recordFile = new File(recordFilePath);
+
+                if (!recordFile.exists()) {
+                    Log.i(TAG, "Record doesn't exist yet. Creating...");
+                    recordCropsDirFile.mkdirs();
+                    br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
+                    while ((line = br.readLine()) != null) {
+                        details = line.split(",");
+                        //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                        attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                        studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                    }
+                } else {
+                    Log.i(TAG, "Record exists. Loading...");
+                    br = new BufferedReader(new FileReader(recordFile));
+                    while ((line = br.readLine()) != null) {
+                        details = line.split(",");
+                        //a line in an attendance record text file has the syntax: <id>,<studentNumber>,<lastname>,<firstname>,<attendance>
+                        attendanceRecord.put(Integer.parseInt(details[0]), Integer.parseInt(details[4])); //(id, attendance)
+                        studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                        if (details[4].equals("1")) {
+                            numStudentsPresent++;
+                        }
+                    }
+                }
+
+
+                numStudents = attendanceRecord.size();
+
+                //For PCA+SVM recognition:
+                Log.i(TAG, "Loading SVM...");
+                FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
+                SVM sfr = SVM.create();
+                sfr.read(fs.root());
+                fs.release();
+
+                fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+                PCA pca = new PCA();
+                pca.read(fs.root());
+                fs.release();
+
+                Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+                Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+                Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+
+
+                Log.i(TAG, "SVM loaded.");
+
+                Mat mColor;
+                Mat mGray;
+                int predictedLabel;
+                int secondaryID;
+                File f;
+                String studentName;
+                String[] temp;
+
+                Log.i(TAG, "FaceRecogTask: Initialization complete.");
+
+
+                while (null != (mColor = td.recogQueue.poll())) {//This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for recognition.
+                    Log.i(TAG, "FaceRecogTask: Now in recognition loop.");
+
+                    mGray = new Mat();
+                    cvtColor(mColor, mGray, CV_BGR2GRAY);
+
+                    Log.i(TAG, "Train usage: image converted to grayscale");
+
+                    equalizeHist(mGray, mGray);
+                    //fastNlMeansDenoising(mGray,mGray);
+                    resize(mGray, mGray, dSize);
+                    mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+
+
+                    predictedLabel = (int) sfr.predict(pca.project(mGray));
+                    //predictedLabel = efr.predict(mGray);
+
+                    /*//Recognize faces:
+                    if(1 == (predictedLabel = (int)sfrOneClass.predict(pca.project(mGray)))) {
+                        Log.i(TAG, "One class svm: " + predictedLabel);
+                        timeStart = System.currentTimeMillis();
+
+                        predictedLabel = (int) sfr.predict(pca.project(mGray));
+
+                        //predictedLabel = efr.predict(mGray);
+                        timeEnd = System.currentTimeMillis();
+                        timeElapsed = timeEnd - timeStart;
+                    } else {
+                        Log.i(TAG, "One class svm: " + predictedLabel);
+                        predictedLabel = 0;
+                    }*/
+
+                    Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+
+                    if (attendanceRecord.containsKey(predictedLabel)) {
+                        Log.i(TAG, "predictedLabel was found in the classlist.");
+                        if (0 == attendanceRecord.get(predictedLabel)) {
+                            attendanceRecord.put(predictedLabel, 1);
+                            numStudentsPresent++;
+                            Log.i(TAG, "predictedLabel attendance was marked.");
+                        }
+
+                        temp = studentNumsAndNames.get(predictedLabel).split(",");
+                        studentName = temp[1] + "," + temp[2];
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            temp = studentNumsAndNames.get(predictedLabel).split(",");
+                            studentName = temp[1] + "," + temp[2];
+                            f = new File(recordCropsDirPath + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
+
+                        imwrite(f.getAbsolutePath(), mColor);
+
+                        Log.i(TAG, "Crop saved.");
+                    } else if (0 == predictedLabel) {
+                        Log.i(TAG, "Non face found.");
+
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            f = new File(recordCropsDirPath + "/0_nonFace_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
+
+                        imwrite(f.getAbsolutePath(), mColor);
+                        numUnrecognizedFaces++;
+
+                    } else {
+                        Log.i(TAG, "Urecognized face found.");
+
+                        //Before saving the crop, check which secondaryID is still available:
+                        secondaryID = 0;
+                        do {
+                            f = new File(recordCropsDirPath + "/unlabeled_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while (f.exists());
+
+                        imwrite(f.getAbsolutePath(), mColor);
+                        numUnrecognizedFaces++;
+
+                    }
+
+                    mColor.release();
+                    mGray.release();
+
+                    Log.i(TAG, "FaceRecogTask: Progress published.");
+                    //}
+
+                }
+
+                //Thread has been signalled to die at this point; time to write the attendance report .txt file.
+                BufferedWriter bw = new BufferedWriter(new FileWriter(recordFile));
+                Set attendanceSet = attendanceRecord.entrySet();
+                Set nameSet = studentNumsAndNames.entrySet();
+                Iterator ai = attendanceSet.iterator();
+                Iterator ni = nameSet.iterator();
+                Entry ae;
+                Entry ne;
+                Log.i(TAG, "Recog: Writing and saving attendance record...");
+                // Display elements
+                while (ai.hasNext()) {
+                    ae = (Entry) ai.next();
+                    ne = (Entry) ni.next();
+                    bw.write(ae.getKey() + "," + ne.getValue() + "," + ae.getValue() + "\n");
+                }
+
+                bw.flush();
+                bw.close();
+
+                Log.i(TAG, "Time test reading and writing:");
+                //Time Test:
+                timeEnd = System.currentTimeMillis();
+                BufferedReader brr = new BufferedReader(new FileReader("sdcard/PresentData/researchMode/timeTest.txt"));
+                String[] timeDetails = brr.readLine().split("_");
+                Log.i(TAG, "Read line " + timeDetails[0] + "_" + timeDetails[1]);
+                timeStart = Long.parseLong(timeDetails[0]);
+                timeElapsed = timeEnd - timeStart;
+                int numTestImgs = Integer.parseInt(timeDetails[1]);
+                brr.close();
+
+                BufferedWriter bww = new BufferedWriter(new FileWriter("sdcard/PresentData/researchMode/timeTest.txt"));
+                bww.write("Total time for detecting and recognizing " + numTestImgs + " images: " + (float) timeElapsed/1000 + "seconds\nAvg time = " + (float) timeElapsed / (1000 * numTestImgs) + " seconds.");
+                bww.flush();
+                bww.close();
+
+                Log.i(TAG, "Time test recog done.");
             }
 
-            }catch(Exception e){
+        }catch(Exception e){
                 e.printStackTrace();
                 Log.e(TAG, "Exception thrown at FaceRecogTask: " + e);
             }
             Log.i(TAG, "Closing FaceRecogTask thread.");
 
             return null;
-        }
+    }
 
 
 

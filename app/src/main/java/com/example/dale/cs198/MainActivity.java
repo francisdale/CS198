@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -243,12 +244,12 @@ public class MainActivity extends AppCompatActivity {
 
             testFaceDetect();
 
-        } else if (id == R.id.action_testRecogTrain) {
+        } else if (id == R.id.action_testDetectRecogTime) {
 
-            testRecogTrain();
-        } else if (id == R.id.action_testRecog) {
+            testDetectRecogTime();
+        } else if (id == R.id.action_createDataSet) {
 
-            testRecog();
+            createDataSet();
         }
 
 
@@ -419,55 +420,32 @@ public class MainActivity extends AppCompatActivity {
 
         FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.TEST_USAGE);
         fd.execute();
-        /*
-        String[] testClassDetails;
-        String className;
-        File dataFolder;
-        FilenameFilter imgFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                name = name.toLowerCase();
-                return name.endsWith(".jpg");
-            }
-        };
-        File[] testImages;
-        TaskData td;
-
-        for(int i = 0; i < testClassNamesAndDataSplits.length; i++) {
-            Log.i(TAG, "testFaceDetect loop " + i);
-            testClassDetails = testClassNamesAndDataSplits[i].split(",");
-            className = testClassDetails[0];
-            dataFolder = new File(testClassDataDir +"/" + className + " Classroom Data");
-            testImages = dataFolder.listFiles(imgFilter);
-
-            td = new TaskData();
-
-            FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.TEST_USAGE);
-            fd.execute();
-
-            int y = 0;
-            Log.i(TAG, "Face detect thread executed.");
-            Log.i(TAG, "Number of images: " + testImages.length + ".Populating detectQueue...");
-            for(File f : testImages){
-                td.detectQueue.add(imread(f.getAbsolutePath()));
-                y++;
-                Log.i(TAG, "Populating detectQueue loop " + y);
-            }
-            Log.i(TAG, "detectQueue populated.");
-
-            td.setThreadsToDie();
-
-            Log.i(TAG, "Waiting for face detect thread to finish...");
-            td.mainThreadWaitsForDetectThreadToDie();
-            Log.i(TAG, "Face detect thread finished. Goodbye!");
-        }*/
     }
 
-    public void testRecogTrain(){
+    public void testDetectRecogTime(){
+        Log.i(TAG, "Now in testDetectRecogTime.");
+
+        TaskData td = new TaskData();
+
+        FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.TESTTIME_USAGE);
+        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        FaceRecogTask fr = new FaceRecogTask(td, "CS 197", FaceRecogTask.TESTTIME_USAGE);
+        fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
 
     }
 
-    public void testRecog(){
+    public void createDataSet(){
+        Log.i(TAG, "Now in testDetectRecogTime.");
 
+        TaskData td = new TaskData();
+
+        FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.CREATEDATASET_USAGE);
+        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        FaceRecogTask fr = new FaceRecogTask(td, "CS 197", FaceRecogTask.CREATEDATASET_USAGE);
+        fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private static void copyFile(File source, File dest) throws IOException {

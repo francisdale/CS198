@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
@@ -35,7 +34,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
     private static final String modelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
     private static double threshold = 10000.0;
-    private static final Size dSize = new Size(160, 160);
+    private static final Size dSize = new Size(23, 28);
 
     int numTrainingImages = 200;
     int numPrincipalComponents = 250;
@@ -62,7 +61,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         int counter = 0;
         Mat img;
 
-        
+
 
         //For SVM:
         Mat trainingMat = new Mat();
@@ -89,7 +88,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
             }
         }
 
-        //Form kernelMat:
+        /*//Form kernelMat:
 
         Log.i(TAG, "Calculating kernelMat...");
         Mat kernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
@@ -135,7 +134,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
             }
         }
 
-        kernelMat.deallocate();
+        kernelMat.deallocate();*/
 
 
 
@@ -207,7 +206,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         /*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
         PCA pca = new PCA();
         pca.read(pfs.root());
-        pfs.release();*//*
+        pfs.release();*/
         PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
         int numTrainingMatRows = trainingMat.rows();
 
@@ -227,105 +226,101 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
         Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
-        Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());*/
-
-
-        //Kernel PCA:
-        PCA pca = new PCA(finalKernelMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
-        int numTrainingMatRows = finalKernelMat.rows();
-
-        Mat eVectors = pca.eigenvectors();
-        FloatBufferIndexer eI = eVectors.createIndexer();
-        FloatBufferIndexer pI;
-        float val;
-
-        timeStart = System.currentTimeMillis();
-        for(int i = 0; i < numTrainingMatRows; i++) {
-            projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
-            pI = projectedMat.createIndexer();
-
-            Log.i(TAG, "Loop " + i);
-
-            for(int q = 0; q < numTrainingImages; q++){
-                val = 0;
-                for(int a = 0; a < numTrainingImages; a++){
-                    val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(trainingMat.row(i)), 2);
-                }
-                pI.put(0,q,val);
-            }
-            data.push_back(projectedMat);
-            projectedMat.deallocate();
-        }
-        timeEnd = System.currentTimeMillis();
-        timeElapsedSVM = timeEnd - timeStart;
-
-        Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
-        Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
         Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
 
-        data.convertTo(data, CV_32FC1);
-
-        Log.i(TAG, "Saving pca to pca.xml...");
         FileStorage fs = new FileStorage(modelDir + "/pca.xml", FileStorage.WRITE);
         pca.write(fs);
         fs.release();
 
+//        //Kernel PCA:
+//        //PCA pca = new PCA(finalKernelMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+//
+//        int numTrainingMatRows = (int)images.size();
+//        Mat eVectors = new Mat();
+//        Mat eValues = new Mat();
+//
+//        if(eigen(finalKernelMat, eValues, eVectors)){
+//            Log.i(TAG, "eValues and eVectors harvested.");
+//        } else {
+//            Log.i(TAG, "Failed to harvest eValues and eVectors.");
+//        }
+//
+//        /*FileStorage fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+//        PCA pca = new PCA();
+//        pca.read(fs.root());
+//        fs.release();
+//        eVectors = pca.eigenvectors();
+//        eValues = pca.eigenvalues();*/
+//
+//
+//
+////        FloatBufferIndexer eValI = eValues.createIndexer();
+////        float[] sortedEValues = new float[100];
+////
+////        for(int i = 100; i < 200; i++){
+////            Log.i(TAG, "eValue at " + i + ": " + eValI.get(i, 0));
+////            sortedEValues[i] = eValI.get(i, 0);
+////        }
+////
+////
+////        Log.i(TAG, "eValues rows = " + eValues.rows() + ", cols = " + eValues.cols() + ", eValues(0,0): " + eValI.get(0,0));
+//
+//        FloatBufferIndexer eI = eVectors.createIndexer();
+//
+//        FloatBufferIndexer pI;
+//        float val;
+//
+//        timeStart = System.currentTimeMillis();
+//        for(int i = 0; i < numTrainingMatRows; i++) {
+//            projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
+//            pI = projectedMat.createIndexer();
+//
+//            //Log.i(TAG, "Loop " + i);
+//
+//            for(int q = 0; q < numTrainingImages; q++){
+//                val = 0;
+//                for(int a = 0; a < numTrainingImages; a++){
+//                    val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(trainingMat.row(i)), 2);
+//                }
+//                pI.put(0,q,val);
+//            }
+//            data.push_back(projectedMat);
+//            projectedMat.deallocate();
+//        }
+//        timeEnd = System.currentTimeMillis();
+//        timeElapsedSVM = timeEnd - timeStart;
+//
+//        FloatBufferIndexer eVecI = eVectors.createIndexer();
+//        Log.i(TAG, "Before saving: eVectors rows = " + eVectors.rows() + ", cols = " + eVectors.cols() + ", (0,0): " + eVecI.get(0, 0));
+//
+//        data.convertTo(data, CV_32FC1);
+//
+//
+//        Log.i(TAG, "Saving pca to pca.xml...");
+//
+//        PCA pca = new PCA();
+//        pca.eigenvectors(eVectors);
+//        FileStorage fsa = new FileStorage(modelDir + "/pca.xml", FileStorage.WRITE);
+//        pca.write(fsa);
+//        fsa.release();
+//
+////        FileStorage fr = new FileStorage(modelDir + "/pca.xml", FileStorage.READ);
+////        eVectors = new Mat(fr.get("eVectors"));
+////        fr.release();
+//
+//
+//        Mat pcaEVectors = pca.eigenvectors();
+//        FloatBufferIndexer pEVecI = pcaEVectors.createIndexer();
+//        Log.i(TAG, "After reloading: eVectors rows = " + pcaEVectors.rows() + ", cols = " + pcaEVectors.cols() + ", at (0,0): " + pEVecI.get(0,0));
+
+                /*PCA pca2 = new PCA(finalKernelMat, new Mat(), CV_PCA_DATA_AS_ROW, 200);
+        Log.i(TAG, "PCA2 eVectors rows: " + pca2.eigenvectors().rows() + ", cols = " + pca2.eigenvectors().cols());
+        Mat pcaEValues = pca2.eigenvalues();
+        FloatBufferIndexer fpe = pcaEValues.createIndexer();
+        Log.i(TAG, "PCA2 eValues rows: " + pcaEValues.rows() + ", cols = " + pcaEValues.cols() + ", at (0,0): " + fpe.get(0,0));*/
 
 
-        //imwrite("sdcard/CS198/MeanInJTrain.jpg", pca.mean());
-        //imwrite("sdcard/CS198/EVectorsInJTrain.jpg",pca.eigenvectors());
-        //imwrite("sdcard/CS198/EValuesInJTrain.jpg",pca.eigenvalues());
 
-        /* For Yale Database:
-        File root = new File(trainingDir + "/att_faces");
-        FilenameFilter imgFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                name = name.toLowerCase();
-                return name.endsWith(".normal") || name.endsWith(".happy") || name.endsWith(".centerlight");
-            }
-        };
-
-        File[] imageFiles = root.listFiles(imgFilter);
-        Log.i(TAG, "okz1");
-        MatVector images = new MatVector(imageFiles.length);
-        Log.i(TAG, "Number of files in faceDatabase: " + imageFiles.length);
-        Mat labels = new Mat(imageFiles.length, 1, CV_32SC1);
-        IntBuffer labelsBuf = labels.getIntBuffer();
-
-        int counter = 0;
-        int label;
-
-        Log.i(TAG, "okz2");
-
-        //Renaming Yale Images to .gif:
-        for (File image : imageFiles) {
-            String name = image.getAbsolutePath();
-            int startIndex = name.indexOf(".");
-            int endIndex = name.length();
-            String toBeReplaced = name.substring(startIndex, endIndex);
-            Log.i(TAG, "toBeReplaced: " + toBeReplaced);
-            name = name.replaceAll(toBeReplaced, ".gif");
-            Log.i(TAG, "name after replacement: " + name);
-            File newPath = new File(name);
-            image.renameTo(newPath);
-            Log.i(TAG, "newPath: " + newPath);
-        }
-
-        Log.i(TAG, "okz3");
-        for (File image : imageFiles) {
-            Mat img = imread(image.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-
-            //for Yale database:
-            label = Integer.parseInt(image.getName().substring(7,9));
-
-            images.put(counter, img);
-
-            labelsBuf.put(counter, label);
-
-            counter++;
-        }
-        */
-        Log.i(TAG, "okz4");
 
 
         File folder = new File(modelDir);
@@ -410,9 +405,9 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
         SVM svm = SVM.create();
         svm.setType(SVM.C_SVC);
-        svm.setKernel(SVM.LINEAR);
+        svm.setKernel(SVM.POLY);
         //svm.setP(0.01);
-        //svm.setDegree(3);
+        svm.setDegree(2);
         //svm.setGamma(1);
         TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
         notification.setText("Training SVM...");
@@ -430,15 +425,8 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         trainTimesTextView.setText(trainTimesTextView.getText() + "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
         trainTimesTextView.setText(trainTimesTextView.getText() + "Type legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
 
-        //svm.save(modelDir + "/svmModel.xml");
-
         fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.WRITE);
         svm.write(fs);
-        fs.release();
-
-        SVM mvs = SVM.create();
-        fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.READ);
-        mvs.read(fs.root());
         fs.release();
 
         notification.setText("Training complete.\nThreshold used = " + threshold);

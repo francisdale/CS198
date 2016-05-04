@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.FileStorage;
 import org.bytedeco.javacpp.opencv_core.Mat;
@@ -14,8 +13,8 @@ import org.bytedeco.javacpp.opencv_core.Mat;
 import java.io.File;
 import java.nio.IntBuffer;
 
-import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
+import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.PCA;
 import static org.bytedeco.javacpp.opencv_face.FaceRecognizer;
 import static org.bytedeco.javacpp.opencv_face.createEigenFaceRecognizer;
@@ -30,6 +29,8 @@ import static org.bytedeco.javacpp.opencv_ml.SVM;
 public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
+
+    private static final opencv_core.Size dSize = new opencv_core.Size(23, 28);
 
     private static final String trainingSetDir = "sdcard/PresentData/att/att_faces";
 
@@ -294,26 +295,26 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
         Mat trainingMat = new Mat();
 
-        //Image resolution92x112
-        for(int s = 1; s <= 40; s++){
-            for(int i = 1; i <= 10; i += 2, counter++){
-                img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
-                resize(img, img, new opencv_core.Size(23,28));
-
-
-                equalizeHist(img, img);
-
-                images.put(counter, img);
-                labelsBuf.put(counter, s);
-
-                img.reshape(1, 1).convertTo(img, CV_32FC1);
-                trainingMat.push_back(img);
-
-                img.deallocate();
-
-                Log.i(TAG, "s" + s + " i" + i);
-            }
-        }
+//        //Image resolution92x112
+//        for(int s = 1; s <= 40; s++){
+//            for(int i = 1; i <= 10; i += 2, counter++){
+//                img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
+//                resize(img, img, dSize);
+//
+//
+//                equalizeHist(img, img);
+//
+//                images.put(counter, img);
+//                labelsBuf.put(counter, s);
+//
+//                img.reshape(1, 1).convertTo(img, CV_32FC1);
+//                trainingMat.push_back(img);
+//
+//                img.deallocate();
+//
+//                Log.i(TAG, "s" + s + " i" + i);
+//            }
+//        }
 
         for(int s = 1; s <= 40; s++) {
             for (int i = 2; i <= 10; i += 2, numImg++) {
@@ -378,30 +379,31 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                     }
                 }*/
 
-                //Kernel PCA:
+//                //Kernel PCA:
+//
+//                Mat eVectors = pca.eigenvectors();
+//                FloatBufferIndexer eI = eVectors.createIndexer();
+//                Mat projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
+//                FloatBufferIndexer pI = projectedMat.createIndexer();
+//                float val;
+//
+//                Log.i(TAG, "eVectors rows: " + eVectors.rows() + ", cols: " + eVectors.cols() + ", at (199,0): " + eI.get(199, 0) + ", at (0,199): " + eI.get(0,199));
+//                img.reshape(1, 1).convertTo(img, CV_32FC1);
+//
+//                for(int q = 0; q < numTrainingImages; q++){
+//                    val = 0;
+//                    for(int a = 0; a < numTrainingImages; a++){
+//                        val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(img), 2);
+//                    }
+//                    pI.put(0,q,val);
+//                }
+//
+//                timeStart = System.currentTimeMillis();
+//                predictedLabel = (int) sfr.predict(projectedMat);
 
-                Mat eVectors = pca.eigenvectors();
-                FloatBufferIndexer eI = eVectors.createIndexer();
-                Mat projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
-                FloatBufferIndexer pI = projectedMat.createIndexer();
-                float val;
-
-                Log.i(TAG, "eVectors rows: " + eVectors.rows() + ", cols: " + eVectors.cols() + ", at (199,0): " + eI.get(199, 0) + ", at (0,199): " + eI.get(0,199));
                 img.reshape(1, 1).convertTo(img, CV_32FC1);
 
-                for(int q = 0; q < numTrainingImages; q++){
-                    val = 0;
-                    for(int a = 0; a < numTrainingImages; a++){
-                        val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(img), 2);
-                    }
-                    pI.put(0,q,val);
-                }
-
-                timeStart = System.currentTimeMillis();
-                predictedLabel = (int) sfr.predict(projectedMat);
-
-                /*projectedImg = pca.project(img);
-                predictedLabel = (int) sfr.predict(projectedImg);*/
+                predictedLabel = (int) sfr.predict(pca.project(img));
                 timeEnd = System.currentTimeMillis();
                 svmAvgTime += timeEnd - timeStart;
                 if (s == predictedLabel) {
@@ -413,7 +415,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                 Log.i(TAG, "SVM prediction: Correct label = " + s + ", predictedLabel = " + predictedLabel);
                 Log.i(TAG, "SVM done");
 
-                projectedMat.deallocate();
+                //projectedMat.deallocate();
             }
         }
 

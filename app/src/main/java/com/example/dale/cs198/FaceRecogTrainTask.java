@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.bytedeco.javacpp.indexer.FloatBufferIndexer;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.Mat;
 import org.bytedeco.javacpp.opencv_core.MatVector;
@@ -16,9 +15,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.nio.IntBuffer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CV_32SC1;
@@ -46,7 +42,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
     boolean oneClassNonFace = false;
 
-    private static final Size dSize = new Size(160, 160);
+    private static final Size dSize = new Size(64, 64);
     int numPrincipalComponents = 250;
     double threshold = 10000.0;
 
@@ -93,7 +89,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-
+        timeStart = System.currentTimeMillis();
         //Unify the names of all crops in CS197
         //gatherAllCrops();
 
@@ -102,22 +98,22 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             tempF.mkdirs();
         }
 
-        String timeStamp = new SimpleDateFormat("MMddyyy-HHmmss").format(new Date());
+        //String timeStamp = new SimpleDateFormat("MMddyyy-HHmmss").format(new Date());
 
-        String modelFileName = "eigenModel_" + timeStamp + ".xml";
+        //String modelFileName = "eigenModel_" + timeStamp + ".xml";
 
 
         //Load training images from trainedCropsDir and untrainedCropsDir
         File trainedCropsFolder = new File(trainedCropsDir);
         File untrainedCropsFolder = new File(untrainedCropsDir);
 
-        //For testing without nonfaces:
-        FilenameFilter imgFilter = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                name = name.toLowerCase();
-                return !name.startsWith("0_") && name.endsWith(".jpg");
-            }
-        };
+//        //For testing without nonfaces:
+//        FilenameFilter imgFilter = new FilenameFilter() {
+//            public boolean accept(File dir, String name) {
+//                name = name.toLowerCase();
+//                return !name.startsWith("0_") && name.endsWith(".jpg");
+//            }
+//        };
 
         File[] trainedCrops = trainedCropsFolder.listFiles();
 
@@ -154,8 +150,6 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         untrainedCrops = untrainedCropsFolder.listFiles();
 
         if (untrainedCrops.length == 0 && trainedCrops.length == 0) {
-            //toast = Toast.makeText(c, "No training images found.", Toast.LENGTH_SHORT);
-            //toast.show();
             return null;
         }
 
@@ -167,16 +161,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Mat img;
         Mat labels = new Mat(numTotalCrops, 1, CV_32SC1);
         IntBuffer labelsBuf = labels.getIntBuffer();
-        Mat labelsOneClass = new Mat(numTotalCrops, 1, CV_32SC1);
-        IntBuffer labelsOneClassBuf = labelsOneClass.getIntBuffer();
         int label;
         String[] nameDetails;
         File f;
         int counter = 0;
         int secondaryID;
-
-        HashMap<Integer, Integer> labelFreq = new HashMap<Integer, Integer>();
-        int tempFreq;
 
 
         //For SVM:
@@ -192,15 +181,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             nameDetails = c.getName().split("_");
             label = Integer.parseInt(nameDetails[0]);
 
-            /*if (labelFreq.containsKey(label)) {
-                tempFreq = labelFreq.get(label) + 1;
-                labelFreq.put(label, tempFreq);
-            } else {
-                labelFreq.put(label, 0);
-            }*/
-
             labelsBuf.put(counter, label);
-            //labelsOneClassBuf.put(counter, 1);
             images.put(counter, img);
 
             //For SVM:
@@ -221,37 +202,6 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         }
 
-
-
-        /*for (int i = 0; i < nonFaces.length; i+= numNonFaces) {
-            img = imread(nonFaces[i].getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-            equalizeHist(img, img);
-            //fastNlMeansDenoising(img, img);
-            resize(img, img, dSize);
-
-            nameDetails = nonFaces[i].getName().split("_");
-            label = Integer.parseInt(nameDetails[0]);
-
-            labelsBuf.put(counter, label);
-            images.put(counter, img);
-
-            //For SVM:
-            img.reshape(1, 1).convertTo(img, CV_32FC1);
-            trainingMat.push_back(img);
-
-            //Before moving the crop to trainedCrops, find a new filename for the crop that does not conflict with a crop already in trainedCrops.
-            secondaryID = 0;
-            do {
-                f = new File(trainedCropsDir + "/" + label + "_" + nameDetails[1] + "_" + secondaryID + ".jpg");
-                secondaryID++;
-            } while (f.exists());
-            nonFaces[i].renameTo(f);
-
-            img.deallocate();
-            counter++;
-            Log.i(TAG, "nonFaces " + counter);
-
-        }*/
 
 
         for (File c : untrainedCrops) {
@@ -296,68 +246,19 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         int numTrainingImages = (int) images.size();
 
-        //Form kernelMat:
-
-        Log.i(TAG, "Calculating kernelMat...");
-        Mat kernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
-        FloatBufferIndexer kI = kernelMat.createIndexer();
-
-        //The matrix is a mirror along the diagonal, so to reduce computation, copy already computed answers to slots that require the value.
-        for(int i = 0; i < numTrainingImages; i++){
-            for(int j = 0; j < i; j++){
-                kI.put(i,j,kI.get(j,i));
-                //oI.put(i,j,1);
-            }
-            for(int k = i; k < numTrainingImages; k++){
-                kI.put(i,k,(float)Math.pow(trainingMat.row(i).dot(trainingMat.row(k)), 2));
-                //oI.put(i,k,1);
-            }
-        }
-
-        Log.i(TAG, "Calculating finalKernelMat...");
-        Mat finalKernelMat = new Mat(numTrainingImages, numTrainingImages, CV_32FC1);
-        FloatBufferIndexer fkI = finalKernelMat.createIndexer();
-        float subA;
-        float subB;
-        float addC;
-        double numTrainingImagesSquared = Math.pow(numTrainingImages, 2);
-
-        for(int i = 0; i < numTrainingImages; i++){
-            for(int j = 0; j < numTrainingImages; j++){
-                subA = 0;
-                subB = 0;
-                addC = 0;
-                for(int Mn = 0; Mn < numTrainingImages; Mn++){
-                    subA += kI.get(Mn,j);
-                    subB += kI.get(i,Mn);
-                    for(int N = 0; N < numTrainingImages; N++){
-                        addC += kI.get(Mn,N);
-                    }
-                }
-                subA /= numTrainingImages;
-                subB /= numTrainingImages;
-                addC /= numTrainingImagesSquared;
-
-                fkI.put(i,j, kI.get(i,j) - subA - subB + addC);
-            }
-        }
-
-        kernelMat.deallocate();
-
-
-
-        //numPrincipalComponents = numTrainingImages - 1;
-
-        /*//For PCA+SVM recognition:
+        //For PCA+SVM recognition:
         trainingMat.convertTo(trainingMat, CV_32FC1);
         Mat data = new Mat();
         Mat projectedMat;
         Mat temp;
 
-        *//*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
-        PCA pca = new PCA();
-        pca.read(pfs.root());
-        pfs.release();*//*
+        //numPrincipalComponents = numTrainingImages - 1;
+
+//        FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+//        PCA pca = new PCA();
+//        pca.read(pfs.root());
+//        pfs.release();
+
         PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
 
         for (int i = 0; i < numTrainingImages; i++) {
@@ -374,42 +275,17 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         Log.i(TAG, "Data now has num of rows, cols :" + data.rows() + ", " + data.cols());
         Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
         Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
-        Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());*/
-
-        //Kernel PCA:
-        trainingMat.convertTo(trainingMat, CV_32FC1);
-        Mat data = new Mat();
-        Mat projectedMat;
-
-        PCA pca = new PCA(finalKernelMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
-        int numTrainingMatRows = finalKernelMat.rows();
-
-        Mat eVectors = pca.eigenvectors();
-        FloatBufferIndexer eI = eVectors.createIndexer();
-        FloatBufferIndexer pI;
-        float val;
-
-        timeStart = System.currentTimeMillis();
-        for(int i = 0; i < numTrainingMatRows; i++) {
-            projectedMat = new Mat(1, numTrainingImages, CV_32FC1);
-            pI = projectedMat.createIndexer();
-
-            Log.i(TAG, "Loop " + i);
-
-            for(int q = 0; q < numTrainingImages; q++){
-                val = 0;
-                for(int a = 0; a < numTrainingImages; a++){
-                    val += eI.get(q, a) * Math.pow(trainingMat.row(a).dot(trainingMat.row(i)), 2);
-                }
-                pI.put(0,q,val);
-            }
-            data.push_back(projectedMat);
-            projectedMat.deallocate();
-        }
-
-        Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
-        Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
         Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+
+
+//        //Check out PCA contents:
+//        Mat eValues = pca.eigenvalues();
+//        Mat eVectors = pca.eigenvectors();
+//        FloatBufferIndexer fI = eValues.createIndexer();
+//
+//        for(int i=0; i < 20; i++){
+//            Log.i(TAG, "eValue at i" + i + ": " + fI.get(i, 0));
+//        }
 
 
         data.convertTo(data, CV_32FC1);
@@ -421,21 +297,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         //svm.setGamma(0.00001);
         TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
 
-        /*Mat cw = new Mat(numTotalCrops, 1, CV_32SC1);
-        FloatBuffer cwBuf = cw.getFloatBuffer();
-        Set labelSet = labelFreq.entrySet();
-        Iterator li = labelSet.iterator();
-        Map.Entry le;
-        counter = 0;
-        Log.i(TAG, "Recog: Writing and saving attendance record...");
-        // Display elements
-        while (li.hasNext()) {
-            le = (Map.Entry) li.next();
-            bw.write(ae.getKey() + "," + ne.getValue() + "," + ae.getValue() + "\n");
-        }*/
 
-
-        //Log.i(TAG, "kFold selected: " + kFold);
         Log.i(TAG, "Num of rows and cols in data: " + data.rows() + ", " + data.cols());
         Log.i(TAG, "Num of rows and cols in labels: " + labels.rows() + ", " + labels.cols());
         Log.i(TAG, "Training SVM...");
@@ -624,7 +486,17 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
             Log.i(TAG, "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
             Log.i(TAG, "Type legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
 
-            Mat resultCW = svm.getClassWeights();
+        }
+        timeEnd = System.currentTimeMillis();
+        timeElapsed = timeEnd - timeStart;
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("sdcard/PresentData/researchMode/trainTimeTest.txt"));
+            bw.write("Trained with " + numTrainingImages + " images\nTotal time: " + (float) timeElapsed/1000 + " seconds\nAvg train time per pic: " + (float) timeElapsed/(1000*numTrainingImages) + " seconds");
+            bw.flush();
+            bw.close();
+        } catch (Exception e){
+            e.printStackTrace();
         }
 
         isTrainingSuccess = true;

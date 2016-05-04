@@ -13,13 +13,13 @@
         app:showAsAction="never" ></item>
 
     <item
-        android:id="@+id/action_testRecogTrain"
-        android:title="Test recog train"
+        android:id="@+id/action_testDetectRecogTime"
+        android:title="Test detect recog time"
         app:showAsAction="never" ></item>
 
     <item
-        android:id="@+id/action_testRecog"
-        android:title="Test recog"
+        android:id="@+id/action_createDataSet"
+        android:title="Create data set"
         app:showAsAction="never" ></item>
 
 </menu>

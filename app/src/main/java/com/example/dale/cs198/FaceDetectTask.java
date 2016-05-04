@@ -39,12 +39,14 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "testMessage";
 
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
-    private static final String haarCascadeXML = "haarcascade_frontalface_alt.xml";
+    private static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
     //private static final String testResultsDir = "sdcard/PresentData/researchMode/faceDetectTestResults";
 
     static final int ATTENDANCE_USAGE = 0;
     static final int TRAIN_USAGE = 1;
     static final int TEST_USAGE = 2;
+    static final int TESTTIME_USAGE = 3;
+    static final int CREATEDATASET_USAGE = 4;
 
     //Face detection parameters:
     double scaleFactor = 1.1;
@@ -104,7 +106,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             File cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
             File cascadeFile = new File(cascadeDir, haarCascadeXML);
             FileOutputStream os = new FileOutputStream(cascadeFile);
-            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
+            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
 
             byte[] buffer = new byte[4096];
             int bytesRead;
@@ -145,6 +147,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 */
 
 
+
                 while (null != (mColor = td.detectQueue.poll())) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
                     imgCount++;
                     mGray = new Mat();
@@ -161,7 +164,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     timeEnd = System.currentTimeMillis();
                     timeElapsed = timeEnd - timeStart;
 
-                    mGray.release();
+                    mGray.deallocate();
 
                     numFaces = (int)faces.size();
 
@@ -215,7 +218,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     timeEnd = System.currentTimeMillis();
                     timeElapsed = timeEnd - timeStart;
 
-                    mGray.release();
+                    mGray.deallocate();
 
                     numFaces = (int)faces.size();
 
@@ -324,7 +327,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 for (int i = 0; i < testClassNamesAndDataSplits.length; i++) {
                     Log.i(TAG, "Running test on class " + testClassNamesAndDataSplits[i] + "...");
                     dataFolderDir = testClassDataDir + "/" + testClassNamesAndDataSplits[i] + " Classroom Data";
-                    resultsFolderDir = dataFolderDir + "/greenBoxesHaar20";
+                    resultsFolderDir = dataFolderDir + "/greenBoxesHaar";
                     dataFolder = new File(dataFolderDir);
                     resultsFolder = new File(resultsFolderDir);
 
@@ -346,6 +349,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         imgCount++;
                         mGray = new Mat();
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
+                        //equalizeHist(mGray, mGray);
 
                         /*timeStart = System.currentTimeMillis();
                         equalizeHist(mGray, mGray);
@@ -370,7 +374,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         timeElapsed = timeEnd - timeStart;
                         avgTime += timeElapsed;
 
-                        mGray.release();
+                        mGray.deallocate();
 
                         imgColor = new IplImage(mColor);
 
@@ -414,9 +418,161 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 }
 
 
+            } else if (usageType == TESTTIME_USAGE) {
+                Log.i(TAG, "Now in TESTTIME Usage ");
+
+                //Time Test:
+                //Write down number of faces detected:
+
+                BufferedWriter bw = new BufferedWriter(new FileWriter("sdcard/PresentData/researchMode/timeTest.txt"));
+                File[] testingFolder = new File("sdcard/PresentData/researchMode/testingImages").listFiles();
+                bw.write(System.currentTimeMillis() + "_" + testingFolder.length);
+                bw.flush();
+                bw.close();
+
+
+                for (File im : testingFolder) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
+                    imgCount++;
+                    mColor = imread(im.getAbsolutePath());
+                    mGray = new Mat();
+                    cvtColor(mColor, mGray, CV_BGR2GRAY);
+                    equalizeHist(mGray, mGray);
+
+                    faces = new RectVector();
+
+                    //Detect faces:
+                    Log.i(TAG, "Detecting img " + imgCount);
+                    timeStart = System.currentTimeMillis();
+                    faceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
+                    timeEnd = System.currentTimeMillis();
+                    timeElapsed = timeEnd - timeStart;
+
+                    mGray.deallocate();
+
+                    numFaces = (int) faces.size();
+
+                    if (numFaces > 0) {//check if faces is not empty; an empty r means no face was really detected
+
+                        Log.i(TAG, "Detection complete. Cropping...");
+                        //Crop faces:
+
+                        for (int i = 0; i < numFaces; i++) {
+                            r = faces.get(i);
+
+                            //roi = new Rect(r.x(), r.y(), r.width(), r.height());
+                            td.recogQueue.add(new Mat(mColor, r));
+                        }
+                    } else {
+                        numFaces = 0;
+                    }
+                    mColor.deallocate();
+
+                    faceCount += numFaces;
+
+                    Log.i(TAG, "Cropping complete. Publishing progress.");
+                    Log.i(TAG, imgCount + " images detected.");
+                }
+                td.setThreadsToDie();
+                Log.i(TAG, "FaceDetect Test successful.");
+
+
+            } else if (usageType == CREATEDATASET_USAGE) {
+
+                Log.i(TAG, "Now in CREATEDATASET Usage ");
+                String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133- -0"};
+                String researchModeDir = "sdcard/PresentData/researchMode";
+
+                File[] images;
+                FilenameFilter imgFilter = new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
+                        name = name.toLowerCase();
+                        return name.endsWith(".jpg");
+                    }
+                };
+
+                BufferedWriter bw = new BufferedWriter(new FileWriter("sdcard/PresentData/researchMode/timeTest.txt"));
+
+                String sourceClassDataDir;
+                String resultDataDir;
+                String dateFolderDir;
+
+                File tempF;
+                String date;
+                String className;
+                String[] details;
+                String dateDelimiter;
+                int dateIndex;
+
+                for(int i = 0; i < classNamesAndDateParsing.length; i++) {
+
+                    details = classNamesAndDateParsing[i].split("-");
+                    className = details[0];
+                    sourceClassDataDir = researchModeDir +"/" + className + " Classroom Data";
+                    resultDataDir = sourceClassDataDir + " Result";
+                    images = new File(sourceClassDataDir).listFiles(imgFilter);
+
+                    dateDelimiter = details[1];
+                    dateIndex = Integer.parseInt(details[2]);
+
+
+                    tempF = new File(resultDataDir);
+                    if(tempF.exists()){
+                       DirectoryDeleter.deleteDir(tempF);
+                    }
+                    tempF.mkdirs();
+
+                    for (File im : images) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
+                        imgCount++;
+
+                        date = im.getName().split(dateDelimiter)[dateIndex];
+                        tempF = new File(sourceClassDataDir + "/" + date);
+                        if(!tempF.exists()){
+                            tempF.mkdirs();
+                        }
+
+                        mColor = imread(im.getAbsolutePath());
+                        mGray = new Mat();
+                        cvtColor(mColor, mGray, CV_BGR2GRAY);
+                        equalizeHist(mGray, mGray);
+
+                        faces = new RectVector();
+
+                        //Detect faces:
+                        Log.i(TAG, "Detecting img " + imgCount);
+                        timeStart = System.currentTimeMillis();
+                        faceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
+                        timeEnd = System.currentTimeMillis();
+                        timeElapsed = timeEnd - timeStart;
+
+                        mGray.deallocate();
+
+                        numFaces = (int) faces.size();
+
+                        if (numFaces > 0) {//check if faces is not empty; an empty r means no face was really detected
+
+                            Log.i(TAG, "Detection complete. Cropping...");
+                            //Crop faces:
+
+                            for (int j = 0; j < numFaces; j++) {
+                                r = faces.get(j);
+
+                                //roi = new Rect(r.x(), r.y(), r.width(), r.height());
+                                td.recogQueue.add(new Mat(mColor, r));
+                            }
+                        } else {
+                            numFaces = 0;
+                        }
+                        mColor.deallocate();
+
+                        faceCount += numFaces;
+
+                        Log.i(TAG, "Cropping complete. Publishing progress.");
+                        Log.i(TAG, imgCount + " images detected.");
+                    }
+                }
+                td.setThreadsToDie();
+                Log.i(TAG, "FaceDetect Test successful.");
             }
-            //td.faceDetectThreadAnnounceDeath();
-            Log.i(TAG, "FaceDetect Test successful.");
 
         } catch (Exception e) {
             e.printStackTrace();
