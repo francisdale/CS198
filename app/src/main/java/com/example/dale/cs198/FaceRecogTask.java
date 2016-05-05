@@ -235,8 +235,6 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                             Log.i(TAG, "predictedLabel attendance was marked.");
                         }
 
-                        temp = studentNumsAndNames.get(predictedLabel).split(",");
-                        studentName = temp[1] + "," + temp[2];
                         //Before saving the crop, check which secondaryID is still available:
                         secondaryID = 0;
                         do {
@@ -277,8 +275,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                     }
 
-                    mColor.release();
-                    mGray.release();
+                    mColor.deallocate();
+                    mGray.deallocate();
 
                     publishProgress();
                     Log.i(TAG, "FaceRecogTask: Progress published.");
@@ -539,6 +537,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                 bww.close();
 
                 Log.i(TAG, "Time test recog done.");
+
             } else if (usageType == CREATEDATASET_USAGE) {
 
                 //Read class list:
@@ -630,22 +629,6 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
 
                     predictedLabel = (int) sfr.predict(pca.project(mGray));
-                    //predictedLabel = efr.predict(mGray);
-
-                    /*//Recognize faces:
-                    if(1 == (predictedLabel = (int)sfrOneClass.predict(pca.project(mGray)))) {
-                        Log.i(TAG, "One class svm: " + predictedLabel);
-                        timeStart = System.currentTimeMillis();
-
-                        predictedLabel = (int) sfr.predict(pca.project(mGray));
-
-                        //predictedLabel = efr.predict(mGray);
-                        timeEnd = System.currentTimeMillis();
-                        timeElapsed = timeEnd - timeStart;
-                    } else {
-                        Log.i(TAG, "One class svm: " + predictedLabel);
-                        predictedLabel = 0;
-                    }*/
 
                     Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
@@ -699,8 +682,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
                     }
 
-                    mColor.release();
-                    mGray.release();
+                    mColor.deallocate();
+                    mGray.deallocate();
 
                     Log.i(TAG, "FaceRecogTask: Progress published.");
                     //}

@@ -6,15 +6,21 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_ml;
 import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.InputStream;
+import java.util.HashMap;
 
+import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CvScalar;
 import static org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_core.Mat;
@@ -30,6 +36,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvRectangle;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
+import static org.bytedeco.javacpp.opencv_imgproc.resize;
 
 /**
  * Created by jedpatrickdatu on 2/10/2016.
@@ -490,7 +497,36 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     }
                 };
 
-                BufferedWriter bw = new BufferedWriter(new FileWriter("sdcard/PresentData/researchMode/timeTest.txt"));
+                //Initializing Face Recognition:
+                String modelDir = "sdcard/PresentData/recognizerModels";
+                String classesDir = "sdcard/PresentData/Classes";
+                Size dSize = new Size(64, 64);
+
+                //For PCA+SVM recognition:
+                Log.i(TAG, "Loading SVM...");
+                opencv_core.FileStorage fs = new opencv_core.FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
+                opencv_ml.SVM sfr = opencv_ml.SVM.create();
+                sfr.read(fs.root());
+                fs.release();
+
+                fs = new opencv_core.FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+                opencv_core.PCA pca = new opencv_core.PCA();
+                pca.read(fs.root());
+                fs.release();
+
+                Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+                Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+                Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+
+
+                Log.i(TAG, "SVM loaded.");
+
+                int predictedLabel;
+                String studentName;
+                String[] temp;
+
+                Log.i(TAG, "CreateDataSet: Face Recog Initialization complete.");
+
 
                 String sourceClassDataDir;
                 String resultDataDir;
@@ -521,11 +557,34 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     }
                     tempF.mkdirs();
 
-                    for (File im : images) { //This condition ends this thread and will happen when the queue returns null, meaning there are no more images coming for detecting.
+                    //Read class list:
+                    BufferedReader br;
+                    HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+                    HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+                    String line;
+
+                    String classDir = classesDir + "/" + className;
+
+                    try {
+                        br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
+                        while ((line = br.readLine()) != null) {
+                            details = line.split(",");
+                            //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                            attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                            studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+                        }
+                        br.close();
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
+
+
+                    for (File im : images) {
                         imgCount++;
 
                         date = im.getName().split(dateDelimiter)[dateIndex];
-                        tempF = new File(sourceClassDataDir + "/" + date);
+                        dateFolderDir = sourceClassDataDir + "/" + date;
+                        tempF = new File(dateFolderDir);
                         if(!tempF.exists()){
                             tempF.mkdirs();
                         }
@@ -556,8 +615,54 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                             for (int j = 0; j < numFaces; j++) {
                                 r = faces.get(j);
 
-                                //roi = new Rect(r.x(), r.y(), r.width(), r.height());
-                                td.recogQueue.add(new Mat(mColor, r));
+                                Log.i(TAG, "Recognizing j " + j);
+
+                                mGray = new Mat();
+                                cvtColor(new Mat(mColor, r), mGray, CV_BGR2GRAY);
+
+                                equalizeHist(mGray, mGray);
+                                //fastNlMeansDenoising(mGray,mGray);
+                                resize(mGray, mGray, dSize);
+                                mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+
+                                predictedLabel = (int) sfr.predict(pca.project(mGray));
+
+                                Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+
+                                if (attendanceRecord.containsKey(predictedLabel)) {
+                                    Log.i(TAG, "predictedLabel was found in the classlist.");
+                                    if (0 == attendanceRecord.get(predictedLabel)) {
+                                        attendanceRecord.put(predictedLabel, 1);
+                                        Log.i(TAG, "predictedLabel attendance was marked.");
+                                    }
+
+                                    //Before saving the crop, check which secondaryID is still available:
+                                    secondaryID = 0;
+                                    do {
+                                        temp = studentNumsAndNames.get(predictedLabel).split(",");
+                                        studentName = temp[1] + "," + temp[2];
+                                        f = new File(dateFolderDir + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
+                                        secondaryID++;
+                                    } while (f.exists());
+
+                                    imwrite(f.getAbsolutePath(), mColor);
+
+                                    Log.i(TAG, "Crop saved.");
+                                } else if (0 == predictedLabel) {
+                                    Log.i(TAG, "Non face found.");
+
+                                    //Before saving the crop, check which secondaryID is still available:
+                                    secondaryID = 0;
+                                    do {
+                                        f = new File(dateFolderDir + "/0_nonFace_" + secondaryID + ".jpg");
+                                        secondaryID++;
+                                    } while (f.exists());
+
+                                    imwrite(f.getAbsolutePath(), mColor);
+
+                                }
+
+                                mGray.deallocate();
                             }
                         } else {
                             numFaces = 0;
