@@ -18,6 +18,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
@@ -519,9 +521,19 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 Mat mColorCrop;
                 Mat mGrayCrop;
 
+                //Date parsing variables for CS 133:
+                String OLD_FORMAT = "MMM_dd_yyyy";
+                final String NEW_FORMAT = "yyyyMMdd";
+                Date d;
+                SimpleDateFormat sdf;
+
+                //Date counter for date folder name:
+                String prevDate;
+                int dateCounter;
+                int imgCounterPerDate = 0;
+
+
                 for(int i = 0; i < classNamesAndDateParsing.length; i++) {
-
-
 
                     details = classNamesAndDateParsing[i].split("-");
                     className = details[0];
@@ -531,6 +543,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                     dateDelimiter = details[1];
                     dateIndex = Integer.parseInt(details[2]);
+
+                    prevDate = "null";
+                    dateCounter = 0;
 
 
                     tempF = new File(resultDataDir);
@@ -581,11 +596,34 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         imgCount++;
 
                         date = im.getName().split(dateDelimiter)[dateIndex];
-                        dateFolderDir = resultDataDir + "/" + date;
-                        tempF = new File(dateFolderDir);
-                        if(!tempF.exists()){
-                            tempF.mkdirs();
+
+                        //If class is CS 133, convert the date to correct format
+                        if(className.equals("CS 133")) {
+                            Log.i(TAG, "Date before parsing: " + date);
+                            sdf = new SimpleDateFormat(OLD_FORMAT);
+                            d = sdf.parse(date);
+                            sdf.applyPattern(NEW_FORMAT);
+                            date = sdf.format(d);
+                            Log.i(TAG, "Date after parsing: " + date);
                         }
+
+                        imgCounterPerDate++;
+                        //Date counter:
+                        if(!prevDate.equals(date)){
+                            dateCounter++;
+                            prevDate = date;
+                            imgCounterPerDate = 1;
+
+                            dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date+ "_" + imgCounterPerDate;
+                            tempF.mkdirs();
+                            tempF = new File(dateFolderDir);
+                            tempF.mkdirs();
+                        } else {
+                            dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date + "_" + imgCounterPerDate;
+                            tempF.renameTo(new File(dateFolderDir));
+                        }
+
+                        Log.i(TAG, "In class " + className + " detecting image from date " + date + "...");
 
                         mColor = imread(im.getAbsolutePath());
                         mGray = new Mat();

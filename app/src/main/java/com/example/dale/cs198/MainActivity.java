@@ -250,6 +250,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_createDataSet) {
 
             createDataSet();
+        } else if (id == R.id.action_testFaceRecogTrain) {
+
+            testFaceRecogTrain();
         } else if (id == R.id.action_testFaceRecog) {
 
             testFaceRecog();
@@ -446,9 +449,6 @@ public class MainActivity extends AppCompatActivity {
 
         FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.CREATEDATASET_USAGE);
         fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        FaceRecogTask fr = new FaceRecogTask(td, "CS 197", FaceRecogTask.CREATEDATASET_USAGE);
-        fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private static void copyFile(File source, File dest) throws IOException {
@@ -468,12 +468,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void testFaceRecogTrain(){
+        FaceRecogTrainTask tt = new FaceRecogTrainTask(this, FaceRecogTrainTask.TEST_USAGE);
+        tt.execute();
+    }
+
     public void testFaceRecog(){
         Log.i(TAG, "Now in testFaceDetect.");
 
         TaskData td = new TaskData();
 
-        FaceRecogTask fr = new FaceDetectTask(td, this, FaceRecogTask.TEST_USAGE);
+        FaceRecogTask fr = new FaceRecogTask(td, this, FaceRecogTask.TEST_USAGE);
         fr.execute();
     }
 

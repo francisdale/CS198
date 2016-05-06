@@ -1,5 +1,6 @@
 package com.example.dale.cs198;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -77,11 +78,34 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
         tv = (TextView)((CustomCamera)c).findViewById(R.id.attendanceCounter);
     }
 
+    public FaceRecogTask(TaskData td, Context c, int usageType){
+        this.td = td;
+        this.c = c;
+        this.usageType = usageType;
+    }
+
     public FaceRecogTask(TaskData td, String className, int usageType){
         this.td = td;
         this.c = c;
         this.className = className;
         this.usageType = usageType;
+    }
+
+
+    private ProgressDialog dialog;
+
+
+    protected void onPreExecute() {
+        if(usageType == TEST_USAGE || usageType == TESTTIME_USAGE || usageType == CREATEDATASET_USAGE) {
+            dialog = new ProgressDialog(c);
+            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            dialog.setIndeterminate(true);
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setMessage("Testing face detection...");
+            dialog.show();
+            Log.i(TAG, "Progress dialog shown.");
+        }
     }
 
 

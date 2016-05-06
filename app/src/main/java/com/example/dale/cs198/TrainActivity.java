@@ -16,8 +16,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
@@ -177,7 +175,7 @@ public class TrainActivity extends AppCompatActivity {
 
 
     public void trainRecognizer(View view){
-        FaceRecogTrainTask tt = new FaceRecogTrainTask(this);
+        FaceRecogTrainTask tt = new FaceRecogTrainTask(this, FaceRecogTrainTask.NORMAL_USAGE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         tt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
