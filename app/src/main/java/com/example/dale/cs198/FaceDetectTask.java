@@ -46,7 +46,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "testMessage";
 
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
-    private static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
+    private static final String haarCascadeXML = "haarcascade_frontalface_alt.xml";
     //private static final String testResultsDir = "sdcard/PresentData/researchMode/faceDetectTestResults";
 
     static final int ATTENDANCE_USAGE = 0;
@@ -84,7 +84,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     }
 
     protected void onPreExecute() {
-        if(usageType == TEST_USAGE) {
+        if(usageType == TEST_USAGE || usageType == TESTTIME_USAGE || usageType == CREATEDATASET_USAGE) {
             dialog = new ProgressDialog(c);
             dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             dialog.setIndeterminate(true);
@@ -98,7 +98,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void v) {
-        if(usageType == TEST_USAGE) {
+        if(usageType == TEST_USAGE || usageType == TESTTIME_USAGE || usageType == CREATEDATASET_USAGE) {
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
@@ -113,7 +113,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             File cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
             File cascadeFile = new File(cascadeDir, haarCascadeXML);
             FileOutputStream os = new FileOutputStream(cascadeFile);
-            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
 
             byte[] buffer = new byte[4096];
             int bytesRead;
@@ -497,36 +497,14 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     }
                 };
 
-                //Initializing Face Recognition:
+
                 String modelDir = "sdcard/PresentData/recognizerModels";
                 String classesDir = "sdcard/PresentData/Classes";
+
                 Size dSize = new Size(64, 64);
-
-                //For PCA+SVM recognition:
-                Log.i(TAG, "Loading SVM...");
-                opencv_core.FileStorage fs = new opencv_core.FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
-                opencv_ml.SVM sfr = opencv_ml.SVM.create();
-                sfr.read(fs.root());
-                fs.release();
-
-                fs = new opencv_core.FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
-                opencv_core.PCA pca = new opencv_core.PCA();
-                pca.read(fs.root());
-                fs.release();
-
-                Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
-                Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
-                Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
-
-
-                Log.i(TAG, "SVM loaded.");
-
                 int predictedLabel;
                 String studentName;
                 String[] temp;
-
-                Log.i(TAG, "CreateDataSet: Face Recog Initialization complete.");
-
 
                 String sourceClassDataDir;
                 String resultDataDir;
@@ -538,8 +516,12 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 String[] details;
                 String dateDelimiter;
                 int dateIndex;
+                Mat mColorCrop;
+                Mat mGrayCrop;
 
                 for(int i = 0; i < classNamesAndDateParsing.length; i++) {
+
+
 
                     details = classNamesAndDateParsing[i].split("-");
                     className = details[0];
@@ -556,6 +538,22 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                        DirectoryDeleter.deleteDir(tempF);
                     }
                     tempF.mkdirs();
+
+                    Log.i(TAG, "Handling class " + className + "...");
+
+                    //Initializing Face Recognition:
+                    Log.i(TAG, "Loading SVM...");
+                    opencv_core.FileStorage fs = new opencv_core.FileStorage(modelDir + "/svmModel_" + className + "_allHE.xml", opencv_core.FileStorage.READ);
+                    opencv_ml.SVM sfr = opencv_ml.SVM.create();
+                    sfr.read(fs.root());
+                    fs.release();
+
+                    fs = new opencv_core.FileStorage(modelDir + "/pca_" + className + "_allHE.xml", opencv_core.FileStorage.READ);
+                    opencv_core.PCA pca = new opencv_core.PCA();
+                    pca.read(fs.root());
+                    fs.release();
+
+                    Log.i(TAG, "CreateDataSet: Face Recog Initialization complete.");
 
                     //Read class list:
                     BufferedReader br;
@@ -583,7 +581,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         imgCount++;
 
                         date = im.getName().split(dateDelimiter)[dateIndex];
-                        dateFolderDir = sourceClassDataDir + "/" + date;
+                        dateFolderDir = resultDataDir + "/" + date;
                         tempF = new File(dateFolderDir);
                         if(!tempF.exists()){
                             tempF.mkdirs();
@@ -617,15 +615,16 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                                 Log.i(TAG, "Recognizing j " + j);
 
-                                mGray = new Mat();
-                                cvtColor(new Mat(mColor, r), mGray, CV_BGR2GRAY);
+                                mColorCrop = new Mat(mColor, r);
+                                mGrayCrop = new Mat();
+                                cvtColor(mColorCrop, mGrayCrop, CV_BGR2GRAY);
 
-                                equalizeHist(mGray, mGray);
+                                equalizeHist(mGrayCrop, mGrayCrop);
                                 //fastNlMeansDenoising(mGray,mGray);
-                                resize(mGray, mGray, dSize);
-                                mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+                                resize(mGrayCrop, mGrayCrop, dSize);
+                                mGrayCrop.reshape(1, 1).convertTo(mGrayCrop, CV_32FC1);
 
-                                predictedLabel = (int) sfr.predict(pca.project(mGray));
+                                predictedLabel = (int) sfr.predict(pca.project(mGrayCrop));
 
                                 Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
 
@@ -645,7 +644,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                                         secondaryID++;
                                     } while (f.exists());
 
-                                    imwrite(f.getAbsolutePath(), mColor);
+                                    imwrite(f.getAbsolutePath(), mColorCrop);
 
                                     Log.i(TAG, "Crop saved.");
                                 } else if (0 == predictedLabel) {
@@ -658,11 +657,12 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                                         secondaryID++;
                                     } while (f.exists());
 
-                                    imwrite(f.getAbsolutePath(), mColor);
+                                    imwrite(f.getAbsolutePath(), mColorCrop);
 
                                 }
 
-                                mGray.deallocate();
+                                mColorCrop.deallocate();
+                                mGrayCrop.deallocate();
                             }
                         } else {
                             numFaces = 0;
@@ -670,13 +670,10 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         mColor.deallocate();
 
                         faceCount += numFaces;
-
-                        Log.i(TAG, "Cropping complete. Publishing progress.");
-                        Log.i(TAG, imgCount + " images detected.");
                     }
                 }
                 td.setThreadsToDie();
-                Log.i(TAG, "FaceDetect Test successful.");
+                Log.i(TAG, "CreateDataSet complete.");
             }
 
         } catch (Exception e) {

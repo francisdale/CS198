@@ -22,4 +22,9 @@
         android:title="Create data set"
         app:showAsAction="never" ></item>
 
+    <item
+        android:id="@+id/action_testFaceRecog"
+        android:title="Test face recog"
+        app:showAsAction="never" ></item>
+
 </menu>

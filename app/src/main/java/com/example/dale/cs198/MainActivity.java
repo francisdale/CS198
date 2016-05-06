@@ -250,6 +250,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_createDataSet) {
 
             createDataSet();
+        } else if (id == R.id.action_testFaceRecog) {
+
+            testFaceRecog();
         }
 
 
@@ -463,6 +466,15 @@ public class MainActivity extends AppCompatActivity {
             input.close();
             output.close();
         }
+    }
+
+    public void testFaceRecog(){
+        Log.i(TAG, "Now in testFaceDetect.");
+
+        TaskData td = new TaskData();
+
+        FaceRecogTask fr = new FaceDetectTask(td, this, FaceRecogTask.TEST_USAGE);
+        fr.execute();
     }
 
 

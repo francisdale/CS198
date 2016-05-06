@@ -46,7 +46,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
     private static final String masterListPath = "sdcard/PresentData/Master List.txt";
 
     static final int ATTENDANCE_USAGE = 0;
-    private static final int TEST_USAGE = 2;
+    static final int TEST_USAGE = 2;
     static final int TESTTIME_USAGE = 3;
     static final int CREATEDATASET_USAGE = 4;
     int usageType;
