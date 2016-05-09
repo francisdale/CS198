@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -48,7 +49,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "testMessage";
 
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
-    private static final String haarCascadeXML = "haarcascade_frontalface_alt.xml";
+    private static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
     //private static final String testResultsDir = "sdcard/PresentData/researchMode/faceDetectTestResults";
 
     static final int ATTENDANCE_USAGE = 0;
@@ -115,7 +116,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             File cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
             File cascadeFile = new File(cascadeDir, haarCascadeXML);
             FileOutputStream os = new FileOutputStream(cascadeFile);
-            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
+            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
 
             byte[] buffer = new byte[4096];
             int bytesRead;
@@ -488,7 +489,8 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             } else if (usageType == CREATEDATASET_USAGE) {
 
                 Log.i(TAG, "Now in CREATEDATASET Usage ");
-                String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133- -0"};
+                String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133-_-1"};
+                //String[] classNamesAndDateParsing = {"CS 133-_-1"};
                 String researchModeDir = "sdcard/PresentData/researchMode";
 
                 File[] images;
@@ -540,6 +542,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     sourceClassDataDir = researchModeDir +"/" + className + " Classroom Data";
                     resultDataDir = sourceClassDataDir + " Result";
                     images = new File(sourceClassDataDir).listFiles(imgFilter);
+                    Arrays.sort(images);
 
                     dateDelimiter = details[1];
                     dateIndex = Integer.parseInt(details[2]);
@@ -555,6 +558,23 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     tempF.mkdirs();
 
                     Log.i(TAG, "Handling class " + className + "...");
+
+//                    //Rename CS 133 folders to proper date format
+//                    if(className.equals("CS 133")) {
+//                        for (File im : images) {
+//                            date = im.getName().split(dateDelimiter)[dateIndex];
+//                            Log.i(TAG, "Date before parsing: " + date);
+//                            sdf = new SimpleDateFormat(OLD_FORMAT);
+//                            d = sdf.parse(date);
+//                            sdf.applyPattern(NEW_FORMAT);
+//                            date = sdf.format(d);
+//                            Log.i(TAG, "Date after parsing: " + date);
+//
+//                            tempF = new File(im.getAbsolutePath());
+//                            tempF.renameTo(new File(sourceClassDataDir + "/IMG_" + date + "_" + im.getName().split(" ")[1]));
+//                        }
+//                    }
+//                    images = new File(sourceClassDataDir).listFiles(imgFilter);
 
                     //Initializing Face Recognition:
                     Log.i(TAG, "Loading SVM...");
@@ -597,15 +617,15 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                         date = im.getName().split(dateDelimiter)[dateIndex];
 
-                        //If class is CS 133, convert the date to correct format
-                        if(className.equals("CS 133")) {
-                            Log.i(TAG, "Date before parsing: " + date);
-                            sdf = new SimpleDateFormat(OLD_FORMAT);
-                            d = sdf.parse(date);
-                            sdf.applyPattern(NEW_FORMAT);
-                            date = sdf.format(d);
-                            Log.i(TAG, "Date after parsing: " + date);
-                        }
+//                        //If class is CS 133, convert the date to correct format
+//                        if(className.equals("CS 133")) {
+//                            Log.i(TAG, "Date before parsing: " + date);
+//                            sdf = new SimpleDateFormat(OLD_FORMAT);
+//                            d = sdf.parse(date);
+//                            sdf.applyPattern(NEW_FORMAT);
+//                            date = sdf.format(d);
+//                            Log.i(TAG, "Date after parsing: " + date);
+//                        }
 
                         imgCounterPerDate++;
                         //Date counter:
@@ -615,12 +635,12 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                             imgCounterPerDate = 1;
 
                             dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date+ "_" + imgCounterPerDate;
-                            tempF.mkdirs();
                             tempF = new File(dateFolderDir);
                             tempF.mkdirs();
                         } else {
                             dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date + "_" + imgCounterPerDate;
                             tempF.renameTo(new File(dateFolderDir));
+                            tempF = new File(dateFolderDir);
                         }
 
                         Log.i(TAG, "In class " + className + " detecting image from date " + date + "...");
@@ -628,7 +648,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         mColor = imread(im.getAbsolutePath());
                         mGray = new Mat();
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
-                        equalizeHist(mGray, mGray);
+                        //equalizeHist(mGray, mGray);
 
                         faces = new RectVector();
 

@@ -33,9 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    String[] testClassNamesAndDataSplits = {"CS 133,1,8,9,10"};
+    //String[] testClassNamesAndDataSplits = {"CS 133,1,8,9,10"};
     //String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19"};
-    //String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19", "CS 133,1,6,7,10"};
+    String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19", "CS 133,1,6,7,10"};
     final String testClassDataDir = "sdcard/PresentData/researchMode";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
@@ -277,12 +277,14 @@ public class MainActivity extends AppCompatActivity {
         int trainStart;
         int trainEnd;
 
+
         for(int i = 0; i < testClassNamesAndDataSplits.length; i++) {
             Log.i(TAG, "Loop " + i);
             testClassDetails = testClassNamesAndDataSplits[i].split(",");
             className = testClassDetails[0];
             trainStart = Integer.parseInt(testClassDetails[1]);
             trainEnd = Integer.parseInt(testClassDetails[2]);
+
 
 
             classDataDir = testClassDataDir +"/" + className + " Classroom Data Haar20HE";
