@@ -522,11 +522,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
                 tempF.mkdirs();
             }
 
-            String[] classNames = {"CS 197", "CS 133"};
+            String[] classDataNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
 
-            for(int j = 0; j < classNames.length; j++) {
+            for(int j = 0; j < classDataNames.length; j++) {
 
-                File trainingCropsFolder = new File("sdcard/PresentData/researchMode/" + classNames[j] + " Classroom Data/trainingCrops");
+                File trainingCropsFolder = new File("sdcard/PresentData/researchMode/" + classDataNames[j] + "/trainingCrops");
 
                 FilenameFilter imgFilter = new FilenameFilter() {
                     public boolean accept(File dir, String name) {
@@ -612,7 +612,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
                 FileStorage fs;
                 Log.i(TAG, "Saving pca to pca.xml...");
-                fs = new FileStorage(researchModelDir + "/pca_" + classNames[j] + ".xml", opencv_core.FileStorage.WRITE);
+                fs = new FileStorage(researchModelDir + "/pca_" + classDataNames[j] + ".xml", opencv_core.FileStorage.WRITE);
                 pca.write(fs);
                 fs.release();
 
@@ -627,11 +627,11 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
                 svm.setKernel(SVM.LINEAR);
                 svm.train(td);
 
-                fs = new FileStorage(researchModelDir + "/svmModel_" + classNames[j] + "_linear.xml", FileStorage.WRITE);
+                fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_linear.xml", FileStorage.WRITE);
                 svm.write(fs);
                 fs.release();
 
-                int numPolyDegrees = 6;
+                int numPolyDegrees = 5;
 
                 for (int i = 2; i <= numPolyDegrees; i++) {
                     Log.i(TAG, "Training poly " + i + " SVM...");
@@ -641,7 +641,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
                     svm.setDegree((double) i);
                     svm.train(td);
 
-                    fs = new FileStorage(researchModelDir + "/svmModel_" + classNames[j] + "_poly_" + i + ".xml", FileStorage.WRITE);
+                    fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_degree " + i + ".xml", FileStorage.WRITE);
                     svm.write(fs);
                     fs.release();
                 }

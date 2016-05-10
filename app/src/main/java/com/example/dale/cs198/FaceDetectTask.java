@@ -49,7 +49,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "testMessage";
 
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
-    private static final String haarCascadeXML = "haarcascade_frontalface_default.xml";
+    private static final String haarCascadeXML = "haarcascade_frontalface_alt.xml";
     //private static final String testResultsDir = "sdcard/PresentData/researchMode/faceDetectTestResults";
 
     static final int ATTENDANCE_USAGE = 0;
@@ -116,7 +116,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             File cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
             File cascadeFile = new File(cascadeDir, haarCascadeXML);
             FileOutputStream os = new FileOutputStream(cascadeFile);
-            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+            InputStream is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
 
             byte[] buffer = new byte[4096];
             int bytesRead;
@@ -525,7 +525,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                 //Date parsing variables for CS 133:
                 String OLD_FORMAT = "MMM_dd_yyyy";
-                final String NEW_FORMAT = "yyyyMMdd";
+                String NEW_FORMAT = "yyyyMMdd";
                 Date d;
                 SimpleDateFormat sdf;
 
