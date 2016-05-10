@@ -641,7 +641,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
                     svm.setDegree((double) i);
                     svm.train(td);
 
-                    fs = new FileStorage(researchModelDir + "/svmModel_" + classNames[j] + "_poly" + i + ".xml", FileStorage.WRITE);
+                    fs = new FileStorage(researchModelDir + "/svmModel_" + classNames[j] + "_poly_" + i + ".xml", FileStorage.WRITE);
                     svm.write(fs);
                     fs.release();
                 }

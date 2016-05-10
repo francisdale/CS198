@@ -14,6 +14,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -329,25 +330,31 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             } else if(usageType == TEST_USAGE){
 
-                String[] testClassNamesAndTestingDataSplits = {"CS 197,11,19", "CS 133,7,10"};
-
+                String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20HE,11,19", "CS 133 Classroom Data Haar20HE,7,10", "CS 197 Classroom Data Haar20,11,19", "CS 133 Classroom Data Haar20,7,10", "CS 197 Classroom Data HaarHE,11,19", "CS 133 Classroom Data HaarHE,7,10", "CS 197 Classroom Data Haar,11,19", "CS 133 Classroom Data Haar,7,10"};
+                String researchDir = "sdcard/PresentData/researchMode";
                 String[] testClassDetails;
+                String[] details;
                 String className;
                 int testStart;
                 int testEnd;
 
+                File tempF;
+                String date;
+                Mat mColorCrop;
+                Mat mGrayCrop;
+
                 for(int i = 0; i < testClassNamesAndTestingDataSplits.length; i++) {
                     testClassDetails = testClassNamesAndTestingDataSplits[i].split(",");
-                    className = testClassDetails[0];
+                    details = testClassDetails[0].split(" ");
+                    className = details[0] + " " + details[1];
                     testStart = Integer.parseInt(testClassDetails[1]);
                     testEnd = Integer.parseInt(testClassDetails[2]);
 
                     HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
                     HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
                     String line;
-                    String[] details;
-                    String classroomDataDir = "sdcard/PresentData/researchMode/" + className + " Classroom Data";
-                    String testResultsDir =  classroomDataDir + "/Recognition Test Results";
+                    String classroomDataDir = researchDir + "/" + testClassDetails[0];
+                    String testResultsDir =  researchDir + "/Recognition Test Results/" + testClassDetails[0];
 
                     File folder = new File(testResultsDir);
                     if (folder.exists()) {
@@ -356,8 +363,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     folder.mkdirs();
 
 
-                    File testRecordFilesDir = new File(classroomDataDir + "/attendanceRecordsOutput");
-                    //File trueRecordFile = new File(recordFilePath);
+                    File testRecordFilesDir = new File(researchDir + "/" + className + "_manualAttendanceReports");
 
                     BufferedReader br = new BufferedReader(new FileReader(masterListPath));
                     while ((line = br.readLine()) != null) {
@@ -368,6 +374,109 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     }
 
                     numStudents = attendanceRecord.size();
+
+
+                    //Initializing Face Recognition:
+                    String researchModelDir = "sdcard/PresentData/researchMode/recognizerModels";
+
+                    FilenameFilter svmModelFilter = new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            name = name.toLowerCase();
+                            return name.startsWith("svmModel_") && name.endsWith(".xml");
+                        }
+                    };
+
+                    File[] svmModels = new File(researchModelDir).listFiles(svmModelFilter);
+
+                    SVM[] sfrs = new SVM[svmModels.length];
+
+                    FileStorage fs = new FileStorage(researchModelDir + "/pca_" + className + ".xml", FileStorage.READ);
+                    PCA pca = new PCA();
+                    pca.read(fs.root());
+                    fs.release();
+
+                    for(int s = 0; s < svmModels.length; s++) {
+                        Log.i(TAG, "Loading SVM...");
+                        fs = new FileStorage(researchModelDir + "/svmModel_" + className + "_allHE.xml", opencv_core.FileStorage.READ);
+                        sfrs[s] = SVM.create();
+                        sfrs[s].read(fs.root());
+                        fs.release();
+                    }
+
+
+                    FilenameFilter dateFolderFilter = new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            name = name.toLowerCase();
+                            return dir.isDirectory();
+                        }
+                    };
+                    File[] dateFolders;
+
+
+                    FilenameFilter imgFilter = new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            name = name.toLowerCase();
+                            return name.endsWith(".jpg");
+                        }
+                    };
+                    File[] crops;
+
+                    crops = new File(sourceClassDataDir).listFiles(imgFilter);
+
+                    for (int j = 0; j < numFaces; j++) {
+                        Log.i(TAG, "Recognizing j " + j);
+
+                        mGrayCrop = new Mat();
+                        cvtColor(mColorCrop, mGrayCrop, CV_BGR2GRAY);
+
+                        equalizeHist(mGrayCrop, mGrayCrop);
+                        //fastNlMeansDenoising(mGray,mGray);
+                        resize(mGrayCrop, mGrayCrop, dSize);
+                        mGrayCrop.reshape(1, 1).convertTo(mGrayCrop, CV_32FC1);
+
+                        predictedLabel = (int) sfr.predict(pca.project(mGrayCrop));
+
+                        Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+
+                        if (attendanceRecord.containsKey(predictedLabel)) {
+                            Log.i(TAG, "predictedLabel was found in the classlist.");
+                            if (0 == attendanceRecord.get(predictedLabel)) {
+                                attendanceRecord.put(predictedLabel, 1);
+                                Log.i(TAG, "predictedLabel attendance was marked.");
+                            }
+
+                            //Before saving the crop, check which secondaryID is still available:
+                            secondaryID = 0;
+                            do {
+                                temp = studentNumsAndNames.get(predictedLabel).split(",");
+                                studentName = temp[1] + "," + temp[2];
+                                f = new File(dateFolderDir + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
+                                secondaryID++;
+                            } while (f.exists());
+
+                            imwrite(f.getAbsolutePath(), mColorCrop);
+
+                            Log.i(TAG, "Crop saved.");
+                        } else if (0 == predictedLabel) {
+                            Log.i(TAG, "Non face found.");
+
+                            //Before saving the crop, check which secondaryID is still available:
+                            secondaryID = 0;
+                            do {
+                                f = new File(dateFolderDir + "/0_nonFace_" + secondaryID + ".jpg");
+                                secondaryID++;
+                            } while (f.exists());
+
+                            imwrite(f.getAbsolutePath(), mColorCrop);
+
+                        }
+
+                        mColorCrop.deallocate();
+                        mGrayCrop.deallocate();
+                    }
+                    Log.i(TAG, "CreateDataSet: Face Recog Initialization complete.");
+
+
                 }
 
             } else if (usageType == TESTTIME_USAGE) {
