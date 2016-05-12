@@ -33,9 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
 
-    //String[] testClassNamesAndDataSplits = {"CS 133,1,8,9,10"};
-    //String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19"};
-    String[] testClassNamesAndDataSplits = {"CS 197,1,10,11,19", "CS 133,1,6,7,10"};
+
     final String testClassDataDir = "sdcard/PresentData/researchMode";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
@@ -267,12 +265,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void relabelAndGather(){
 
+        //String[] testClassNamesAndDataSplits = {"CS 197 Classroom Data Haar20HE,1,10", "CS 133 Classroom Data Haar20HE,1,8", "CS 197 Classroom Data Haar20,1,10", "CS 133 Classroom Data Haar20,1,8", "CS 197 Classroom Data HaarHE,1,10", "CS 133 Classroom Data HaarHE,1,8", "CS 197 Classroom Data Haar,1,10", "CS 133 Classroom Data Haar,1,8"};
+        String[] testClassNamesAndDataSplits = {"CS 133 Classroom Data Haar20HE,1,8", "CS 133 Classroom Data Haar20,1,8", "CS 133 Classroom Data HaarHE,1,8", "CS 133 Classroom Data Haar,1,8"};
 
         String classDataDir;
         String allCropsDir;
         String trainingCropsDir;
         String classListFilePath;
         String[] testClassDetails;
+        String[] details;
         String className;
         int trainStart;
         int trainEnd;
@@ -281,23 +282,23 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < testClassNamesAndDataSplits.length; i++) {
             Log.i(TAG, "Loop " + i);
             testClassDetails = testClassNamesAndDataSplits[i].split(",");
-            className = testClassDetails[0];
+            details = testClassDetails[0].split(" ");
+            className = details[0] + " " + details[1];
             trainStart = Integer.parseInt(testClassDetails[1]);
             trainEnd = Integer.parseInt(testClassDetails[2]);
 
 
 
-            classDataDir = testClassDataDir +"/" + className + " Classroom Data Haar20HE";
+            classDataDir = testClassDataDir +"/" + testClassDetails[0];
             allCropsDir = classDataDir + "/allCrops";
             trainingCropsDir = classDataDir + "/trainingCrops";
-            classListFilePath = classDataDir + "/" + className + "_studentList.txt";
+            classListFilePath = testClassDataDir + "/" + className + "_studentList.txt";
 
             //Read class list:
             BufferedReader br;
             HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
             HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
             String line;
-            String[] details;
 
 
             try {
@@ -329,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
 
             //Clear old folders and then recreate them:
             DirectoryDeleter.deleteDir(new File(allCropsDir));
-            new File(allCropsDir).mkdirs();
+            //new File(allCropsDir).mkdirs();
 
             DirectoryDeleter.deleteDir(new File(trainingCropsDir));
             new File(trainingCropsDir).mkdirs();
@@ -341,7 +342,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
 
-            Log.i(TAG, "Creating the AllCrops folder...");
             for (File f : classDataDirFiles) {
                 folderNameDetails = f.getName().split("_");
 
@@ -383,19 +383,19 @@ public class MainActivity extends AppCompatActivity {
                         cNameDetails = c.getName().split("_");
                         cFirstPartName = cNameDetails[0] + "_" + cNameDetails[1] + "_" + date + "_";
 
-                        //For copying the new crop to allCrops:
-                        secondId = 0;
-                        do {
-                            cropNewName = cFirstPartName + secondId + ".jpg";
-                            tempFile = new File(allCropsDir + "/" + cropNewName);
-                            secondId++;
-                        } while (tempFile.exists());
-
-                        try {
-                            copyFile(c, tempFile);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+//                        //For copying the new crop to allCrops:
+//                        secondId = 0;
+//                        do {
+//                            cropNewName = cFirstPartName + secondId + ".jpg";
+//                            tempFile = new File(allCropsDir + "/" + cropNewName);
+//                            secondId++;
+//                        } while (tempFile.exists());
+//
+//                        try {
+//                            copyFile(c, tempFile);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
 
                         //For copying the new crop to trainingCrops or testingCrops:
                         if(folderNum >= trainStart && folderNum <= trainEnd){

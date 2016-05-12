@@ -489,15 +489,16 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             } else if (usageType == CREATEDATASET_USAGE) {
 
                 Log.i(TAG, "Now in CREATEDATASET Usage ");
-                String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133-_-1"};
+                //String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133-_-1"};
+                String[] classNamesAndDateParsing = {"CS 197-_-1"};
                 //String[] classNamesAndDateParsing = {"CS 133-_-1"};
                 String researchModeDir = "sdcard/PresentData/researchMode";
 
                 File[] images;
                 FilenameFilter imgFilter = new FilenameFilter() {
                     public boolean accept(File dir, String name) {
-                        name = name.toLowerCase();
-                        return name.endsWith(".jpg");
+                        //name = name.toLowerCase();
+                        return name.startsWith("IMG_20160422") && name.endsWith(".jpg");
                     }
                 };
 

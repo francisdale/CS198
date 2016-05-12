@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -107,6 +108,15 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             dialog.setMessage("Testing face detection...");
             dialog.show();
             Log.i(TAG, "Progress dialog shown.");
+        }
+    }
+
+    @Override
+    protected void onPostExecute(Void v) {
+        if(usageType == TEST_USAGE || usageType == CREATEDATASET_USAGE) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
         }
     }
 
@@ -338,7 +348,8 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             } else if(usageType == TEST_USAGE){
 
-                String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20HE,11,19", "CS 133 Classroom Data Haar20HE,7,10", "CS 197 Classroom Data Haar20,11,19", "CS 133 Classroom Data Haar20,7,10", "CS 197 Classroom Data HaarHE,11,19", "CS 133 Classroom Data HaarHE,7,10", "CS 197 Classroom Data Haar,11,19", "CS 133 Classroom Data Haar,7,10"};
+                //String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20HE,11,19", "CS 133 Classroom Data Haar20HE,7,10", "CS 197 Classroom Data Haar20,11,19", "CS 133 Classroom Data Haar20,7,10", "CS 197 Classroom Data HaarHE,11,19", "CS 133 Classroom Data HaarHE,7,10", "CS 197 Classroom Data Haar,11,19", "CS 133 Classroom Data Haar,7,10"};
+                String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20HE,11,19"};
                 String researchDir = "sdcard/PresentData/researchMode";
                 String[] details;
                 String className;
@@ -366,6 +377,9 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     testStart = Integer.parseInt(testClassDetails[1]);
                     testEnd = Integer.parseInt(testClassDetails[2]);
 
+                    Log.i(TAG, "Handling " + testClassDetails[0] + "...");
+
+                    //Student data:
                     HashMap<Integer, Integer> correctAttendanceRecord = new HashMap<Integer, Integer>();
                     HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
                     String line;
@@ -374,101 +388,142 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                     String testResultsDir =  testResultsHomeDir + "/" + testClassDetails[0];
                     String testResultsDirHE;
 
+                    File folder = new File(testResultsHomeDir);
+                    if (folder.exists()) {
+                        DirectoryDeleter.deleteDir(folder);
+                    }
+                    folder.mkdirs();
 
                     File testRecordFilesDir = new File(researchDir + "/" + className + "_manualAttendanceReports");
 
                     //Initializing Face Recognition:
                     String researchModelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
-                    FilenameFilter svmModelFilter = new FilenameFilter() {
-                        public boolean accept(File dir, String name) {
-                            name = name.toLowerCase();
-                            return name.startsWith("svmModel_" + testClassDetails[0]) && name.endsWith(".xml");
-                        }
-                    };
-
-                    File[] svmModels = new File(researchModelDir).listFiles(svmModelFilter);
-
-                    SVM[] sfrs = new SVM[svmModels.length];
-                    String[] sfrKernelNames = new String[svmModels.length];
-                    int[] sfrCorrectCounts = new int[svmModels.length];
-                    int[] sfrCorrectCountsPerDate = new int[svmModels.length];
-                    int[] sfrCorrectAttendanceCounts = new int[svmModels.length];
-                    int[] sfrCorrectAttendanceCountsPerDate = new int[svmModels.length];
-                    float[] sfrAccuracies = new float[svmModels.length];
-                    float[] sfrAccuraciesPerDate = new float[svmModels.length];
-                    HashMap<Integer, Integer>[] attendanceRecord = new HashMap[svmModels.length]; //This ArrayList is parallel with the attendance ArrayList
-
-                    FileStorage fs = new FileStorage(researchModelDir + "/pca_" + testClassDetails[0] + ".xml", FileStorage.READ);
-                    PCA pca = new PCA();
-                    pca.read(fs.root());
-                    fs.release();
-
-                    for (int s = 0; s < svmModels.length; s++) {
-                        Log.i(TAG, "Loading SVM...");
-                        fs = new FileStorage(svmModels[s].getAbsolutePath(), FileStorage.READ);
-                        sfrs[s] = SVM.create();
-                        sfrs[s].read(fs.root());
-                        fs.release();
-                        sfrKernelNames[s] = svmModels[s].getName().split("_")[2].split(".")[0];
-                        sfrCorrectAttendanceCounts[s] = 0;
-                    }
-
-                    BufferedReader br = new BufferedReader(new FileReader(masterListPath));
-                    while ((line = br.readLine()) != null) {
-                        details = line.split(",");
-                        //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
-                        for (int s = 0; s < svmModels.length; s++) {
-                            attendanceRecord[s].put(Integer.parseInt(details[0]), 0); //(id, attendance)
-                        }
-                        studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
-                    }
-
-                    FilenameFilter dateFolderFilter = new FilenameFilter() {
-                        public boolean accept(File dir, String name) {
-                            name = name.toLowerCase();
-                            return dir.isDirectory() && 3 == name.split("_").length;
-                        }
-                    };
-                    File[] dateFolders = new File(classroomDataDir).listFiles(dateFolderFilter);
-
-                    FilenameFilter imgFilter = new FilenameFilter() {
-                        public boolean accept(File dir, String name) {
-                            name = name.toLowerCase();
-                            return name.endsWith(".jpg");
-                        }
-                    };
-
-                    int folderNum;
-
                     //HE loop:
-                    for(int h = 0; h < 2; h++) {
+                    for(int h = 1; h < 2; h++) {
 
-                        int totalNumCorrectAttendance = 0;
+                        FilenameFilter svmModelFilter;
+
+                        if(h == 1) {
+                            svmModelFilter = new FilenameFilter() {
+                                public boolean accept(File dir, String name) {
+                                    //name = name.toLowerCase();
+                                    return name.startsWith("svmModel_" + testClassDetails[0]) && name.endsWith("withHE_.xml");
+                                }
+                            };
+                        } else {
+                            svmModelFilter = new FilenameFilter() {
+                                public boolean accept(File dir, String name) {
+                                    //name = name.toLowerCase();
+                                    return name.startsWith("svmModel_" + testClassDetails[0]) && name.endsWith("withoutHE_.xml");
+                                }
+                            };
+                        }
+
+                        Log.i(TAG, "Setting up recognition data collection variables for this class...");
+                        File[] svmModels = new File(researchModelDir).listFiles(svmModelFilter);
+
+                        SVM[] sfrs = new SVM[svmModels.length];
+                        String[] sfrKernelNames = new String[svmModels.length];
+                        float[] sfrCorrectCounts = new float[svmModels.length];
+                        float[] sfrCorrectCountsPerDate = new float[svmModels.length];
+                        float[] sfrCorrectAttendanceCounts = new float[svmModels.length];
+                        float[] sfrCorrectAttendanceCountsPerDate = new float[svmModels.length];
+                        float[] sfrAvgTimes = new float[svmModels.length];
+                        HashMap<Integer, Integer>[] attendanceRecord = new HashMap[svmModels.length]; //This ArrayList is parallel with the attendance ArrayList
+                        HashMap<Integer, Double>[] studentNumImages = new HashMap[svmModels.length];
+                        HashMap<Integer, Double>[] studentNumImagesCorrect = new HashMap[svmModels.length];
+
+
+                        FileStorage fs;
+                        if(h == 1) {
+                            fs = new FileStorage(researchModelDir + "/pca_" + testClassDetails[0] + "withHE_.xml", FileStorage.READ);
+                        } else {
+                            fs = new FileStorage(researchModelDir + "/pca_" + testClassDetails[0] + "withHE_.xml", FileStorage.READ);
+                        }
+                        PCA pca = new PCA();
+                        pca.read(fs.root());
+                        fs.release();
+
+                        Log.i(TAG, "Found " + svmModels.length + "svms.");
+                        Log.i(TAG, "Loading svm models for each classData...");
+                        for (int s = 0; s < svmModels.length; s++) {
+                            fs = new FileStorage(svmModels[s].getAbsolutePath(), FileStorage.READ);
+                            sfrs[s] = SVM.create();
+                            sfrs[s].read(fs.root());
+                            fs.release();
+                            sfrKernelNames[s] = svmModels[s].getName().split("_")[2];
+                            Log.i(TAG, "Loaded svm for " + sfrKernelNames[s]);
+                            attendanceRecord[s] = new HashMap<Integer, Integer>();
+                            studentNumImages[s] = new HashMap<Integer, Double>();
+                            studentNumImagesCorrect[s] = new HashMap<Integer, Double>();
+
+                            //Add nonface to student score list:
+                            studentNumImages[s].put(0, 0.0);
+                            studentNumImagesCorrect[s].put(0, 0.0);
+                        }
+
+                        Log.i(TAG, "Set up attendance records for each kernel, as well as the accuracy scores for each student...");
+                        BufferedReader br = new BufferedReader(new FileReader(researchDir + "/" + className + "_studentList.txt"));
+                        while ((line = br.readLine()) != null) {
+                            details = line.split(",");
+                            //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+                            for (int s = 0; s < svmModels.length; s++) {
+                                attendanceRecord[s].put(Integer.parseInt(details[0]), 0); //(id, attendance)
+                                studentNumImages[s].put(Integer.parseInt(details[0]), 0.0);
+                                studentNumImagesCorrect[s].put(Integer.parseInt(details[0]), 0.0);
+                            }
+                            studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+
+                        }
+                        //Add nonface:
+                        studentNumsAndNames.put(0, "none,non,face");
+
+
+                        Log.i(TAG, "Gather date folders for class data...");
+                        FilenameFilter dateFolderFilter = new FilenameFilter() {
+                            public boolean accept(File dir, String name) {
+                                name = name.toLowerCase();
+                                return dir.isDirectory() && 3 == name.split("_").length;
+                            }
+                        };
+                        File[] dateFolders = new File(classroomDataDir).listFiles(dateFolderFilter);
+
+                        FilenameFilter imgFilter = new FilenameFilter() {
+                            public boolean accept(File dir, String name) {
+                                name = name.toLowerCase();
+                                return name.endsWith(".jpg");
+                            }
+                        };
+
+                        int folderNum;
 
                         for (int s = 0; s < svmModels.length; s++) {
-                            sfrAccuracies[s] = 0;
+                            sfrAvgTimes[s] = 0;
+                            sfrCorrectCounts[s] = 0;
+                            sfrCorrectAttendanceCounts[s] = 0;
                         }
 
                         BufferedWriter resultsWriter;
                         if(h == 0) {
-                            testResultsDirHE = testResultsDir + "/Without HE";
-                            resultsWriter = new BufferedWriter(new FileWriter(testResultsHomeDir + "/recogResults" + "_" + testClassDetails[0] + "_Without HE.txt"));
+                            Log.i(TAG, "Without HE:");
+                            testResultsDirHE = testResultsDir + "/recogWithoutHE";
+                            resultsWriter = new BufferedWriter(new FileWriter(new File(testResultsHomeDir + "/recogResults_" + testClassDetails[0] + "_recogWithoutHE.txt")));
 
                         } else {
-                            testResultsDirHE = testResultsDir + "/With HE";
-                            resultsWriter = new BufferedWriter(new FileWriter(testResultsHomeDir + "/recogResults" + "_" + testClassDetails[0] + "_With HE.txt"));
+                            Log.i(TAG, "With HE:");
+                            testResultsDirHE = testResultsDir + "/recogWithHE";
+                            resultsWriter = new BufferedWriter(new FileWriter(new File(testResultsHomeDir + "/recogResults_" + testClassDetails[0] + "_recogWithHE.txt")));
                         }
 
-                        File folder = new File(testResultsDirHE);
-                        if (folder.exists()) {
-                            DirectoryDeleter.deleteDir(folder);
-                        }
-                        folder.mkdirs();
+
 
 
                         int numImagesPerClassData = 0;
 
+
+
+                        //for each date:
                         for (File dateFolder : dateFolders) {
                             folderNum = Integer.parseInt(dateFolder.getName().split("_")[0]);
                             if (folderNum < testStart || folderNum > testEnd) {
@@ -482,31 +537,32 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                             String dateTestResultsDir = testResultsDirHE + "/" + dateFolder.getName();
                             new File(dateTestResultsDir).mkdirs();
 
+                            Log.i(TAG, "Creating kernel result folders...");
                             String[] sfrDirs = new String[sfrKernelNames.length];
                             for (int s = 0; s < sfrKernelNames.length; s++) {
                                 sfrDirs[s] = dateTestResultsDir + "/" + sfrKernelNames[s];
                                 new File(sfrDirs[s]).mkdirs();
                             }
 
+                            Log.i(TAG, "Set correctCounts and correctAttendanceCounts per date to 0...");
                             for (int s = 0; s < svmModels.length; s++) {
-                                sfrAccuraciesPerDate[s] = 0;
                                 sfrCorrectCountsPerDate[s] = 0;
+                                sfrCorrectAttendanceCountsPerDate[s] = 0;
                             }
 
-                            File[] crops = dateFolder.listFiles(imgFilter);
-                            numImagesPerClassData += crops.length;
 
 
+                            Log.i(TAG, "Getting date and manualAttendanceRecord...");
                             date = dateFolder.getAbsolutePath().split("_")[1];
-                            String OLD_FORMAT = "MMddyyyy";
-                            String NEW_FORMAT = "yyyyMMdd";
+                            String OLD_FORMAT = "yyyyMMdd";
+                            String NEW_FORMAT = "MMddyyyy";
                             Log.i(TAG, "Date before parsing: " + date);
                             SimpleDateFormat sdf = new SimpleDateFormat(OLD_FORMAT);
                             Date d = sdf.parse(date);
                             sdf.applyPattern(NEW_FORMAT);
                             date = sdf.format(d);
                             Log.i(TAG, "Date after parsing: " + date);
-                            br = new BufferedReader(new FileReader(testRecordFilesDir + "/" + classNameInRecordFile + "_" + date));
+                            br = new BufferedReader(new FileReader(testRecordFilesDir + "/" + classNameInRecordFile + "_" + date + ".txt"));
                             while ((line = br.readLine()) != null) {
                                 details = line.split(",");
                                 //a line in an attendance record text file has the syntax: <id>,<studentNumber>,<lastname>,<firstname>,<attendance>
@@ -515,9 +571,21 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                                 }
                             }
 
+                            File[] crops = dateFolder.listFiles(imgFilter);
+                            numImagesPerClassData += crops.length;
+
+                            //Per crop:
+                            Log.i(TAG, "Processing " + crops.length + " crops...");
                             for (File c : crops) {
 
                                 correctLabel = Integer.parseInt(c.getName().split("_")[0]);
+
+                                Log.i(TAG, "correctLabel: " + correctLabel);
+
+
+
+                                timeStart = System.currentTimeMillis();
+
                                 mColorCrop = imread(c.getAbsolutePath());
                                 mGrayCrop = new Mat();
                                 cvtColor(mColorCrop, mGrayCrop, CV_BGR2GRAY);
@@ -529,60 +597,81 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                                 resize(mGrayCrop, mGrayCrop, dSize);
                                 mGrayCrop.reshape(1, 1).convertTo(mGrayCrop, CV_32FC1);
 
+                                timeEnd = System.currentTimeMillis();
+                                timeElapsed = timeEnd - timeStart;
+
+
                                 for (int s = 0; s < sfrs.length; s++) {
 
+                                    sfrAvgTimes[s] += timeElapsed;
+
+                                    studentNumImages[s].put(correctLabel, studentNumImages[s].get(correctLabel) + 1);
+
+                                    timeStart = System.currentTimeMillis();
                                     predictedLabel = (int) sfrs[s].predict(pca.project(mGrayCrop));
+                                    Log.i(TAG, sfrKernelNames[s] + ": " + predictedLabel + ", correctLabel: " + correctLabel);
                                     if(predictedLabel == correctLabel){
                                         sfrCorrectCountsPerDate[s]++;
                                         sfrCorrectCounts[s]++;
+                                        studentNumImagesCorrect[s].put(predictedLabel, studentNumImagesCorrect[s].get(predictedLabel) + 1);
                                     }
 
-                                    Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+
 
                                     if (attendanceRecord[s].containsKey(predictedLabel)) {
-                                        Log.i(TAG, "predictedLabel was found in the classlist.");
                                         if (0 == attendanceRecord[s].get(predictedLabel)) {
                                             attendanceRecord[s].put(predictedLabel, 1);
                                             Log.i(TAG, "predictedLabel attendance was marked.");
                                         }
 
                                         //Before saving the crop, check which secondaryID is still available:
+                                        String[] tempC;
                                         secondaryID = 0;
-                                        do {
-                                            temp = studentNumsAndNames.get(predictedLabel).split(",");
-                                            studentName = temp[1] + "," + temp[2];
-                                            f = new File(sfrDirs[s] + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
-                                            secondaryID++;
-                                        } while (f.exists());
-
+                                        if(predictedLabel == correctLabel){
+                                            do {
+                                                temp = studentNumsAndNames.get(predictedLabel).split(",");
+                                                studentName = predictedLabel + "_" + temp[1] + "," + temp[2];
+                                                f = new File(sfrDirs[s] + "/" +  studentName + "_" + secondaryID + ".jpg");
+                                                secondaryID++;
+                                            } while (f.exists());
+                                        } else {
+                                            do {
+                                                temp = studentNumsAndNames.get(predictedLabel).split(",");
+                                                tempC = studentNumsAndNames.get(correctLabel).split(",");
+                                                studentName = "wrong_" + predictedLabel + "_" + temp[1] + "," + temp[2] + "_correct:_" + correctLabel + "_" + tempC[1] + "," + tempC[2];
+                                                f = new File(sfrDirs[s] + "/" + studentName + "_" + secondaryID + ".jpg");
+                                                secondaryID++;
+                                            } while (f.exists());
+                                        }
                                         imwrite(f.getAbsolutePath(), mColorCrop);
 
                                         Log.i(TAG, "Crop saved.");
-                                    } else if (0 == predictedLabel) {
-                                        Log.i(TAG, "Non face found.");
-
-                                        //Before saving the crop, check which secondaryID is still available:
-                                        secondaryID = 0;
-                                        do {
-                                            f = new File(sfrDirs[s] + "/0_nonFace_" + secondaryID + ".jpg");
-                                            secondaryID++;
-                                        } while (f.exists());
-
-                                        imwrite(f.getAbsolutePath(), mColorCrop);
-
                                     }
+//                                    else if (0 == predictedLabel) {
+//
+//
+//                                        //Before saving the crop, check which secondaryID is still available:
+//                                        secondaryID = 0;
+//                                        do {
+//                                            f = new File(sfrDirs[s] + "/0_nonFace_" + secondaryID + ".jpg");
+//                                            secondaryID++;
+//                                        } while (f.exists());
+//
+//                                        imwrite(f.getAbsolutePath(), mColorCrop);
+//                                        Log.i(TAG, "Nonface crop saved.");
+//                                    }
+
+                                    timeEnd = System.currentTimeMillis();
+                                    sfrAvgTimes[s] += timeEnd - timeStart;
                                 }
+
 
                                 mColorCrop.deallocate();
                                 mGrayCrop.deallocate();
                             }
 
-                            //Write date folder accuracies:
-
-
-
+                            Log.i(TAG, "Writing date folder accuracies...");
                             int numStudentsInClass = correctAttendanceRecord.size();
-
                             resultsWriter.write(numImagesPerClassData + " crops tested\nKernel,Recognition Accuracy, Attendance Accuracy\n");
                             for(int s = 0; s < sfrs.length; s++){
                                 Iterator it = attendanceRecord[s].entrySet().iterator();
@@ -594,22 +683,77 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                                     if(record.getValue() == cRecord.getValue()){
                                         dateNumCorrectAttendance++;
                                     }
-                                    System.out.println("record: " + record.getValue() + ", cRecord: " + cRecord.getValue());
+                                    Log.i(TAG, "aRecord: " + record.getValue() + ", aCRecord: " + cRecord.getValue());
                                     attendanceRecord[s].put((Integer)record.getKey(), 0);
                                     //it.remove(); // avoids a ConcurrentModificationException
                                 }
                                 sfrCorrectAttendanceCounts[s] += dateNumCorrectAttendance;
 
-                                resultsWriter.write(sfrKernelNames[s] + ": " + (float) sfrCorrectCountsPerDate[s] / crops.length + "%, " + (float) dateNumCorrectAttendance / numStudentsInClass + " %\n");
+                                resultsWriter.write(sfrKernelNames[s] + ": " + (sfrCorrectCountsPerDate[s] / crops.length) * 100 + "%, " + (dateNumCorrectAttendance /(float) numStudentsInClass) * 100 + "%\n");
+
+//                                //Write attendance:
+//                                BufferedWriter bw = new BufferedWriter(new FileWriter(new File(dateTestResultsDir + "/" + classNameInRecordFile + "_" + date + "_" + sfrKernelNames[s] + ".txt")));
+//                                Set attendanceSet = attendanceRecord[s].entrySet();
+//                                Set nameSet = studentNumsAndNames.entrySet();
+//                                Iterator ai = attendanceSet.iterator();
+//                                Iterator ni = nameSet.iterator();
+//                                Entry ae;
+//                                Entry ne;
+//                                Log.i(TAG, "Recog: Writing and saving attendance record...");
+//                                // Display elements
+//                                while (ai.hasNext()) {
+//                                    ae = (Entry) ai.next();
+//                                    ne = (Entry) ni.next();
+//                                    bw.write(ae.getKey() + "," + ne.getValue() + "," + ae.getValue() + "\n");
+//                                }
+//                                bw.write("\nAccuracy = " + (dateNumCorrectAttendance /(float) numStudentsInClass) * 100 + "%");
+//
+//                                bw.flush();
+//                                bw.close();
                             }
+
+                            resultsWriter.write("\n\n");
                             resultsWriter.flush();
 
                         }
-                        resultsWriter.write("Total");
+
+                        Log.i(TAG, "Writing classData accuracies and average times...");
+
+
+                        //Per-student accuracies:
+                        numStudents = studentNumsAndNames.size();
+                        String[] accPerStudent = new String[numStudents];
+                        resultsWriter.write("Student accuracies per kernel:\n\n");
+                        for(int s = 0; s < svmModels.length; s++) {
+                            Iterator its = studentNumImages[s].entrySet().iterator();
+                            Iterator itsc = studentNumImagesCorrect[s].entrySet().iterator();
+                            for (int t = 0; t < accPerStudent.length; t++) {
+                                Entry sRecord = (Entry) its.next();
+                                Entry scRecord = (Entry) itsc.next();
+                                details = studentNumsAndNames.get(sRecord.getKey()).split(",");
+                                Log.i(TAG, details[1] + ", " + details[2] + " correct: " + (Double) scRecord.getValue() + ", total: " + (Double) sRecord.getValue() + ", quotient: " + (Double) scRecord.getValue() / (Double) sRecord.getValue());
+                                accPerStudent[t] = (((Double) scRecord.getValue() / (Double) sRecord.getValue()) * 100) + "% - " + details[1] + ", " + details[2];
+
+                                //Reset:
+                                studentNumImages[s].put((Integer) sRecord.getKey(), 0.0);
+                                studentNumImagesCorrect[s].put((Integer) sRecord.getKey(), 0.0);
+                            }
+                            Arrays.sort(accPerStudent);
+
+                            resultsWriter.write("\n" + sfrKernelNames[s] + ":\n");
+                            for (String str : accPerStudent) {
+                                resultsWriter.write(str + "\n");
+                            }
+                        }
+
+                        resultsWriter.write("\nTotal face recognition and attendance accuracies:\nKernel,Face Recognition,Attendance,Average Time(sec)\n");
+                        for(int s = 0; s < sfrKernelNames.length; s++) {
+                            resultsWriter.write(sfrKernelNames[s] + ": " + (float) (sfrCorrectCounts[s] / numImagesPerClassData) * 100 + "%, " + (float) (sfrCorrectAttendanceCounts[s] / (dateFolders.length * numStudents)) * 100 + "%, " + (float) (sfrAvgTimes[s] / (numImagesPerClassData * 1000)) + "\n");
+                        }
                         resultsWriter.flush();
                         resultsWriter.close();
                     }
-                    Log.i(TAG, "CreateDataSet: Face Recog Initialization complete.");
+                    Log.i(TAG, "Test Face Recog complete.");
 
 
                 }
