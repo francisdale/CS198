@@ -517,161 +517,200 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
         } else if(usageType == TEST_USAGE){
 
-            File tempF = new File(researchModelDir);
-            if (!tempF.exists()) {
+            try {
+                File tempF = new File(researchModelDir);
+                if (tempF.exists()) {
+                    DirectoryDeleter.deleteDir(tempF);
+                }
                 tempF.mkdirs();
-            }
 
-            //String[] classDataNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
-            String[] classDataNames = {"CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
-            for(int h = 0; h < 2; h++){
-                for(int j = 0; j < classDataNames.length; j++) {
-                    Log.i(TAG, "Handling class " + classDataNames[j]);
-
-                    File trainingCropsFolder = new File("sdcard/PresentData/researchMode/" + classDataNames[j] + "/trainingCrops");
-
-                    FilenameFilter imgFilter = new FilenameFilter() {
-                        public boolean accept(File dir, String name) {
-                            name = name.toLowerCase();
-                            return name.endsWith(".jpg");
-                        }
-                    };
-
-                    File[] trainingCrops = trainingCropsFolder.listFiles(imgFilter);
+                BufferedWriter timeWriter = new BufferedWriter(new FileWriter(researchModelDir + "/recogTrainingTimes.txt"));
 
 
-                    if (trainingCrops.length == 0) {
-                        return null;
+                String[] classDataNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
+                //String[] classDataNames = {"CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
+
+                int numPolyDegrees = 4;
+                float[] times = new float[numPolyDegrees + 1];
+
+                for(int h = 0; h < 2; h++){
+
+                    if(h == 1) {
+                        timeWriter.write("Recog with HE:-------------------------------------\n\n");
+                    } else {
+                        timeWriter.write("Recog without HE:-------------------------------------\n\n");
                     }
 
-                    int numTotalCrops = trainingCrops.length;
+                    for(int j = 0; j < classDataNames.length; j++) {
+                        Log.i(TAG, "Handling class " + classDataNames[j]);
 
-                    Log.i(TAG, "numTotalCrops: " + numTotalCrops);
+                        timeStart = System.currentTimeMillis();
+                        File trainingCropsFolder = new File("sdcard/PresentData/researchMode/" + classDataNames[j] + "/trainingCrops");
 
-                    MatVector images = new MatVector(numTotalCrops);
-                    Mat mColor;
-                    Mat mGray;
-                    Mat labels = new Mat(numTotalCrops, 1, CV_32SC1);
-                    IntBuffer labelsBuf = labels.getIntBuffer();
-                    int label;
-                    String[] nameDetails;
-                    File f;
-                    int counter = 0;
+                        FilenameFilter imgFilter = new FilenameFilter() {
+                            public boolean accept(File dir, String name) {
+                                name = name.toLowerCase();
+                                return name.endsWith(".jpg");
+                            }
+                        };
 
-                    //For SVM:
-                    Mat trainingMat = new Mat();
+                        File[] trainingCrops = trainingCropsFolder.listFiles(imgFilter);
 
-                    for (File c : trainingCrops) {
-                        mColor = imread(c.getAbsolutePath());
-                        mGray = new Mat();
-                        cvtColor(mColor, mGray, CV_BGR2GRAY);
-                        mColor.deallocate();
 
-                        mGray = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
-                        if(h == 1) {
-                            equalizeHist(mGray, mGray);
+                        if (trainingCrops.length == 0) {
+                            return null;
                         }
-                        //fastNlMeansDenoising(mGray,mGray);
-                        resize(mGray, mGray, dSize);
 
-                        nameDetails = c.getName().split("_");
-                        label = Integer.parseInt(nameDetails[0]);
+                        int numTotalCrops = trainingCrops.length;
 
-                        labelsBuf.put(counter, label);
-                        images.put(counter, mGray);
+                        Log.i(TAG, "numTotalCrops: " + numTotalCrops);
+
+                        MatVector images = new MatVector(numTotalCrops);
+                        Mat mColor;
+                        Mat mGray;
+                        Mat labels = new Mat(numTotalCrops, 1, CV_32SC1);
+                        IntBuffer labelsBuf = labels.getIntBuffer();
+                        int label;
+                        String[] nameDetails;
+                        File f;
+                        int counter = 0;
 
                         //For SVM:
-                        mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
-                        trainingMat.push_back(mGray);
+                        Mat trainingMat = new Mat();
 
-                        mGray.deallocate();
-                        counter++;
-                        //Log.i(TAG, "trainedCrops " + counter);
+                        for (File c : trainingCrops) {
+                            mColor = imread(c.getAbsolutePath());
+                            mGray = new Mat();
+                            cvtColor(mColor, mGray, CV_BGR2GRAY);
+                            mColor.deallocate();
 
-                    }
+                            mGray = imread(c.getAbsolutePath(), CV_LOAD_IMAGE_GRAYSCALE);
+                            if(h == 1) {
+                                equalizeHist(mGray, mGray);
+                            }
+                            //fastNlMeansDenoising(mGray,mGray);
+                            resize(mGray, mGray, dSize);
 
+                            nameDetails = c.getName().split("_");
+                            label = Integer.parseInt(nameDetails[0]);
 
-                    Log.i(TAG, "Number of images loaded: " + images.size());
+                            labelsBuf.put(counter, label);
+                            images.put(counter, mGray);
 
-                    int numTrainingImages = (int) images.size();
+                            //For SVM:
+                            mGray.reshape(1, 1).convertTo(mGray, CV_32FC1);
+                            trainingMat.push_back(mGray);
 
-                    //For PCA+SVM recognition:
-                    trainingMat.convertTo(trainingMat, CV_32FC1);
-                    Mat data = new Mat();
-                    Mat projectedMat;
-                    Mat temp;
+                            mGray.deallocate();
+                            counter++;
+                            //Log.i(TAG, "trainedCrops " + counter);
 
-                    PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
-
-                    for (int i = 0; i < numTrainingImages; i++) {
-                        projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
-                        //Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
-                        pca.project(trainingMat.row(i), projectedMat);
-                        temp = pca.project(trainingMat.row(i));
-
-                        //Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
-                        data.push_back(projectedMat);
-                        projectedMat.deallocate();
-                        temp.deallocate();
-                    }
+                        }
 
 
-                    FileStorage fs;
-                    Log.i(TAG, "Saving pca to pca.xml...");
-                    if(h == 1) {
-                        fs = new FileStorage(researchModelDir + "/pca_" + classDataNames[j] + "_withHE_.xml", opencv_core.FileStorage.WRITE);
-                    } else {
-                        fs = new FileStorage(researchModelDir + "/pca_" + classDataNames[j] + "_withoutHE_.xml", opencv_core.FileStorage.WRITE);
-                    }
-                    pca.write(fs);
-                    fs.release();
-                    pca.deallocate();
+                        Log.i(TAG, "Number of images loaded: " + images.size());
 
-                    data.convertTo(data, CV_32FC1);
-                    TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
-                    data.deallocate();
+                        int numTrainingImages = (int) images.size();
 
-                    SVM svm;
+                        //For PCA+SVM recognition:
+                        trainingMat.convertTo(trainingMat, CV_32FC1);
+                        Mat data = new Mat();
+                        Mat projectedMat;
+                        Mat temp;
 
-                    Log.i(TAG, "Training linear SVM...");
-                    svm = SVM.create();
-                    svm.setType(SVM.C_SVC);
-                    svm.setKernel(SVM.LINEAR);
-                    svm.train(td);
+                        PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
 
-                    if(h == 1) {
-                        fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_linear_withHE_.xml", FileStorage.WRITE);
-                    } else {
-                        fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_linear_withoutHE_.xml", FileStorage.WRITE);
-                    }
-                    svm.write(fs);
-                    fs.release();
-                    Log.i(TAG, "Saved svmLinear");
+                        for (int i = 0; i < numTrainingImages; i++) {
+                            projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
+                            //Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
+                            pca.project(trainingMat.row(i), projectedMat);
+                            temp = pca.project(trainingMat.row(i));
 
-                    int numPolyDegrees = 5;
+                            //Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
+                            data.push_back(projectedMat);
+                            projectedMat.deallocate();
+                            temp.deallocate();
+                        }
 
-                    for (int i = 2; i <= numPolyDegrees; i++) {
-                        Log.i(TAG, "Training poly " + i + " SVM...");
+
+                        FileStorage fs;
+                        Log.i(TAG, "Saving pca to pca.xml...");
+                        if(h == 1) {
+                            fs = new FileStorage(researchModelDir + "/pca_" + classDataNames[j] + "_withHE_.xml", opencv_core.FileStorage.WRITE);
+                        } else {
+                            fs = new FileStorage(researchModelDir + "/pca_" + classDataNames[j] + "_withoutHE_.xml", opencv_core.FileStorage.WRITE);
+                        }
+                        pca.write(fs);
+                        fs.release();
+                        pca.deallocate();
+
+                        data.convertTo(data, CV_32FC1);
+                        TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
+                        data.deallocate();
+
+                        SVM svm;
+
+                        timeEnd = System.currentTimeMillis();
+                        timeElapsed = timeEnd - timeStart;
+
+                        for(int s = 0; s < times.length; s++){
+                            times[s] = timeElapsed;
+                        }
+
+                        timeWriter.write(classDataNames[j] + "---------\n\nNumber of training crops: " + numTotalCrops + "\nTraining times in seconds:\n\n");
+
+                        timeStart = System.currentTimeMillis();
+
+                        Log.i(TAG, "Training linear SVM...");
                         svm = SVM.create();
                         svm.setType(SVM.C_SVC);
-                        svm.setKernel(SVM.POLY);
-                        svm.setDegree((double) i);
+                        svm.setKernel(SVM.LINEAR);
                         svm.train(td);
-                        Log.i(TAG, "Trained svmPoly " + i + ". Saving...");
 
                         if(h == 1) {
-                            fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_polyDegree " + i + "_withHE_.xml", FileStorage.WRITE);
+                            fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_linear_withHE_.xml", FileStorage.WRITE);
                         } else {
-                            fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_polyDegree " + i + "_withoutHE_.xml", FileStorage.WRITE);
+                            fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_linear_withoutHE_.xml", FileStorage.WRITE);
                         }
                         svm.write(fs);
                         fs.release();
-                        Log.i(TAG, "Saved svmPoly " + i);
-                    }
+                        Log.i(TAG, "Saved svmLinear");
 
-                    td.deallocate();
+                        timeEnd = System.currentTimeMillis();
+                        int s = 0;
+                        times[s] += timeEnd - timeStart;
+                        timeWriter.write("Linear: " + times[s]/1000 + "\n");
+                        s++;
 
-                    try {
+                        for (int i = 2; i <= numPolyDegrees; i++, s++) {
+                            timeStart = System.currentTimeMillis();
+                            Log.i(TAG, "Training poly " + i + " SVM...");
+                            svm = SVM.create();
+                            svm.setType(SVM.C_SVC);
+                            svm.setKernel(SVM.POLY);
+                            svm.setDegree((double) i);
+                            svm.train(td);
+                            Log.i(TAG, "Trained svmPoly " + i + ". Saving...");
+
+                            if(h == 1) {
+                                fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_polyDegree " + i + "_withHE_.xml", FileStorage.WRITE);
+                            } else {
+                                fs = new FileStorage(researchModelDir + "/svmModel_" + classDataNames[j] + "_polyDegree " + i + "_withoutHE_.xml", FileStorage.WRITE);
+                            }
+                            svm.write(fs);
+                            fs.release();
+                            Log.i(TAG, "Saved svmPoly " + i);
+                            timeEnd = System.currentTimeMillis();
+                            times[s] += timeEnd - timeStart;
+                            timeWriter.write("Poly " + i + ": " + times[s]/1000 + "\n");
+                        }
+
+                        td.deallocate();
+
+                        timeWriter.write("\n");
+                        timeWriter.flush();
+
+
                         BufferedWriter bw = new BufferedWriter(new FileWriter(researchModelDir + "/svmParams.txt"));
                         bw.write("Type: " + svm.getType() + "\nGamma: " + svm.getGamma() + "\nC: " + svm.getC() + "\nP: " + svm.getP() + "\ncoef0: " + svm.getCoef0() + "\n\n");
                         bw.write("\nType legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
@@ -679,11 +718,15 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
                         bw.flush();
                         bw.close();
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
 
+                    }
+
+
+                }
+                timeWriter.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             Log.i(TAG, "Face Recog Train successful");
         }
