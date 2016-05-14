@@ -95,12 +95,12 @@ public class CustomCamera extends AppCompatActivity implements SurfaceHolder.Cal
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
         td = new TaskData();
-        fd = new FaceDetectTask(td, this, taskUsage);
+        fd = new FaceDetectTask(td, this, detectUsage);
 
-        if (taskUsage == FaceRecogTask.ATTENDANCE_USAGE) {
+        if (detectUsage == FaceRecogTask.ATTENDANCE_USAGE) {
             className = intent.getStringExtra("classNameString");
             status.setText(className);
-            fr = new FaceRecogTask(td, this, className, taskUsage);
+            fr = new FaceRecogTask(td, this, className, detectUsage);
         }
 
         capture.setOnClickListener(new View.OnClickListener() {

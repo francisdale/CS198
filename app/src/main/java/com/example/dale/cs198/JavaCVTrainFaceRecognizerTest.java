@@ -56,38 +56,42 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 
     public void trainAlgorithm() {
         //for AT&T face database:
-        MatVector images = new MatVector(numTrainingImages);
-        Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
-        IntBuffer labelsBuf = labels.getIntBuffer();
-        int counter = 0;
-        Mat img;
 
 
-
-        //For SVM:
-        Mat trainingMat = new Mat();
 
         (new File(modelDir)).mkdirs();
+        for(int h = 0; h < 2; h++) {
+            MatVector images = new MatVector(numTrainingImages);
+            Mat labels = new Mat(numTrainingImages, 1, CV_32SC1);
+            IntBuffer labelsBuf = labels.getIntBuffer();
+            int counter = 0;
+            Mat img;
+            //For SVM:
+            Mat trainingMat = new Mat();
 
-        //Image resolution92x112
-        for(int s = 1; s <= 40; s++){
-            for(int i = 1; i <= 10; i += 2, counter++){
-                img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
-                resize(img, img, dSize);
+           Log.i(TAG, "Gathering ATT faces");
+            //Image resolution92x112
+            for (int s = 1; s <= 40; s++) {
+                for (int i = 1; i <= 10; i += 2, counter++) {
+                    img = imread(trainingSetDir + "/s" + s + "/" + i + ".pgm", CV_LOAD_IMAGE_GRAYSCALE);
+                    resize(img, img, dSize);
 
-                equalizeHist(img, img);
+                    Log.i(TAG, "Obtained img " + trainingSetDir + "/s" + s + "/" + i + ".pgm");
+                    if(h == 1) {
+                        equalizeHist(img, img);
+                    }
 
-                images.put(counter, img);
-                labelsBuf.put(counter, s);
+                    images.put(counter, img);
+                    labelsBuf.put(counter, s);
 
-                img.reshape(1, 1).convertTo(img, CV_32FC1);
-                trainingMat.push_back(img);
+                    img.reshape(1, 1).convertTo(img, CV_32FC1);
+                    trainingMat.push_back(img);
 
-                img.deallocate();
+                    img.deallocate();
 
-                Log.i(TAG, "s" + s + " i" + i);
+                    Log.i(TAG, "s" + s + " i" + i);
+                }
             }
-        }
 
         /*//Form kernelMat:
 
@@ -195,39 +199,39 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         }
         */
 
-        //For training SVM:
-        trainingMat.convertTo(trainingMat, CV_32FC1);
-        Log.i(TAG, "Number of images loaded: " + images.size());
+            //For training SVM:
+            trainingMat.convertTo(trainingMat, CV_32FC1);
+            Log.i(TAG, "Number of images loaded: " + images.size());
 
-        //For training SVM:
-        Mat data = new Mat();
-        Mat projectedMat;
-        Mat temp;
+            //For training SVM:
+            Mat data = new Mat();
+            Mat projectedMat;
+            Mat temp;
 
         /*FileStorage pfs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
         PCA pca = new PCA();
         pca.read(pfs.root());
         pfs.release();*/
-        PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
-        int numTrainingMatRows = trainingMat.rows();
+            PCA pca = new PCA(trainingMat, new Mat(), CV_PCA_DATA_AS_ROW, numPrincipalComponents);
+            int numTrainingMatRows = trainingMat.rows();
 
-        timeStart = System.currentTimeMillis();
-        for(int i = 0; i < numTrainingMatRows; i++) {
-            projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
-            Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
-            pca.project(trainingMat.row(i), projectedMat);
-            temp = pca.project(trainingMat.row(i));
+            timeStart = System.currentTimeMillis();
+            for (int i = 0; i < numTrainingMatRows; i++) {
+                projectedMat = new Mat(1, numPrincipalComponents, CV_32FC1);
+                //Log.i(TAG, "Loop " + i + " - data now has num of rows, cols :" + data.rows() + ", " + data.cols());
+                pca.project(trainingMat.row(i), projectedMat);
+                temp = pca.project(trainingMat.row(i));
 
-            Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
-            Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
-            data.push_back(projectedMat);
-        }
-        timeEnd = System.currentTimeMillis();
-        timeElapsedSVM = timeEnd - timeStart;
+//                Log.i(TAG, "Num of rows and cols of projection: " + temp.rows() + ", " + temp.cols());
+//                Log.i(TAG, "Num of rows and cols of projectedMat: " + projectedMat.rows() + ", " + projectedMat.cols());
+                data.push_back(projectedMat);
+            }
+            timeEnd = System.currentTimeMillis();
+            timeElapsedSVM = timeEnd - timeStart;
 
-        Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
-        Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
-        Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
+//            Log.i(TAG, "orig mean rows = " + pca.mean().rows() + ", cols = " + pca.mean().cols());
+//            Log.i(TAG, "orig eigenvectors rows = " + pca.eigenvectors().rows() + ", cols = " + pca.eigenvectors().cols());
+//            Log.i(TAG, "orig eigenvalues rows = " + pca.eigenvalues().rows() + ", cols = " + pca.eigenvalues().cols());
 
 //        FileStorage fs = new FileStorage(modelDir + "/pca.xml", FileStorage.WRITE);
 //        pca.write(fs);
@@ -321,37 +325,34 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         Log.i(TAG, "PCA2 eValues rows: " + pcaEValues.rows() + ", cols = " + pcaEValues.cols() + ", at (0,0): " + fpe.get(0,0));*/
 
 
+            File folder = new File(modelDir);
+            if (!folder.exists()) {
+                Log.i(TAG, modelDir + " does not exist. Creating...");
+                folder.mkdir();
+            }
 
 
 
-        File folder = new File(modelDir);
-        if(!folder.exists()){
-            Log.i(TAG, modelDir + " does not exist. Creating...");
-            folder.mkdir();
-        }
 
 
-        TextView numImg = (TextView) findViewById(R.id.numImg);
-        TextView notification = (TextView) findViewById(R.id.trainingNotification);
-        TextView trainTimesTextView = (TextView) findViewById(R.id.trainTimesTextView);
+            FaceRecognizer faceRecognizer;
 
 
-        FaceRecognizer faceRecognizer;
+            //Eigen Recog:
+            faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
+            timeStart = System.currentTimeMillis();
+            Log.i(TAG, "Training PCA+KNN...");
+            faceRecognizer.train(images, labels);
+            timeEnd = System.currentTimeMillis();
+            timeElapsed = timeEnd - timeStart;
+            //trainTimesTextView.setText(trainTimesTextView.getText() + "PCA+KNN : " + ((float) timeElapsed / 1000) + "s\n");
+            if(h == 1) {
+                faceRecognizer.save(modelDir + "/eigenModel_withHE_.xml");
+            } else {
+                faceRecognizer.save(modelDir + "/eigenModel_withoutHE_.xml");
+            }
 
-
-
-        //Eigen Recog:
-        faceRecognizer = createEigenFaceRecognizer(numPrincipalComponents, threshold);
-        timeStart = System.currentTimeMillis();
-        Log.i(TAG, "Training PCA+KNN...");
-        faceRecognizer.train(images, labels);
-        timeEnd = System.currentTimeMillis();
-        timeElapsed = timeEnd - timeStart;
-        trainTimesTextView.setText(trainTimesTextView.getText() + "PCA+KNN : " + ((float) timeElapsed / 1000) + "s\n");
-        faceRecognizer.save(modelDir + "/eigenModel.xml");
-
-
-        //Eigen Recog 20 times:
+            //Eigen Recog 20 times:
         /*
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(modelDir + "/eigenTrainingTimes.txt"));
@@ -402,7 +403,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         faceRecognizer.save(modelDir + "/lbphModel.xml");
         */
 
-        //SVM Recog:
+            //SVM Recog:
 
 //        SVM svm = SVM.create();
 //        svm.setType(SVM.C_SVC);
@@ -426,58 +427,78 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
 //        trainTimesTextView.setText(trainTimesTextView.getText() + "Kernel legend:\nLINEAR: " + SVM.LINEAR + "\nPOLY: " + SVM.POLY + "\nRBF: " + SVM.RBF + "\nSIGMOID: " + SVM.SIGMOID + "\nCHI2: " + SVM.CHI2 + "\nINTER: " + SVM.INTER + "\n\n");
 //        trainTimesTextView.setText(trainTimesTextView.getText() + "Type legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
 
-        //Six-kernel SVM training:
+            //Six-kernel SVM training:
 
-        FileStorage fs = new FileStorage(modelDir + "/pca_att.xml", FileStorage.WRITE);
-        pca.write(fs);
-        fs.release();
+            FileStorage fs;
+            if(h == 1) {
+                fs = new FileStorage(modelDir + "/pca_att_withHE_.xml", FileStorage.WRITE);
+            } else {
+                fs = new FileStorage(modelDir + "/pca_att_withoutHE_.xml", FileStorage.WRITE);
+            }
 
-        String researchModelDir = "sdcard/PresentData/researchMode/recognizerModels";
+            pca.write(fs);
+            fs.release();
 
-        TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
-        SVM svm;
+            String researchModelDir = "sdcard/PresentData/researchMode/recognizerModels";
 
-        Log.i(TAG, "Training linear SVM...");
-        svm = SVM.create();
-        svm.setType(SVM.C_SVC);
-        svm.setKernel(SVM.LINEAR);
-        svm.train(td);
+            TrainData td = TrainData.create(data, ROW_SAMPLE, labels);
+            SVM svm;
 
-        fs = new FileStorage(researchModelDir + "/svmModel_att_linear_.xml", FileStorage.WRITE);
-        svm.write(fs);
-        fs.release();
-
-        int numPolyDegrees = 5;
-
-        for (int i = 2; i <= numPolyDegrees; i++) {
-            Log.i(TAG, "Training poly " + i + " SVM...");
+            Log.i(TAG, "Training linear SVM...");
             svm = SVM.create();
             svm.setType(SVM.C_SVC);
-            svm.setKernel(SVM.POLY);
-            svm.setDegree((double) i);
+            svm.setKernel(SVM.LINEAR);
             svm.train(td);
 
-            fs = new FileStorage(researchModelDir + "/svmModel_att_polyDegree " + i + "_.xml", FileStorage.WRITE);
+            if(h == 1) {
+                fs = new FileStorage(researchModelDir + "/svmModel_att_linear_withHE_.xml", FileStorage.WRITE);
+            } else {
+                fs = new FileStorage(researchModelDir + "/svmModel_att_linear_withoutHE_.xml", FileStorage.WRITE);
+            }
             svm.write(fs);
             fs.release();
-        }
 
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(researchModelDir + "/svmParams.txt"));
-            bw.write("Type: " + svm.getType() + "\nGamma: " + svm.getGamma() + "\nC: " + svm.getC() + "\nP: " + svm.getP() + "\ncoef0: " + svm.getCoef0() + "\n\n");
-            bw.write("\nType legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
+            int numPolyDegrees = 4;
 
-            bw.flush();
-            bw.close();
+            for (int i = 2; i <= numPolyDegrees; i++) {
+                Log.i(TAG, "Training poly " + i + " SVM...");
+                svm = SVM.create();
+                svm.setType(SVM.C_SVC);
+                svm.setKernel(SVM.POLY);
+                svm.setDegree((double) i);
+                svm.train(td);
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                if(h == 1) {
+                    fs = new FileStorage(researchModelDir + "/svmModel_att_polyDegree " + i + "_withHE_.xml", FileStorage.WRITE);
+                } else {
+                    fs = new FileStorage(researchModelDir + "/svmModel_att_polyDegree " + i + "_withoutHE_.xml", FileStorage.WRITE);
+                }
+                svm.write(fs);
+                fs.release();
+            }
+
+
+            try {
+                BufferedWriter bw = new BufferedWriter(new FileWriter(researchModelDir + "/svmParams.txt"));
+                bw.write("Type: " + svm.getType() + "\nGamma: " + svm.getGamma() + "\nC: " + svm.getC() + "\nP: " + svm.getP() + "\ncoef0: " + svm.getCoef0() + "\n\n");
+                bw.write("\nType legend:\nC_SVC: " + SVM.C_SVC + "\nNU_SVC: " + SVM.NU_SVC + "\nONE_CLASS: " + SVM.ONE_CLASS + "\nEPS_SVR: " + SVM.EPS_SVR + "\nNU_SVR: " + SVM.NU_SVR + "\n\n");
+
+                bw.flush();
+                bw.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Log.i(TAG, "One h loop done");
         }
 
 //        fs = new FileStorage(modelDir + "/svmModel.xml", FileStorage.WRITE);
 //        svm.write(fs);
 //        fs.release();
 
+        TextView numImg = (TextView) findViewById(R.id.numImg);
+        TextView notification = (TextView) findViewById(R.id.trainingNotification);
+        TextView trainTimesTextView = (TextView) findViewById(R.id.trainTimesTextView);
         notification.setText("Training complete.\nThreshold used = " + threshold);
 
     }

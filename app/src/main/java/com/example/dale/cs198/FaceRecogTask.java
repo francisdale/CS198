@@ -348,10 +348,12 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
             } else if(usageType == TEST_USAGE){
 
-                //String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20HE,11,19", "CS 133 Classroom Data Haar20HE,9,14", "CS 197 Classroom Data Haar20,11,19", "CS 133 Classroom Data Haar20,9,14", "CS 197 Classroom Data HaarHE,11,19", "CS 133 Classroom Data HaarHE,9,14", "CS 197 Classroom Data Haar,11,19", "CS 133 Classroom Data Haar,9,14"};
+                String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20HE,11,19", "CS 133 Classroom Data Haar20HE,9,14", "CS 197 Classroom Data Haar20,11,19", "CS 133 Classroom Data Haar20,9,14", "CS 197 Classroom Data HaarHE,11,19", "CS 133 Classroom Data HaarHE,9,14", "CS 197 Classroom Data Haar,11,19", "CS 133 Classroom Data Haar,9,14"};
                 //String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20HE,11,19", "CS 133 Classroom Data Haar20HE,9,14"};
                 //String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar20,11,19", "CS 133 Classroom Data Haar20,9,14"};
-                String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data HaarHE,11,19", "CS 133 Classroom Data HaarHE,9,14"};
+                //String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data HaarHE,11,19", "CS 133 Classroom Data HaarHE,9,14"};
+                //String[] testClassNamesAndTestingDataSplits = {"CS 197 Classroom Data Haar,11,19"};
+                //String[] testClassNamesAndTestingDataSplits = {"CS 133 Classroom Data Haar,9,14"};
                 String researchDir = "sdcard/PresentData/researchMode";
                 String[] details;
                 String className;
@@ -413,14 +415,14 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                             svmModelFilter = new FilenameFilter() {
                                 public boolean accept(File dir, String name) {
                                     //name = name.toLowerCase();
-                                    return name.startsWith("svmModel_" + testClassDetails[0]) && name.endsWith("withHE_.xml");
+                                    return name.startsWith("svmModel_" + testClassDetails[0] + "_") && name.endsWith("_withHE_.xml");
                                 }
                             };
                         } else {
                             svmModelFilter = new FilenameFilter() {
                                 public boolean accept(File dir, String name) {
                                     //name = name.toLowerCase();
-                                    return name.startsWith("svmModel_" + testClassDetails[0]) && name.endsWith("withoutHE_.xml");
+                                    return name.startsWith("svmModel_" + testClassDetails[0] + "_") && name.endsWith("_withoutHE_.xml");
                                 }
                             };
                         }
@@ -629,55 +631,56 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                                             attendanceRecord[s].put(predictedLabel, 1);
                                             Log.i(TAG, "predictedLabel attendance was marked.");
                                         }
+//
+//                                        //Before saving the crop, check which secondaryID is still available:
+//                                        String[] tempC;
+//                                        secondaryID = 0;
+//                                        if (predictedLabel == correctLabel) {
+//                                            Log.i(TAG, "Correct face");
+//                                            do {
+//                                                temp = studentNumsAndNames.get(predictedLabel).split(",");
+//                                                studentName = predictedLabel + "_" + temp[1] + "," + temp[2];
+//                                                f = new File(sfrDirs[s] + "/" + studentName + "_" + secondaryID + ".jpg");
+//                                                secondaryID++;
+//                                            } while (f.exists());
+//                                        } else {
+//                                            Log.i(TAG, "Wrong face");
+//                                            do {
+//                                                temp = studentNumsAndNames.get(predictedLabel).split(",");
+//                                                tempC = studentNumsAndNames.get(correctLabel).split(",");
+//                                                studentName = "wrong_" + predictedLabel + "_" + temp[1] + "," + temp[2];
+//                                                //studentName = "wrong_" + predictedLabel + "_" + temp[1] + "," + temp[2] + "_correct:_" + correctLabel + "_" + tempC[1] + "," + tempC[2];
+//                                                f = new File(sfrDirs[s] + "/" + studentName + "_" + secondaryID + ".jpg");
+//                                                secondaryID++;
+//                                            } while (f.exists());
+//                                        }
+//                                        imwrite(f.getAbsolutePath(), mColorCrop);
+//                                        Log.i(TAG, "Saved " + f.getAbsolutePath());
+//
+//                                        Log.i(TAG, "Crop saved.");
 
-                                        //Before saving the crop, check which secondaryID is still available:
-                                        String[] tempC;
-                                        secondaryID = 0;
-                                        if (predictedLabel == correctLabel) {
-                                            Log.i(TAG, "Correct face");
-                                            do {
-                                                temp = studentNumsAndNames.get(predictedLabel).split(",");
-                                                studentName = predictedLabel + "_" + temp[1] + "," + temp[2];
-                                                f = new File(sfrDirs[s] + "/" + studentName + "_" + secondaryID + ".jpg");
-                                                secondaryID++;
-                                            } while (f.exists());
-                                        } else {
-                                            Log.i(TAG, "Wrong face");
-                                            do {
-                                                temp = studentNumsAndNames.get(predictedLabel).split(",");
-                                                tempC = studentNumsAndNames.get(correctLabel).split(",");
-                                                studentName = "wrong_" + predictedLabel + "_" + temp[1] + "," + temp[2];
-                                                //studentName = "wrong_" + predictedLabel + "_" + temp[1] + "," + temp[2] + "_correct:_" + correctLabel + "_" + tempC[1] + "," + tempC[2];
-                                                f = new File(sfrDirs[s] + "/" + studentName + "_" + secondaryID + ".jpg");
-                                                secondaryID++;
-                                            } while (f.exists());
-                                        }
-                                        imwrite(f.getAbsolutePath(), mColorCrop);
-                                        Log.i(TAG, "Saved " + f.getAbsolutePath());
-
-                                        Log.i(TAG, "Crop saved.");
-
-                                } else if (0 == predictedLabel) {
-
-                                    //Before saving the crop, check which secondaryID is still available:
-                                    secondaryID = 0;
-
-                                    if(predictedLabel == correctLabel) {
-                                        do {
-                                            f = new File(sfrDirs[s] + "/0_nonFace_" + secondaryID + ".jpg");
-                                            secondaryID++;
-                                        } while (f.exists());
-                                    } else {
-                                        do {
-                                            f = new File(sfrDirs[s] + "/wrong_0_nonFace_" + secondaryID + ".jpg");
-                                            //f = new File(sfrDirs[s] + "/wrong_0_nonFace_correct:_" + correctLabel + "_" + secondaryID + ".jpg");
-                                            secondaryID++;
-                                        } while (f.exists());
                                     }
-
-                                    imwrite(f.getAbsolutePath(), mColorCrop);
-                                    Log.i(TAG, "Nonface crop saved.");
-                                    }
+//                                    else if (0 == predictedLabel) {
+//
+//                                    //Before saving the crop, check which secondaryID is still available:
+//                                    secondaryID = 0;
+//
+//                                    if(predictedLabel == correctLabel) {
+//                                        do {
+//                                            f = new File(sfrDirs[s] + "/0_nonFace_" + secondaryID + ".jpg");
+//                                            secondaryID++;
+//                                        } while (f.exists());
+//                                    } else {
+//                                        do {
+//                                            f = new File(sfrDirs[s] + "/wrong_0_nonFace_" + secondaryID + ".jpg");
+//                                            //f = new File(sfrDirs[s] + "/wrong_0_nonFace_correct:_" + correctLabel + "_" + secondaryID + ".jpg");
+//                                            secondaryID++;
+//                                        } while (f.exists());
+//                                    }
+//
+//                                    imwrite(f.getAbsolutePath(), mColorCrop);
+//                                    Log.i(TAG, "Nonface crop saved.");
+//                                    }
 
                                     timeEnd = System.currentTimeMillis();
                                     sfrAvgTimes[s] += timeEnd - timeStart;
@@ -737,7 +740,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                         resultsWriter.write("Total results:----------------------------------\n\n");
 
                         //Per-student accuracies:
-                        numStudents = studentNumsAndNames.size();
+                        numStudents = attendanceRecord[0].size();
                         String[] accPerStudent = new String[numStudents];
                         resultsWriter.write("Student accuracies per kernel:\n\n");
                         for(int s = 0; s < svmModels.length; s++) {
@@ -768,9 +771,18 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                         }
 
                         resultsWriter.write("\nTotal num of testing crops in this classroom data folder: " + numImagesPerClassData + "\n\n");
+
+                        resultsWriter.write("\nTotal num of correctly marked attendance for this classroom data folder:\n");
+                        for(int s = 0; s < sfrKernelNames.length; s++) {
+                            resultsWriter.write(sfrKernelNames[s] + ": " + sfrCorrectAttendanceCounts[s] + "\n");
+                        }
+
+                        resultsWriter.write("\nTotal num of attendance rows in this classroom data folder: " + dateFolders.length * numStudents + "\n\n");
+                        resultsWriter.write("\ndateFolders.length: " + dateFolders.length + ", numStudents: " + numStudents + "\n\n");
+
                         resultsWriter.write("\nTotal face recognition and attendance accuracies:\nKernel,Face Recognition,Attendance,Average Time(sec)\n");
                         for(int s = 0; s < sfrKernelNames.length; s++) {
-                            resultsWriter.write(sfrKernelNames[s] + ": " + (float) (sfrCorrectCounts[s] / numImagesPerClassData) * 100 + "%, " + (float) (sfrCorrectAttendanceCounts[s] / (dateFolders.length * numStudents)) * 100 + "%, " + (float) (sfrAvgTimes[s] / (numImagesPerClassData * 1000)) + "\n");
+                            resultsWriter.write(sfrKernelNames[s] + ": " + (float) (sfrCorrectCounts[s] / numImagesPerClassData) * 100 + "%, " + (float) (sfrCorrectAttendanceCounts[s] / (numStudents * (testEnd - testStart + 1))) * 100 + "%, " + (float) (sfrAvgTimes[s] / (numImagesPerClassData * 1000)) + "\n");
                         }
                         resultsWriter.flush();
                         resultsWriter.close();

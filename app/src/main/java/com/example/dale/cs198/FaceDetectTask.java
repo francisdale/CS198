@@ -206,6 +206,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 Log.i(TAG, "Now in Train Usage ");
 
                 tv = (TextView) ((CustomCamera) c).findViewById(R.id.detectionCounter);
+                tv = (TextView) ((CustomCamera) c).findViewById(R.id.custom);
 
                 File folder = new File(untrainedCropsDir);
                 if(folder.exists()==false){
@@ -251,13 +252,73 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                                 secondaryID++;
                             } while(f.exists());
                             imwrite(f.getAbsolutePath(), crop);
+                            Log.i(TAG, "Saved color crop at " + f.getAbsolutePath());
+
+                            //For greyscale and HE:
+                            mGray = new Mat();
+                            cvtColor(crop, mGray, CV_BGR2GRAY);
+
+                            //Before moving the crop to untrainedCrops, find a new filename for the crop that does not conflict with a crop already in untrainedCrops.
+                            secondaryID = 0;
+                            do {
+                                f = new File(untrainedCropsDir + "/grey_" + secondaryID + ".jpg");
+                                secondaryID++;
+                            } while(f.exists());
+                            imwrite(f.getAbsolutePath(), mGray);
+                            Log.i(TAG, "Saved grey crop at " + f.getAbsolutePath());
+
+                            equalizeHist(mGray,mGray);
+                            //Before moving the crop to untrainedCrops, find a new filename for the crop that does not conflict with a crop already in untrainedCrops.
+                            secondaryID = 0;
+                            do {
+                                f = new File(untrainedCropsDir + "/greyHE_" + secondaryID + ".jpg");
+                                secondaryID++;
+                            } while(f.exists());
+                            imwrite(f.getAbsolutePath(), mGray);
+                            Log.i(TAG, "Saved greyHE crop at " + f.getAbsolutePath());
+                            mGray.deallocate();
                         }
+
+                        //For IMG:
+                        secondaryID = 0;
+                        do {
+                            f = new File(untrainedCropsDir + "/IMG_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while(f.exists());
+                        imwrite(f.getAbsolutePath(), mColor);
+                        Log.i(TAG, "Saved color IMG at " + f.getAbsolutePath());
+
+                        //For greyscale and HE:
+                        mGray = new Mat();
+                        cvtColor(mColor, mGray, CV_BGR2GRAY);
+
+                        //Before moving the crop to untrainedCrops, find a new filename for the crop that does not conflict with a crop already in untrainedCrops.
+                        secondaryID = 0;
+                        do {
+                            f = new File(untrainedCropsDir + "/IMGgrey_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while(f.exists());
+                        imwrite(f.getAbsolutePath(), mGray);
+                        Log.i(TAG, "Saved grey IMG at " + f.getAbsolutePath());
+
+                        equalizeHist(mGray,mGray);
+                        //Before moving the crop to untrainedCrops, find a new filename for the crop that does not conflict with a crop already in untrainedCrops.
+                        secondaryID = 0;
+                        do {
+                            f = new File(untrainedCropsDir + "/IMGgreyHE_" + secondaryID + ".jpg");
+                            secondaryID++;
+                        } while(f.exists());
+                        imwrite(f.getAbsolutePath(), mGray);
+                        Log.i(TAG, "Saved greyHE IMG at " + f.getAbsolutePath());
+                        mGray.deallocate();
+
                     } else {
                         numFaces = 0;
                     }
 
                     faceCount += numFaces;
 
+                    mColor.deallocate();
 
                     /*
                     //For cropping the AT&T faces:

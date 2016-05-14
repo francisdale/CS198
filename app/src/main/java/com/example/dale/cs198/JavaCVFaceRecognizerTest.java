@@ -141,61 +141,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
     public void recog(){
         try{
-            Log.i(TAG, "Now in recog(). Loading eigenModel...");
-            FaceRecognizer efr = createEigenFaceRecognizer();
-            efr.load(modelDir + "/eigenModel.xml");
 
-            Log.i(TAG, "eigenModel loaded. Loading SVM...");
-
-    //        FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
-    //        SVM sfr = SVM.create();
-    //        sfr.read(fs.root());
-    //        fs.release();
-    //
-    //        fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
-    //        PCA pca = new PCA();
-    //        pca.read(fs.root());
-    //        fs.release();
-
-            //Initializing six-kernel Face Recognition:
-
-            String researchModelDir = "sdcard/PresentData/researchMode/recognizerModels";
-
-            FileStorage fs = new FileStorage(researchModelDir + "/pca_att.xml", FileStorage.READ);
-            PCA pca = new PCA();
-            pca.read(fs.root());
-            fs.release();
-
-            FilenameFilter svmModelFilter = new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    //name = name.toLowerCase();
-                    return name.startsWith("svmModel_att") && name.endsWith(".xml");
-                }
-            };
-
-            Log.i(TAG, "Setting up recognition data collection variables for this class...");
-            File[] svmModels = new File(researchModelDir).listFiles(svmModelFilter);
-
-            Log.i(TAG, "Found " + svmModels.length + " svm models.");
-            SVM[] sfrs = new SVM[svmModels.length];
-            String[] sfrKernelNames = new String[svmModels.length];
-            int[] sfrCorrectCounts = new int[svmModels.length];
-
-
-
-            Log.i(TAG, "Loading svm models...");
-            for (int s = 0; s < svmModels.length; s++) {
-                fs = new FileStorage(svmModels[s].getAbsolutePath(), FileStorage.READ);
-                sfrs[s] = SVM.create();
-                sfrs[s].read(fs.root());
-                fs.release();
-                sfrKernelNames[s] = (svmModels[s].getName().split("_")[2]);
-                sfrCorrectCounts[s] = 0;
-                Log.i(TAG, "Loaded svm for " + sfrKernelNames[s]);
-            }
-
-
-            Log.i(TAG, "SVM and PCA loaded.");
 
 
 
@@ -301,22 +247,8 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
             */
             Log.i(TAG, "SVM loading complete");
 
-            float eigenAvgTime = 0;
-            float fisherAvgTime = 0;
-            float lbphAvgTime = 0;
-            float svmAvgTime = 0;
 
-            float eigenNumRight = 0;
-            float fisherNumRight = 0;
-            float lbphNumRight = 0;
-            float svmNumRight = 0;
 
-            float eigenPercentAcc;
-            float fisherPercentAcc;
-            float lbphPercentAcc;
-            float svmPercentAcc;
-
-            float numImg = 0;
 
 
             //Load and recognize AT&T faces
@@ -359,6 +291,102 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
             //HE loop:
             for(int h = 0; h < 2; h++) {
+                float eigenAvgTime = 0;
+                float fisherAvgTime = 0;
+                float lbphAvgTime = 0;
+                float svmAvgTime = 0;
+
+                float eigenNumRight = 0;
+                float fisherNumRight = 0;
+                float lbphNumRight = 0;
+                float svmNumRight = 0;
+
+                float eigenPercentAcc;
+                float fisherPercentAcc;
+                float lbphPercentAcc;
+                float svmPercentAcc;
+
+                float numImg = 0;
+
+                Log.i(TAG, "Now in recog(). Loading eigenModel...");
+                FaceRecognizer efr = createEigenFaceRecognizer();
+                if(h == 1) {
+                    efr.load(modelDir + "/eigenModel_withHE_.xml");
+                }  else {
+                    efr.load(modelDir + "/eigenModel_withoutHE_.xml");
+                }
+
+
+                Log.i(TAG, "eigenModel loaded. Loading SVM...");
+
+                //        FileStorage fs = new FileStorage(modelDir + "/svmModel.xml", opencv_core.FileStorage.READ);
+                //        SVM sfr = SVM.create();
+                //        sfr.read(fs.root());
+                //        fs.release();
+                //
+                //        fs = new FileStorage(modelDir + "/pca.xml", opencv_core.FileStorage.READ);
+                //        PCA pca = new PCA();
+                //        pca.read(fs.root());
+                //        fs.release();
+
+                //Initializing six-kernel Face Recognition:
+
+                String researchModelDir = "sdcard/PresentData/researchMode/recognizerModels";
+
+                FileStorage fs;
+
+                if(h == 1) {
+                    fs = new FileStorage(researchModelDir + "/pca_att_withHE_.xml", FileStorage.READ);
+                } else {
+                    fs = new FileStorage(researchModelDir + "/pca_att_withoutHE_.xml", FileStorage.READ);
+                }
+                PCA pca = new PCA();
+                pca.read(fs.root());
+                fs.release();
+
+
+                FilenameFilter svmModelFilter;
+
+                if(h == 1) {
+                    svmModelFilter = new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            //name = name.toLowerCase();
+                            return name.startsWith("svmModel_att") && name.endsWith("_withHE_.xml");
+                        }
+                    };
+                } else {
+                    svmModelFilter = new FilenameFilter() {
+                        public boolean accept(File dir, String name) {
+                            //name = name.toLowerCase();
+                            return name.startsWith("svmModel_att") && name.endsWith("_withoutHE_.xml");
+                        }
+                    };
+                }
+
+                Log.i(TAG, "Setting up recognition data collection variables for this class...");
+                File[] svmModels = new File(researchModelDir).listFiles(svmModelFilter);
+
+                Log.i(TAG, "Found " + svmModels.length + " svm models.");
+                SVM[] sfrs = new SVM[svmModels.length];
+                String[] sfrKernelNames = new String[svmModels.length];
+                int[] sfrCorrectCounts = new int[svmModels.length];
+
+
+
+                Log.i(TAG, "Loading svm models...");
+                for (int s = 0; s < svmModels.length; s++) {
+                    fs = new FileStorage(svmModels[s].getAbsolutePath(), FileStorage.READ);
+                    sfrs[s] = SVM.create();
+                    sfrs[s].read(fs.root());
+                    fs.release();
+                    sfrKernelNames[s] = (svmModels[s].getName().split("_")[2]);
+                    sfrCorrectCounts[s] = 0;
+                    Log.i(TAG, "Loaded svm for " + sfrKernelNames[s]);
+                }
+
+
+                Log.i(TAG, "SVM and PCA loaded.");
+
                 for(int s = 1; s <= 40; s++) {
                     for (int i = 2; i <= 10; i += 2, numImg++) {
 
@@ -531,12 +559,12 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
                 */
 
-    //            eigenAvgTime /= numImg*1000;
+                //eigenAvgTime /= numImg*1000;
     //            fisherAvgTime /= numImg*1000;
     //            lbphAvgTime /= numImg*1000;
     //            svmAvgTime /= numImg*1000;
     //
-    //            eigenPercentAcc = (eigenNumRight/numImg) * 100;
+                eigenPercentAcc = (eigenNumRight/numImg) * 100;
     //            fisherPercentAcc = (fisherNumRight/numImg) * 100;
     //            lbphPercentAcc = (lbphNumRight/numImg) * 100;
     //            svmPercentAcc = (svmNumRight/numImg) * 100;
@@ -563,6 +591,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
                     resultsWriter.write(sfrKernelNames[s] + ": " + (float) (sfrCorrectCounts[s]/numImg) * 100 + "%\n");
                     resultsWriter.flush();
                 }
+                resultsWriter.write("PCA+KNN: " + eigenPercentAcc + "%\n");
                 resultsWriter.flush();
                 resultsWriter.close();
 
@@ -574,7 +603,7 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
 
             Log.i(TAG, "Setting up the text fields");
             notification.setText("Recognition complete.");
-            numImgView.setText("Number of Training Images: " + numImg);
+            //numImgView.setText("Number of Training Images: " + numImg);
 
     //        timesAndAccuraciesTextView.setText("Eigen time average = " + eigenAvgTime + "s\nEigen accuracy = " + eigenPercentAcc + "%\n\n");
     //        timesAndAccuraciesTextView.setText(timesAndAccuraciesTextView.getText() + "SVM time average = " + svmAvgTime + "s\nSVM accuracy = " + svmPercentAcc + "%\n\n");
