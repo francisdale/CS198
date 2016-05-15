@@ -627,7 +627,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
 
 
                                     if(attendanceRecord[s].containsKey(predictedLabel)) {
-                                        if (0 == attendanceRecord[s].get(predictedLabel)) {
+                                        if (predictedLabel == correctLabel && 0 == attendanceRecord[s].get(predictedLabel)) {
                                             attendanceRecord[s].put(predictedLabel, 1);
                                             Log.i(TAG, "predictedLabel attendance was marked.");
                                         }
