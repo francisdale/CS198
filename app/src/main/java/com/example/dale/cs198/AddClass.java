@@ -61,7 +61,6 @@ public class AddClass extends AppCompatActivity {
     TextView startTime;
     TextView endTime;
 
-    Button alarm;
     AddClassAdapter dataAdapter = null;
 
     ArrayList<StudentItem> studentList;
