@@ -16,17 +16,27 @@ public class HelpActivity extends AppCompatActivity {
     TextView addStudentToMasterHeader;
     TextView addStudentToMasterContent;
 
+    TextView addClassHeader;
+    TextView addClassContent;
+
     TextView editStudentClassHeader;
     TextView editStudentClassContent;
 
     TextView trainHeader;
     TextView trainContent;
 
+    TextView labelHeader;
+    TextView labelContent;
+
+
     TextView takePictureHeader;
     TextView takePictureContent;
 
     TextView generateReportHeader;
     TextView generateReportContent;
+
+    TextView editReportHeader;
+    TextView editReportContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +49,17 @@ public class HelpActivity extends AppCompatActivity {
         addStudentToMasterContent = (TextView)findViewById(R.id.addStudentToMaster_content);
         addStudentToMasterContent.setVisibility(View.GONE);
 
+        addClassContent = (TextView)findViewById(R.id.addClass_content);
+        addClassContent.setVisibility(View.GONE);
+
         editStudentClassContent = (TextView)findViewById(R.id.editStudentClass_content);
         editStudentClassContent.setVisibility(View.GONE);
 
         trainContent = (TextView)findViewById(R.id.train_content);
         trainContent.setVisibility(View.GONE);
+
+        labelContent = (TextView)findViewById(R.id.labelCrops_content);
+        labelContent.setVisibility(View.GONE);
 
         takePictureContent = (TextView)findViewById(R.id.takePicture_content);
         takePictureContent.setVisibility(View.GONE);
@@ -51,6 +67,10 @@ public class HelpActivity extends AppCompatActivity {
         generateReportContent = (TextView)findViewById(R.id.generateReport_content);
         generateReportContent.setVisibility(View.GONE);
 
+        editReportContent = (TextView)findViewById(R.id.editReport_content);
+        editReportContent.setVisibility(View.GONE);
+
+        /*=====================================================================================*/
         uploadMasterHeader = (TextView)findViewById(R.id.uploadMaster_header);
         uploadMasterHeader.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,6 +87,15 @@ public class HelpActivity extends AppCompatActivity {
             }
         });
 
+        addClassHeader = (TextView)findViewById(R.id.addClass_header);
+        addClassHeader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggle_contents(v, addClassContent);
+            }
+        });
+
+
         editStudentClassHeader = (TextView)findViewById(R.id.editStudentClass_header);
         editStudentClassHeader.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,6 +109,14 @@ public class HelpActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 toggle_contents(v,trainContent);
+            }
+        });
+
+        labelHeader = (TextView)findViewById(R.id.labelCrops_header);
+        labelHeader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggle_contents(v,labelContent);
             }
         });
 
@@ -99,7 +136,13 @@ public class HelpActivity extends AppCompatActivity {
             }
         });
 
-
+        editReportHeader = (TextView)findViewById(R.id.editReport_header);
+        editReportHeader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggle_contents(v,editReportContent);
+            }
+        });
     }
 
     public void toggle_contents(View v,TextView content) {

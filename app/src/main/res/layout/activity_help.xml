@@ -7,6 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#9E9E9E"
     tools:context="com.example.dale.cs198.HelpActivity">
 
 
@@ -34,14 +35,14 @@
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/uploadMaster_content"
-            android:text="INSERT INSTRUCTIONS HERE FOR UPLOADING MASTER"
+            android:text="@string/UploadMaster"
             android:layout_below="@+id/uploadMaster_header"/>
 
         <!-- Clickable title -->
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/addStudentToMaster_header"
-            android:text="\u2022 Adding A Student To Master List"
+            android:text="\u2022 Editing the Master List"
             android:textSize="20sp"
             android:textStyle="bold"
             android:clickable="true"
@@ -55,8 +56,31 @@
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/addStudentToMaster_content"
-            android:text="INSERT INSTRUCTIONS HERE FOR ADDING STUDENT"
+            android:text="@string/EditMaster"
             android:layout_below="@+id/addStudentToMaster_header"/>
+
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/addClass_header"
+            android:text="\u2022 Adding a Class"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/addStudentToMaster_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/addClass_content"
+            android:text="@string/AddClass"
+            android:layout_below="@+id/addClass_header"/>
+
 
         <!-- Clickable title -->
         <TextView  android:layout_width="match_parent"
@@ -69,14 +93,14 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:onClick="toggle_contents"
-            android:layout_below="@id/addStudentToMaster_header"
+            android:layout_below="@id/addClass_content"
             android:focusable="true"
             android:focusableInTouchMode="true" />
         <!--content to hide/show -->
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/editStudentClass_content"
-            android:text="INSERT INSTRUCTIONS HERE FOR editing students"
+            android:text="@string/EditClass"
             android:layout_below="@+id/editStudentClass_header"/>
 
 
@@ -84,7 +108,7 @@
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/train_header"
-            android:text="\u2022 Training the Recognizer"
+            android:text="\u2022 Getting Face Crops for Training"
             android:textSize="20sp"
             android:textStyle="bold"
             android:clickable="true"
@@ -98,15 +122,14 @@
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/train_content"
-            android:text="INSERT INSTRUCTIONS HERE FOR training the recognizer"
+            android:text="@string/GetTrainingCrops"
             android:layout_below="@+id/train_header"/>
 
 
-        <!-- Clickable title -->
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/takePicture_header"
-            android:text="\u2022 Taking Attendance Pictures"
+            android:id="@+id/labelCrops_header"
+            android:text="\u2022 Labelling Face Crops for Training"
             android:textSize="20sp"
             android:textStyle="bold"
             android:clickable="true"
@@ -119,15 +142,39 @@
         <!--content to hide/show -->
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/labelCrops_content"
+            android:text="@string/LabelCrops"
+            android:layout_below="@+id/train_header"/>
+
+
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/takePicture_header"
+            android:text="\u2022 Taking Class Attendance"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/labelCrops_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:id="@+id/takePicture_content"
-            android:text="INSERT INSTRUCTIONS HERE FOR taking attendance pictures"
+            android:text="@string/TakeClassAttendance"
             android:layout_below="@+id/takePicture_header"/>
+
 
         <!-- Clickable title -->
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/generateReport_header"
-            android:text="\u2022 Generating Class Attendance Report"
+            android:text="\u2022 Viewing Attendance Reports"
             android:textSize="20sp"
             android:textStyle="bold"
             android:clickable="true"
@@ -141,7 +188,29 @@
         <TextView  android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/generateReport_content"
-            android:text="INSERT INSTRUCTIONS HERE FOR generating report"
+            android:text="@string/ViewReport"
             android:layout_below="@+id/generateReport_header"/>
+
+        <!-- Clickable title -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editReport_header"
+            android:text="\u2022 Editing Attendance Reports"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:onClick="toggle_contents"
+            android:layout_below="@id/generateReport_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <!--content to hide/show -->
+        <TextView  android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editReport_content"
+            android:text="@string/EditReport"
+            android:layout_below="@+id/editReport_header"/>
+
     </LinearLayout>
 </ScrollView>
