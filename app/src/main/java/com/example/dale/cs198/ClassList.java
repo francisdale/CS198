@@ -1,6 +1,5 @@
 package com.example.dale.cs198;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,7 +23,6 @@ import java.util.Map;
 
 public class ClassList extends AppCompatActivity {
 
-    ActionBar actionBar;
     private static final String TAG = "testMessage";
 
     String classesDir = "sdcard/PresentData/Classes";
@@ -54,7 +52,6 @@ public class ClassList extends AppCompatActivity {
         classDir=classesDir + "/" + name;
 
         File file = new File(classDir, name+"_studentList.txt");
-        StringBuilder text = new StringBuilder();
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -119,9 +116,6 @@ public class ClassList extends AppCompatActivity {
 
                 viewReports.putExtra("name",name);
                 startActivity(viewReports);
-
-
-
                 return true;
             case R.id.edit_student_id:
                 Log.i(TAG, "EDIT STUDENTS");
@@ -131,8 +125,6 @@ public class ClassList extends AppCompatActivity {
                 editIntent.putExtra("start",start);
                 editIntent.putExtra("end",end);
                 startActivity(editIntent);
-
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

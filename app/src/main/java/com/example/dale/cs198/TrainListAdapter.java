@@ -1,11 +1,9 @@
 package com.example.dale.cs198;
 
-import android.app.Activity;
+
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,8 +17,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -48,7 +44,6 @@ public class TrainListAdapter extends BaseAdapter{
     String[] labelArr;
 
     public TrainListAdapter(Context context,int layoutResourceId,ArrayList<CropImageItem> crops){
-        //super(context, layoutResourceId, crops);
         this.context=context;
         this.layoutResourceId=layoutResourceId;
         this.crops = crops;
@@ -87,11 +82,8 @@ public class TrainListAdapter extends BaseAdapter{
         holder = new ViewHolder();
         holder.labelItem = (TextView) convertView.findViewById(R.id.crop_label_grid);
         holder.imageItem = (ImageView) convertView.findViewById(R.id.crop_image_grid);
-
-       // holder.customEtListener = new CustomEtListener(position);
         holder.labelItem.addTextChangedListener(new CustomEtListener(position));
 
-        //holder.labelItem.setText();
 
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,8 +99,6 @@ public class TrainListAdapter extends BaseAdapter{
 
                         String idAndName[] = dialogName.getText().toString().split("-");
                         label = idAndName[1];
-                        int idNum = Integer.parseInt(idAndName[0]);
-                        //holder.labelItem.setText(label);
                         holder.labelItem.setText(label);
                         nameDialog.dismiss();
                     }
@@ -127,11 +117,6 @@ public class TrainListAdapter extends BaseAdapter{
         CropImageItem c = crops.get(position);
         Bitmap bmImg = BitmapFactory.decodeFile(c.getPath());
         holder.imageItem.setImageBitmap(bmImg);
-
-        //holder.labelItem.setText();
-        //Log.i(TAG, c.getPath());
-
-
         return convertView;
 
     }

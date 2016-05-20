@@ -75,9 +75,6 @@
             android:name=".ViewAttendanceReport"
             android:label="Attendance Reports" />
         <activity
-            android:name=".EditAttendanceReport"
-            android:label="View Report" />
-        <activity
             android:name=".EditAttendanceReport_RV"
             android:label="View Report" />
 

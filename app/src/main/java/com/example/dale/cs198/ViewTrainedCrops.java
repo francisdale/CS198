@@ -18,12 +18,7 @@ public class ViewTrainedCrops extends AppCompatActivity {
 
     RecyclerView recyclerView;
     ViewTrainedCropsAdapter adapter;
-    RecyclerView.LayoutManager layoutManager;
     ArrayList<CropImageItem> pathList = new ArrayList<CropImageItem>();
-
-    Button openCamera;
-    String modelFileDir = "sdcard/PresentData";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +47,6 @@ public class ViewTrainedCrops extends AppCompatActivity {
             }
         }
         recyclerView = (RecyclerView)findViewById(R.id.recycler_view_trained_crops);
-        //layoutManager = new LinearLayoutManager(this);
-        //recyclerView.setLayoutManager(layoutManager);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(null);
@@ -66,13 +59,5 @@ public class ViewTrainedCrops extends AppCompatActivity {
                 Log.i(TAG, "running notify data set change");
             }
         });
-
-
-
-
-
-
-
-
     }
 }

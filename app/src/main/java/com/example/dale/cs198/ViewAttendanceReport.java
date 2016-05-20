@@ -63,7 +63,6 @@ public class ViewAttendanceReport extends AppCompatActivity {
                 }
             }
 
-
             //DEFINING THE RECYCLERVIEW AND ASSIGNING THE adapter and passing classlist
             recyclerView = (RecyclerView)findViewById(R.id.report_list);
             layoutManager = new LinearLayoutManager(this);
@@ -72,16 +71,7 @@ public class ViewAttendanceReport extends AppCompatActivity {
             adapter=new AttendanceReportListAdapter(this,reportPath,name);
             recyclerView.setAdapter(adapter);
         }
-
-
-
-
     }
-
-
-
-
-
 }
 
 

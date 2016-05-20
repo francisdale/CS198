@@ -49,8 +49,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
     AlertDialog nameDialog;
     TextView dialogName;
     String label;
-    //TextView cropName;
-    int pos;
     String[] labelArr;
 
 
@@ -68,13 +66,11 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
     public void onBindViewHolder(final CropImageViewHolder holder, int position) {
         //Log.i(TAG, "onBindViewHolder Recycling...");
         CropImageItem c = faceCrops.get(position);
-        //holder.cropName.setText(c.getFileName());
 
         Bitmap bmImg = BitmapFactory.decodeFile(c.getPath());
         holder.cropImage.setImageBitmap(bmImg);
         holder.customEtListener.updatePosition(position);
         holder.cropName.setText(labelArr[position]);
-        //holder.cropName.setText(c.getPos() + "x");
 
         String holderName[] = c.getFileName().split("_");
 
@@ -114,12 +110,9 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         ImageView cropImage;
         CustomEtListener customEtListener;
 
-
-
         public CropImageViewHolder(View view,CustomEtListener etListener){
             super(view);
             view.setOnClickListener(this);
-
             cropName = (TextView)view.findViewById(R.id.crop_label);
             cropImage = (ImageView)view.findViewById(R.id.crop_image);
             customEtListener = etListener;
@@ -148,7 +141,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
 
                             File oldfile =new File(filePathOfLabeled);
-                            File sdCardRoot = Environment.getExternalStorageDirectory();
                             File newFilePic;
 
                             for(int i=0;;i++){
@@ -175,9 +167,7 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
                             Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
 
-
                             File oldfile =new File(filePathOfLabeled);
-                            File sdCardRoot = Environment.getExternalStorageDirectory();
                             File newFilePic;
 
                             for(int i=0;;i++){
@@ -210,25 +200,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                             String filePathOfLabeled = faceCrops.get(getAdapterPosition()).getPath();
 
                             Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
-
-                            /*//CHECK IF MAY EXISTING CROP NA SI ID SA TRAINED FOLDER
-                            File sdCardRoot = Environment.getExternalStorageDirectory();
-                            File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops");
-                            int count=0;
-                            for (File f : faceCropsDir.listFiles()) {
-                                if (f.isFile()) {
-                                    String name = f.getName();
-                                    String nameArr[] = name.split("_");
-                                    if(nameArr[0].equals(idAndName[0])){
-                                        count++;
-                                    }
-                                }
-                            }
-                            Log.i(TAG,"COUNT = "+count);
-
-                            //RENAME CROP WITH CHOSEN IDNUM
-                            File oldfile =new File(filePathOfLabeled);
-                            File newfile =new File(sdCardRoot, "PresentData/faceDatabase/untrainedCrops/"+idNum+"_"+count+"_"+label+".jpg");*/
 
                             File oldfile =new File(filePathOfLabeled);
                             File sdCardRoot = Environment.getExternalStorageDirectory();
@@ -269,11 +240,8 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
 
     private class CustomEtListener implements TextWatcher {
         private int position;
-        //Updates the position according to onBindViewHolder
-        //@param position - position of the focused ite
         public void updatePosition(int position) {
             this.position = position;
-            //pos = position;
         }
 
         @Override
@@ -284,13 +252,35 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             // Change the value of array according to the position
             labelArr[position] = charSequence.toString();
-
         }
 
         @Override
         public void afterTextChanged(Editable editable) { }
     }
 
+    public void readMasterList(){
+        String dataPath = "sdcard/PresentData/";
+
+        File file = new File(dataPath, "Master List.txt");
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            String[] details;
+            names.add("DELETE");
+            names.add("NONFACE");
+            while ((line = br.readLine()) != null) {
+                details = line.split(",");
+                names.add(details[0]+"-"+details[2]+", "+details[3]);
+                //lagay yung mga mapping if ids
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*FOR SWIPE TO DELETE FUNCTION FOR FUTURE USE*/
     public void removeCrop(final int position,final RecyclerView recyclerView) {
         Log.i(TAG,"");
         Log.i(TAG, "////////////////////////////////REMOVING AND IMAGE//////////////////////////////");
@@ -334,7 +324,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
                         recyclerView.scrollToPosition(position);
 
                         String filePathOfUndo = faceCrops.get(position).getPath();
-                        String fileNameOfUndo = faceCrops.get(position).getFileName();
 
                         File old = new File(filePathOfUndo);
                         File newF = new File(sdCardRoot,"PresentData/faceDatabase/untrainedCrops/"+fileNameOfRemoved);
@@ -374,31 +363,6 @@ public class CropImageAdapter extends RecyclerView.Adapter<CropImageAdapter.Crop
         notifyItemMoved(fromPosition, toPosition);
         return true;
     }
-
-
-    public void readMasterList(){
-        String dataPath = "sdcard/PresentData/";
-
-        File file = new File(dataPath, "Master List.txt");
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-            String[] details;
-            names.add("DELETE");
-            names.add("NONFACE");
-            while ((line = br.readLine()) != null) {
-                details = line.split(",");
-                names.add(details[0]+"-"+details[2]+", "+details[3]);
-                //lagay yung mga mapping if ids
-            }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-
+    /*FOR SWIPE TO DELETE FUNCTION FOR FUTURE USE*/
 
 }

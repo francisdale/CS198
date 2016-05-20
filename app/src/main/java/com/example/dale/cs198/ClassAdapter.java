@@ -57,9 +57,6 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
         TextView endTime;
         Button takePic;
 
-
-        // / FragmentActivity fa;
-
         public ClassViewHolder(View view){
             super(view);
             view.setOnClickListener(this);
@@ -75,8 +72,6 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
                     cam.putExtra("detectUsage", FaceDetectTask.ATTENDANCE_USAGE);
                     cam.putExtra("classNameString", className.getText().toString());
                     context.startActivity(cam);
-                    //pass a mode na activity usage integer = 0;
-                    //call FaceDetectTask.ATTENDANCE_USAGE
 
                 }
             });
@@ -84,9 +79,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
 
         @Override
         public void onClick(View v) {
-
             Log.i(TAG, "CALLING FRAGMENT MANAGER");
-            //v.setBackgroundColor(Color.LTGRAY);
             Intent cardIntent = new Intent(context,ClassList.class);
             cardIntent.putExtra("name",className.getText());
             cardIntent.putExtra("start",startTime.getText());
@@ -95,15 +88,5 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassViewHol
 
             Log.i(TAG, "CALLING FRAGMENT");
         }
-
-
-
-
     }
-
-
-
-
-
-
 }

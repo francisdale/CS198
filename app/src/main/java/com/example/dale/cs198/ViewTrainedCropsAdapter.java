@@ -28,20 +28,9 @@ public class ViewTrainedCropsAdapter extends RecyclerView.Adapter<ViewTrainedCro
 
     ArrayList<CropImageItem> faceCrops = new ArrayList<CropImageItem>();
     ArrayList<CropImageItem> copyFaceCrops;
-    ArrayList<Integer> ids = new ArrayList<>();
     ArrayList<String> names = new ArrayList<String>();
 
-    CropImageItem temp;
-    private static final String TAG = "testMessage";
     private Context context;
-
-    ListView namesList = null;
-
-    AlertDialog nameDialog;
-    TextView dialogName;
-    String label;
-    //TextView cropName;
-    int pos;
     String[] labelArr;
 
 
@@ -77,9 +66,6 @@ public class ViewTrainedCropsAdapter extends RecyclerView.Adapter<ViewTrainedCro
             String nameInfo[] = names.get(Integer.parseInt(holderName[0])).split("-");
             holder.cropName.setText(nameInfo[1]);
         }
-
-
-
     }
 
     @Override
@@ -111,96 +97,7 @@ public class ViewTrainedCropsAdapter extends RecyclerView.Adapter<ViewTrainedCro
             //cropName.addTextChangedListener(customEtListener);
         }
 
-//        @Override
-//        public void onClick(View v) {
-//
-//            namesList = new ListView(context.getApplicationContext());
-//            ArrayAdapter<String> namesListAdapter = new ArrayAdapter<String>(context.getApplicationContext(),R.layout.names_dialog_layout,R.id.dialogName,names);
-//            namesList.setAdapter(namesListAdapter);
-//            namesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    ViewGroup viewGroup = (ViewGroup) view;
-//                    dialogName = (TextView) viewGroup.findViewById(R.id.dialogName);
-//                    //label is the name of the cro
-//                    //Log.i(TAG,"");
-//                    //Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
-//                    if(dialogName.getText().toString().equals("NOT A FACE") == false){
-//                        String idAndName[] =  dialogName.getText().toString().split("-");
-//                        label = idAndName[1];
-//                        int idNum = Integer.parseInt(idAndName[0]);
-//
-//                        Log.i(TAG,"");
-//                        Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
-//
-//                        String fileNameOfLabeled = faceCrops.get(getAdapterPosition()).getFileName();
-//                        String filePathOfLabeled = faceCrops.get(getAdapterPosition()).getPath();
-//
-//                        Log.i(TAG,"SELECTED CROP TO LABEL: "+fileNameOfLabeled+"\n"+filePathOfLabeled);
-//
-//
-//                        File oldfile =new File(filePathOfLabeled);
-//                        File sdCardRoot = Environment.getExternalStorageDirectory();
-//
-//                        for(int i=0;;i++){
-//                            File newFilePic =new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops/"+idNum+"_"+label+"_"+i+".jpg");
-//                            if(!newFilePic.exists()){
-//                                if (oldfile.renameTo(newFilePic)) {
-//                                    faceCrops.get(getAdapterPosition()).setFileName(newFilePic.getName());
-//                                    faceCrops.get(getAdapterPosition()).setPath(newFilePic.getAbsolutePath());
-//                                    Log.i(TAG, "Rename succesful");
-//                                    Log.i(TAG, "The renamed file is: " + faceCrops.get(getAdapterPosition()).getFileName() + "\n" + faceCrops.get(getAdapterPosition()).getPath());
-//                                } else {
-//                                    Log.i(TAG, "Rename failed");
-//                                }
-//                                break;
-//                            }
-//                        }
-//                        cropName.setText(label);
-//                        nameDialog.dismiss();
-//                    }
-//
-//                    else{
-//                        label = dialogName.getText().toString();
-//
-//                        String fileNameOfNotFace = faceCrops.get(getAdapterPosition()).getFileName();
-//                        String filePathOfNotFace = faceCrops.get(getAdapterPosition()).getPath();
-//
-//                        File sdCardRoot = Environment.getExternalStorageDirectory();
-//                        File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops");
-//                        Log.i(TAG,"");
-//                        Log.i(TAG,"///////////////////////////////RENAMING PHASE//////////////////////////////");
-//
-//                        File oldfile = new File(filePathOfNotFace);
-//                        File newfile = new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops/"+"delete_"+fileNameOfNotFace);
-//
-//                        if(oldfile.renameTo(newfile)){
-//                            faceCrops.get(getAdapterPosition()).setFileName(newfile.getName());
-//                            faceCrops.get(getAdapterPosition()).setPath(newfile.getAbsolutePath());
-//                            Log.i(TAG, "Rename succesful");
-//                            Log.i(TAG,"The renamed file is: "+ faceCrops.get(getAdapterPosition()).getFileName()+"\n"+ faceCrops.get(getAdapterPosition()).getPath());
-//                        }
-//                        else{
-//                            Log.i(TAG, "Rename failed");
-//                        }
-//
-//
-//                        cropName.setText(label);
-//                        nameDialog.dismiss();
-//                    }
-//                }
-//            });
-//
-//            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-//            builder.setCancelable(true);
-//            builder.setView(namesList);
-//
-//            nameDialog = builder.create();
-//            nameDialog.show();
-        }
-
-
-
+    }
 
     private class CustomEtListener implements TextWatcher {
         private int position;
@@ -222,92 +119,6 @@ public class ViewTrainedCropsAdapter extends RecyclerView.Adapter<ViewTrainedCro
         @Override
         public void afterTextChanged(Editable editable) { }
     }
-//
-//    public void removeCrop(final int position,final RecyclerView recyclerView) {
-//        Log.i(TAG,"");
-//        Log.i(TAG, "////////////////////////////////REMOVING AND IMAGE//////////////////////////////");
-//        temp = faceCrops.get(position);
-//        //rename mo nalang yung file and give an indication na dapat siyang madelete
-//
-//        File oldfile;
-//        File newfile;
-//        CropImageItem rename;
-//        final String fileNameOfRemoved = temp.getFileName();
-//        String filePathOfRemoved = temp.getPath();
-//        Log.i(TAG,"TO BE DELETED: "+fileNameOfRemoved+"\n"+filePathOfRemoved);
-//        //DELETE AND MAKE A COPY OF CROP TO BE REMOVED WITH DIFF FILE NAME IN DIRECTORY
-//
-//        //RENAME CROP WITH CHOSEN IDNUM
-//
-//        final File sdCardRoot = Environment.getExternalStorageDirectory();
-//        oldfile = new File(filePathOfRemoved);
-//        newfile = new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops/"+"delete_"+fileNameOfRemoved);
-//
-//        if(oldfile.renameTo(newfile)){
-//            temp.setFileName(newfile.getName());
-//            temp.setPath(newfile.getAbsolutePath());
-//            Log.i(TAG, "Rename succesful");
-//            Log.i(TAG,"The renamed file is: "+temp.getFileName()+"\n"+temp.getPath());
-//        }
-//        else{
-//            Log.i(TAG, "Rename failed");
-//        }
-//
-//        faceCrops.remove(position);
-//        notifyItemRemoved(position);
-//        recyclerView.scrollToPosition(position);
-//
-//        Snackbar snackbar = Snackbar
-//                .make(recyclerView, "FACE CROP REMOVED", Snackbar.LENGTH_LONG)
-//                .setAction("UNDO", new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        faceCrops.add(position, temp);
-//                        notifyItemInserted(position);
-//                        recyclerView.scrollToPosition(position);
-//
-//                        String filePathOfUndo = faceCrops.get(position).getPath();
-//                        String fileNameOfUndo = faceCrops.get(position).getFileName();
-//
-//                        File old = new File(filePathOfUndo);
-//                        File newF = new File(sdCardRoot,"PresentData/faceDatabase/trainedCrops/"+fileNameOfRemoved);
-//
-//                        if(old.renameTo(newF)){
-//                            faceCrops.get(position).setFileName(newF.getName());
-//                            faceCrops.get(position).setPath(newF.getAbsolutePath());
-//                            Log.i(TAG,"UNDO SUCCESSFUL");
-//                            Log.i(TAG,"RETURNED : "+faceCrops.get(position).getFileName()+"\n"+faceCrops.get(position).getPath());
-//                        }
-//                        else{
-//                            Log.i(TAG, "Rename failed");
-//                        }
-//
-//                        Log.i(TAG,"You just undo and returned: " + temp.getFileName() + "\n"+temp.getPath());
-//
-//                        Toast toast = Toast.makeText(context, "Face Crop Number = " + faceCrops.size(), Toast.LENGTH_SHORT);
-//                        toast.show();
-//                    }
-//                });
-//        snackbar.show();
-//
-//        Toast toast = Toast.makeText(context, "Face Crop Number = " + faceCrops.size(), Toast.LENGTH_SHORT);
-//        toast.show();
-//
-//        Log.i(TAG, "////////////////////////////////END OF REMOVING AND IMAGE//////////////////////////////");
-//        Log.i(TAG,"");
-//    }
-//
-//    public void swap(int firstPosition, int secondPosition){
-//        Collections.swap(faceCrops, firstPosition, secondPosition);
-//        notifyItemMoved(firstPosition, secondPosition);
-//    }
-//
-//    public boolean onItemMove(int fromPosition, int toPosition) {
-//        Collections.swap(faceCrops, fromPosition, toPosition);
-//        notifyItemMoved(fromPosition, toPosition);
-//        return true;
-//    }
-
 
     public void readMasterList(){
         String dataPath = "sdcard/PresentData/";

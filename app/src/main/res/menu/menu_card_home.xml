@@ -20,11 +20,6 @@
         app:showAsAction="never"></item>
 
     <item
-        android:title="About Us"
-        android:id="@+id/about_home"
-        app:showAsAction="never"></item>
-
-    <item
         android:title="Research Mode"
         android:id="@+id/research_mode"
         app:showAsAction="never"></item>

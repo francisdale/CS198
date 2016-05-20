@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,7 +36,6 @@ public class EditClassList extends AppCompatActivity {
 
     ArrayList<StudentItem> students = new ArrayList<StudentItem>(); // --> arrayList for students in master list
     ArrayList<StudentItem> studentsInClass = new ArrayList<StudentItem>(); // --> arrayList for students in class list
-    ArrayList<StudentItem> studentItems = new ArrayList<StudentItem>();
     EditClassAdapter dataAdapter = null;
     Button cancel;
 

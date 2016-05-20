@@ -33,7 +33,6 @@ public class AttendanceReportListAdapter extends RecyclerView.Adapter<Attendance
     @Override
     public void onBindViewHolder(ReportViewHolder holder, int position) {
         try {
-            //DateFormat df=new SimpleDateFormat("yyyy-MM-dd");
             DateFormat df=new SimpleDateFormat("EEEE MMM dd yyyy");
             finalDay=df.format(reportItems.get(position).getDate());
             holder.reportName.setText(finalDay);
@@ -41,9 +40,7 @@ public class AttendanceReportListAdapter extends RecyclerView.Adapter<Attendance
         }catch (Exception e){
             e.printStackTrace();
         }
-        //holder.reportName.setText(reportPaths.get(position));
     }
-
 
     @Override
     public ReportViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -56,7 +53,6 @@ public class AttendanceReportListAdapter extends RecyclerView.Adapter<Attendance
     public int getItemCount() {
         return reportItems.size();
     }
-
 
     class ReportViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
@@ -78,31 +74,9 @@ public class AttendanceReportListAdapter extends RecyclerView.Adapter<Attendance
             openReport.putExtra("className",className);
             openReport.putExtra("date",reportName.getText().toString());
             openReport.putExtra("reportPath",reportItems.get(getAdapterPosition()).getReportPath());
-            //openReport.putExtra("dateOfFile",reportItems.get(getAdapterPosition()).)
-
-
-            //Log.i(TAG, "OPENING --> " + reportItems.get(getAdapterPosition()).getFileName());
-            //openReport.putExtra("name",reportName.getText().toString());
-
-            //Log.i(TAG,"classname --> "+className);
             context.startActivity(openReport);
-            //v.setBackgroundColor(Color.LTGRAY);
-//            Intent reportIntent = new Intent(context,ClassList.class);
-//            cardIntent.putExtra("name",className.getText());
-//            cardIntent.putExtra("start",startTime.getText());
-//            cardIntent.putExtra("end",endTime.getText());
-//            context.startActivity(cardIntent);
-
             Log.i(TAG, "CALLING FRAGMENT");
         }
-
-
-
-
     }
-
-
-
-
 
 }

@@ -36,10 +36,6 @@ public class CardHome extends AppCompatActivity{
     RecyclerView.Adapter adapter;
     RecyclerView.LayoutManager layoutManager;
     ArrayList<ClassItem> classList = new ArrayList<ClassItem>();
-    String[] classNames;
-    String[] classDescriptions;
-    String masterFilePath;
-    Button takePic;
     Button addClass;
     Button train;
     int classNum;
@@ -135,9 +131,6 @@ public class CardHome extends AppCompatActivity{
             case R.id.help_home:
                 Intent helpIntent = new Intent(this, HelpActivity.class);
                 startActivity(helpIntent);
-                return true;
-            case R.id.about_home:
-                //show about
                 return true;
             case R.id.add_student:
                 showAddStudentDialog();
@@ -278,8 +271,6 @@ public class CardHome extends AppCompatActivity{
                 alert.show();
             }
             else{
-                //Log.i(TAG,"MASTER--> "+masterFilePath);
-
                 File file = new File(filePath);
                 FileWriter writer = new FileWriter(masterFile);
                 BufferedReader br = new BufferedReader(new FileReader(file));
@@ -296,14 +287,12 @@ public class CardHome extends AppCompatActivity{
                 writer.close();
                 Toast.makeText(this, "Uploaded Master List of Students", Toast.LENGTH_SHORT).show();
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void generateFolders(){
-
         String dataPath="sdcard/PresentData";
         File folder = new File(dataPath);
         if(!folder.exists()){

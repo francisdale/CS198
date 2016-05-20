@@ -60,7 +60,6 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
         String a[] = name.split("\\.");
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File faceCropsDir = new File(sdCardRoot, "PresentData/faceDatabase/trainedCrops");
-        //File faceCropsDir = new File(sdCardRoot, "PresentData/Classes/"+className + "/attendanceReports/" + a[0]);
 
 
         final String ID = Integer.toString(s.getId());
@@ -87,26 +86,6 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
             holder.face.setImageResource(R.mipmap.ic_launcher);
         }
 
-//        final String ID = Integer.toString(s.getId());
-//        FilenameFilter IDImgFilter = new FilenameFilter() {
-//            public boolean accept(File dir, String fileName) {
-//                Log.i(TAG, "Filtered ID --> " + ID);
-//                return fileName.startsWith(ID,0);
-//            }
-//        };
-//
-//        File[] fileArr = faceCropsDir.listFiles(IDImgFilter);
-//        Log.i(TAG, "File arr size -->" + fileArr.length);
-//        if (fileArr.length > 0) {
-//            Log.i(TAG, "directory of first occurence -->" + fileArr[0].getAbsolutePath());
-//            Bitmap bmImg = BitmapFactory.decodeFile(fileArr[0].getAbsolutePath());
-//            holder.face.setImageBitmap(bmImg);
-//        } else {
-//            Log.i(TAG, "no image");
-//            holder.face.setImageResource(R.mipmap.ic_launcher);
-//        }
-
-
     }
 
 
@@ -128,9 +107,6 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
         ImageView face;
         CheckBox detail;
         TextView studInfo;
-
-
-        // / FragmentActivity fa;
 
         public EditAttendanceViewHolder(View view){
             super(view);
@@ -258,11 +234,8 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
 
 
     public void rewriteReport(ArrayList<StudentItem> students){
-        int selected;
         try {
-            //String dataPath = "sdcard/PresentData/Classes/"+name;
             File classFile = new File(reportPath);
-            selected = 0;
             boolean a = classFile.delete();
             if(a == true){
                 File file = new File(reportPath);
@@ -286,20 +259,6 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
         }
     }
 
-
-
-    public void showDialog(boolean isChecked){
-
-        if(isChecked == true){
-
-        }
-
-
-        if(isChecked == false){
-
-
-        }
-    }
     ///////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////ADAPTER FOR GRIDVIEW//////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////
@@ -353,9 +312,5 @@ public class EditAttendanceReport_RVAdapter extends RecyclerView.Adapter<EditAtt
 ///////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////ADAPTER FOR GRIDVIEW//////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 }

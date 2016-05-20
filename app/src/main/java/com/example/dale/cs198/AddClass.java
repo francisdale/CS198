@@ -75,7 +75,6 @@ public class AddClass extends AppCompatActivity {
 
     int n;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -140,7 +139,6 @@ public class AddClass extends AppCompatActivity {
         // Assign adapter to ListView
         listView.setAdapter(dataAdapter);
 
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
@@ -149,7 +147,6 @@ public class AddClass extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Clicked on Row: " + si.getLastName() + " " + si.getFirstName(), Toast.LENGTH_LONG).show();
             }
         });
-
     }
 
     @Override
@@ -261,7 +258,6 @@ public class AddClass extends AppCompatActivity {
         dialogBuilder.setMessage("Enter name below:");
         dialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                //do something with edt.getText().toString();
                 etName.setText(edt.getText().toString());
             }
         });
@@ -332,7 +328,6 @@ public class AddClass extends AppCompatActivity {
                 }
             }
 
-
             if (selected == 0) {
                 classFolder.delete();
                 return selected;
@@ -342,15 +337,12 @@ public class AddClass extends AppCompatActivity {
                 return selected;
             }
 
-
-
             //Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return selected;
     }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////ADAPTER FOR LISTVIEW//////////////////////////////////////
@@ -406,25 +398,4 @@ public class AddClass extends AppCompatActivity {
     ///////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////ADAPTER FOR LISTVIEW//////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////
-
-    public void setAlert(View view) {
-
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTimeInMillis(System.currentTimeMillis());
-//        calendar.set(calendar.HOUR_OF_DAY, hour_start);
-//        calendar.set(calendar.MINUTE, minute_start - 5);
-//
-//        Long alertTime = calendar.getTimeInMillis();
-        Long f = new GregorianCalendar().getTimeInMillis() + 7 * 1000;
-
-        Intent alertIntent = new Intent(this, AlertReceiver.class);
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        //Log.i(TAG, "ALARM GOES IN: " + calendar.HOUR_OF_DAY + ":" + calendar.MINUTE);
-        //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, alertTime, AlarmManager.INTERVAL_DAY,PendingIntent.getBroadcast(this, 1, alertIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-        alarmManager.set(AlarmManager.RTC_WAKEUP, f, PendingIntent.getBroadcast(this, 1, alertIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-        Toast.makeText(this, "ALARM", Toast.LENGTH_SHORT).show();
-    }
-
-
 }

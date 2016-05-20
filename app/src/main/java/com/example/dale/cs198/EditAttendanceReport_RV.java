@@ -44,16 +44,8 @@ import java.util.regex.Pattern;
 public class EditAttendanceReport_RV extends AppCompatActivity {
 
     private static final String TAG = "testMessage";
-    private static final String TAG2 = "testMessageCrop";
 
-
-    private int progressBarStatus = 0;
-    private Handler progressBarHandler = new Handler();
     private ProgressDialog dialog;
-
-
-    Boolean copySuccess = false;
-
     String name;
     String className;
     String date;
@@ -110,12 +102,6 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
 
         adapter=new EditAttendanceReport_RVAdapter(this,allStudents,name,className,date,reportPath);
         recyclerView.setAdapter(adapter);
-
-
-
-
-
-
     }
 
 
@@ -138,7 +124,6 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
         } else {
             Toast.makeText(EditAttendanceReport_RV.this, "Training failed. Error encountered.", Toast.LENGTH_LONG).show();
         }
-
     }
 
     @Override
@@ -211,35 +196,9 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
 
                         }
 
-                        /*boolean meron = false;
-                        for (File f : reportCrops.listFiles()) {
-                            if (f.isFile()) {
-                                for (File file : untrainedCrops.listFiles()) {
-                                    if(file.getName().equals(f.getName())){
-                                        Log.i(TAG,f.getName());
-                                        Log.i(TAG,file.getName());
-                                        meron = true;
-                                        //Log.i(TAG,"duplicate");
-                                        //copiedAlready = true;
-                                    }
-                                }
-                                if(meron == false){
-                                    try {
-                                        copyFile(new File(f.getAbsolutePath()), new File(untrainedCrops, "/" + f.getName()));
-                                    }catch(IOException e){
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        }*/
-
                         dialog.dismiss();
                         msg.arg1 = 1;
                         handler.sendMessage(msg);
-
-
-
-                        //Toast.makeText(getApplicationContext(), "Copied to train!", Toast.LENGTH_LONG).show();
                     }
                 }).start();
 
@@ -312,7 +271,6 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(EditAttendanceReport_RV.this,R.style.Theme_Holo_Dialog_Alert);
 
         String[] x = reportPath.split(Pattern.quote("."));
-        String cropFolder = x[0];
         Log.i(TAG,"cropFolder --> " + x[0]);
 
         //POPULATE pathList from the cropped faces files from sdCard/PresentData/faceCrops folder
@@ -325,7 +283,6 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
             }
         };
 
-        int i=0;
         Log.i(TAG,"facecropsdir --> " + faceCropsDir.getAbsolutePath());
 
         Log.i(TAG,"facecropsdir --> " + faceCropsDir.isDirectory());
@@ -397,7 +354,6 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
             }
             holder.crop.setAdjustViewBounds(true);
             holder.crop.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            //holder.crop.setPadding(8, 8, 8, 8);
 
             Bitmap bmImg = BitmapFactory.decodeFile(paths.get(position));
             holder.crop.setImageBitmap(bmImg);
@@ -414,8 +370,4 @@ public class EditAttendanceReport_RV extends AppCompatActivity {
 ///////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////ADAPTER FOR GRIDVIEW//////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
 }
