@@ -163,7 +163,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     imgCount++;
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
-                    equalizeHist(mGray, mGray);
+                    //equalizeHist(mGray, mGray);
                     //fastNlMeansDenoising(mGray, mGray);
 
                     faces = new RectVector();
@@ -219,7 +219,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     imgCount++;
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
-                    equalizeHist(mGray, mGray);
+                    //equalizeHist(mGray, mGray);
 
                     faces = new RectVector();
 
@@ -509,7 +509,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     mColor = imread(im.getAbsolutePath());
                     mGray = new Mat();
                     cvtColor(mColor, mGray, CV_BGR2GRAY);
-                    equalizeHist(mGray, mGray);
+                    //equalizeHist(mGray, mGray);
 
                     faces = new RectVector();
 
