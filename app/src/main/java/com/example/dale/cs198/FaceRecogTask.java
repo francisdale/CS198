@@ -778,7 +778,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
                         }
 
                         resultsWriter.write("\nTotal num of attendance rows in this classroom data folder: " + dateFolders.length * numStudents + "\n\n");
-                        resultsWriter.write("\ndateFolders.length: " + dateFolders.length + ", numStudents: " + numStudents + "\n\n");
+                        //resultsWriter.write("\ndateFolders.length: " + dateFolders.length + ", numStudents: " + numStudents + "\n\n");
 
                         resultsWriter.write("\nTotal face recognition and attendance accuracies:\nKernel,Face Recognition,Attendance,Average Time(sec)\n");
                         for(int s = 0; s < sfrKernelNames.length; s++) {
