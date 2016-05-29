@@ -334,5 +334,10 @@ public class CardHome extends AppCompatActivity{
             Log.i(TAG, dataPath + " does not exist. Creating...");
             untrainedFaceFolder.mkdir();
         }
+
+        File researchModeFolder = new File("sdcard/PresentData/researchMode");
+        if(!researchModeFolder.exists()){
+            researchModeFolder.mkdir();
+        }
     }
 }

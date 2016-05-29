@@ -49,7 +49,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "testMessage";
 
     private static final String untrainedCropsDir = "sdcard/PresentData/faceDatabase/untrainedCrops";
-    private static final String haarCascadeXML = "haarcascade_frontalface_alt.xml";
+    private static String haarCascadeXML = "haarcascade_frontalface_alt.xml";
     //private static final String testResultsDir = "sdcard/PresentData/researchMode/faceDetectTestResults";
 
     static final int ATTENDANCE_USAGE = 0;
@@ -369,7 +369,8 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
             } else if(usageType == TEST_USAGE) {
                 Log.i(TAG, "Now in face detect task Test Usage ");
 
-                String[] testClassNamesAndDataSplits = {"CS 197", "CS 133"};
+                String[] resultFolderNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
+                //String[] testClassNamesAndDataSplits = {"CS 197", "CS 133"};
                 final String testClassDataDir = "sdcard/PresentData/researchMode";
 
                 FilenameFilter imgFilter = new FilenameFilter() {
@@ -381,6 +382,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                 String dataFolderDir;
                 String resultsFolderDir;
+                String[] details;
                 File dataFolder;
                 File resultsFolder;
 
@@ -397,10 +399,12 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 float avgHETime;
 
 
-                for (int i = 0; i < testClassNamesAndDataSplits.length; i++) {
-                    Log.i(TAG, "Running test on class " + testClassNamesAndDataSplits[i] + "...");
-                    dataFolderDir = testClassDataDir + "/" + testClassNamesAndDataSplits[i] + " Classroom Data";
-                    resultsFolderDir = dataFolderDir + "/greenBoxesHaar";
+                for (int i = 0; i < resultFolderNames.length; i++) {
+
+                    Log.i(TAG, "Running test for " + resultFolderNames[i] + "...");
+                    details = resultFolderNames[i].split(" ");
+                    dataFolderDir = testClassDataDir + "/" + details[0] + " " + details[1] + " Classroom Data/testFaceDetect";
+                    resultsFolderDir = testClassDataDir + "/greenBoxes" + details[4];
                     dataFolder = new File(dataFolderDir);
                     resultsFolder = new File(resultsFolderDir);
 
@@ -408,6 +412,38 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         DirectoryDeleter.deleteDir(resultsFolder);
                     }
                     resultsFolder.mkdirs();
+
+                    try {
+                        //Initialize face detector:
+
+                        if(details[4].startsWith("Haar20")) {
+                            haarCascadeXML = "haarcascade_frontalface_alt.xml";
+                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
+                        } else {
+                            haarCascadeXML = "haarcascade_frontalface_default.xml";
+                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+                        }
+                        cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
+                        cascadeFile = new File(cascadeDir, haarCascadeXML);
+
+
+                        os = new FileOutputStream(cascadeFile);
+
+
+                        buffer = new byte[4096];
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, bytesRead);
+                        }
+                        is.close();
+                        os.close();
+                        Log.i(TAG, "cascadeFile.getAbsolutePath: " + cascadeFile.getAbsolutePath());
+                        Log.i(TAG, "Does the file above exist: " + (new File(cascadeFile.getAbsolutePath())).exists());
+
+                        faceDetector = new CascadeClassifier(cascadeFile.getAbsolutePath());
+                        cascadeDir.delete();
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
 
                     numImagesInClass = 0;
                     numFacesInClass = 0;
@@ -422,8 +458,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         imgCount++;
                         mGray = new Mat();
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
-                        //equalizeHist(mGray, mGray);
-
+                        if(details[4].endsWith("HE")) {
+                            equalizeHist(mGray, mGray);
+                        }
                         /*timeStart = System.currentTimeMillis();
                         equalizeHist(mGray, mGray);
                         timeEnd = System.currentTimeMillis();
@@ -553,7 +590,8 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                 Log.i(TAG, "Now in CREATEDATASET Usage ");
                 //String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133-_-1"};
-                String[] classNamesAndDateParsing = {"CS 197-_-1"};
+                String[] resultFolderNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
+                //String[] classNamesAndDateParsing = {"CS 197-_-1"};
                 //String[] classNamesAndDateParsing = {"CS 133-_-1"};
                 String researchModeDir = "sdcard/PresentData/researchMode";
 
@@ -561,7 +599,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 FilenameFilter imgFilter = new FilenameFilter() {
                     public boolean accept(File dir, String name) {
                         //name = name.toLowerCase();
-                        return name.startsWith("IMG_20160422") && name.endsWith(".jpg");
+                        return name.endsWith(".jpg");
                     }
                 };
 
@@ -599,17 +637,20 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 int imgCounterPerDate = 0;
 
 
-                for(int i = 0; i < classNamesAndDateParsing.length; i++) {
+                for(int i = 0; i < resultFolderNames.length; i++) {
 
-                    details = classNamesAndDateParsing[i].split("-");
-                    className = details[0];
+                    //details = classNamesAndDateParsing[i].split("-");
+                    details = resultFolderNames[i].split(" ");
+                    className = details[0] + " " + details[1];
                     sourceClassDataDir = researchModeDir +"/" + className + " Classroom Data";
-                    resultDataDir = sourceClassDataDir + " Result";
+                    resultDataDir = sourceClassDataDir + " " + details[4];
                     images = new File(sourceClassDataDir).listFiles(imgFilter);
                     Arrays.sort(images);
 
-                    dateDelimiter = details[1];
-                    dateIndex = Integer.parseInt(details[2]);
+//                    dateDelimiter = details[1];
+//                    dateIndex = Integer.parseInt(details[2]);
+                    dateDelimiter = "_";
+                    dateIndex = 1;
 
                     prevDate = "null";
                     dateCounter = 0;
@@ -622,6 +663,38 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                     tempF.mkdirs();
 
                     Log.i(TAG, "Handling class " + className + "...");
+
+                    try {
+                        //Initialize face detector:
+
+                        if(details[4].startsWith("Haar20")) {
+                            haarCascadeXML = "haarcascade_frontalface_alt.xml";
+                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
+                        } else {
+                            haarCascadeXML = "haarcascade_frontalface_default.xml";
+                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+                        }
+                        cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
+                        cascadeFile = new File(cascadeDir, haarCascadeXML);
+
+
+                        os = new FileOutputStream(cascadeFile);
+
+
+                        buffer = new byte[4096];
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, bytesRead);
+                        }
+                        is.close();
+                        os.close();
+                        Log.i(TAG, "cascadeFile.getAbsolutePath: " + cascadeFile.getAbsolutePath());
+                        Log.i(TAG, "Does the file above exist: " + (new File(cascadeFile.getAbsolutePath())).exists());
+
+                        faceDetector = new CascadeClassifier(cascadeFile.getAbsolutePath());
+                        cascadeDir.delete();
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
 
 //                    //Rename CS 133 folders to proper date format
 //                    if(className.equals("CS 133")) {
@@ -712,7 +785,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                         mColor = imread(im.getAbsolutePath());
                         mGray = new Mat();
                         cvtColor(mColor, mGray, CV_BGR2GRAY);
-                        equalizeHist(mGray, mGray);
+                        if(details[4].endsWith("HE")) {
+                            equalizeHist(mGray, mGray);
+                        }
 
                         faces = new RectVector();
 

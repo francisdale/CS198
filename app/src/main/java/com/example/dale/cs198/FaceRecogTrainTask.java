@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.bytedeco.javacpp.opencv_core;
@@ -65,13 +66,13 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
 
 
     protected void onPreExecute() {
+
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setIndeterminate(true);
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
         dialog.setMessage("Training recognizer...");
         dialog.show();
-
     }
 
     @Override
@@ -92,6 +93,7 @@ public class FaceRecogTrainTask extends AsyncTask<Void, Void, Boolean> {
         dialog = new ProgressDialog(c);
         this.c = c;
         this.usageType = usageType;
+
     }
 
     @Override

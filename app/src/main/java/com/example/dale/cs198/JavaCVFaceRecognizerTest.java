@@ -93,45 +93,45 @@ public class JavaCVFaceRecognizerTest extends AppCompatActivity {
         //mkdir does not overwrite the directory if it already exists.
 
 
-        File folder = new File(eigenOutputDirRight);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        folder = new File(eigenOutputDirWrong);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        folder = new File(fisherOutputDirRight);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        folder = new File(fisherOutputDirWrong);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        folder = new File(lbphOutputDirRight);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        folder = new File(lbphOutputDirWrong);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        folder = new File(svmOutputDirRight);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
-
-        folder = new File(svmOutputDirWrong);
-        if(!folder.exists()){
-            folder.mkdirs();
-        }
+//        File folder = new File(eigenOutputDirRight);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
+//
+//        folder = new File(eigenOutputDirWrong);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
+//
+//        folder = new File(fisherOutputDirRight);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
+//
+//        folder = new File(fisherOutputDirWrong);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
+//
+//        folder = new File(lbphOutputDirRight);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
+//
+//        folder = new File(lbphOutputDirWrong);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
+//
+//        folder = new File(svmOutputDirRight);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
+//
+//        folder = new File(svmOutputDirWrong);
+//        if(!folder.exists()){
+//            folder.mkdirs();
+//        }
 
         Log.i(TAG, "onCreate initialization complete");
         recog();

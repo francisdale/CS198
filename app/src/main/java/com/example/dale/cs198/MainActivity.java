@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -232,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_relabelAndGather) {
@@ -242,10 +244,10 @@ public class MainActivity extends AppCompatActivity {
 
             testFaceDetect();
 
-        } else if (id == R.id.action_testDetectRecogTime) {
-
-            testDetectRecogTime();
-        } else if (id == R.id.action_createDataSet) {
+//        } else if (id == R.id.action_testDetectRecogTime) {
+//
+//            testDetectRecogTime();
+//        } else if (id == R.id.action_createDataSet) {
 
             createDataSet();
         } else if (id == R.id.action_testFaceRecogTrain) {
@@ -256,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
             testFaceRecog();
         }
 
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         //git test
         //To infinity and beyond
@@ -265,8 +268,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void relabelAndGather(){
 
-        //String[] testClassNamesAndDataSplits = {"CS 197 Classroom Data Haar20HE,1,10", "CS 133 Classroom Data Haar20HE,1,8", "CS 197 Classroom Data Haar20,1,10", "CS 133 Classroom Data Haar20,1,8", "CS 197 Classroom Data HaarHE,1,10", "CS 133 Classroom Data HaarHE,1,8", "CS 197 Classroom Data Haar,1,10", "CS 133 Classroom Data Haar,1,8"};
-        String[] testClassNamesAndDataSplits = {"CS 133 Classroom Data Haar20HE,1,8", "CS 133 Classroom Data Haar20,1,8", "CS 133 Classroom Data HaarHE,1,8", "CS 133 Classroom Data Haar,1,8"};
+        String[] testClassNamesAndDataSplits = {"CS 197 Classroom Data Haar20HE,1,10", "CS 133 Classroom Data Haar20HE,1,8", "CS 197 Classroom Data Haar20,1,10", "CS 133 Classroom Data Haar20,1,8", "CS 197 Classroom Data HaarHE,1,10", "CS 133 Classroom Data HaarHE,1,8", "CS 197 Classroom Data Haar,1,10", "CS 133 Classroom Data Haar,1,8"};
+        //String[] testClassNamesAndDataSplits = {"CS 133 Classroom Data Haar20HE,1,8", "CS 133 Classroom Data Haar20,1,8", "CS 133 Classroom Data HaarHE,1,8", "CS 133 Classroom Data Haar,1,8"};
 
         String classDataDir;
         String allCropsDir;
@@ -430,22 +433,22 @@ public class MainActivity extends AppCompatActivity {
         fd.execute();
     }
 
-    public void testDetectRecogTime(){
-        Log.i(TAG, "Now in testDetectRecogTime.");
-
-        TaskData td = new TaskData();
-
-        FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.TESTTIME_USAGE);
-        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        FaceRecogTask fr = new FaceRecogTask(td, "CS 197", FaceRecogTask.TESTTIME_USAGE);
-        fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-
-    }
+//    public void testDetectRecogTime(){
+//        Log.i(TAG, "Now in testDetectRecogTime.");
+//
+//        TaskData td = new TaskData();
+//
+//        FaceDetectTask fd = new FaceDetectTask(td, this, FaceDetectTask.TESTTIME_USAGE);
+//        fd.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//
+//        FaceRecogTask fr = new FaceRecogTask(td, "CS 197", FaceRecogTask.TESTTIME_USAGE);
+//        fr.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//
+//
+//    }
 
     public void createDataSet(){
-        Log.i(TAG, "Now in testDetectRecogTime.");
+        Log.i(TAG, "Now in createDataSet.");
 
         TaskData td = new TaskData();
 
