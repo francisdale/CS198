@@ -105,7 +105,7 @@ public class FaceRecogTask extends AsyncTask<Void, Void, Void> {
             dialog.setIndeterminate(true);
             dialog.setCancelable(false);
             dialog.setCanceledOnTouchOutside(false);
-            dialog.setMessage("Testing face detection...");
+            dialog.setMessage("Testing face recognition...");
             dialog.show();
             Log.i(TAG, "Progress dialog shown.");
         }

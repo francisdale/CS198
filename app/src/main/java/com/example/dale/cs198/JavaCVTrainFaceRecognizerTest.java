@@ -499,7 +499,7 @@ public class JavaCVTrainFaceRecognizerTest extends AppCompatActivity {
         TextView numImg = (TextView) findViewById(R.id.numImg);
         TextView notification = (TextView) findViewById(R.id.trainingNotification);
         TextView trainTimesTextView = (TextView) findViewById(R.id.trainTimesTextView);
-        notification.setText("Training complete.\nThreshold used = " + threshold);
+        //notification.setText("Training complete.\nThreshold used = " + threshold);
 
     }
 

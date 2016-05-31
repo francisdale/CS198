@@ -6,24 +6,15 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_ml;
 import org.bytedeco.javacpp.opencv_objdetect.CascadeClassifier;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 
-import static org.bytedeco.javacpp.opencv_core.CV_32FC1;
 import static org.bytedeco.javacpp.opencv_core.CvScalar;
 import static org.bytedeco.javacpp.opencv_core.IplImage;
 import static org.bytedeco.javacpp.opencv_core.Mat;
@@ -39,7 +30,6 @@ import static org.bytedeco.javacpp.opencv_imgproc.CV_BGR2GRAY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvRectangle;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 import static org.bytedeco.javacpp.opencv_imgproc.equalizeHist;
-import static org.bytedeco.javacpp.opencv_imgproc.resize;
 
 /**
  * Created by jedpatrickdatu on 2/10/2016.
@@ -370,6 +360,7 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
                 Log.i(TAG, "Now in face detect task Test Usage ");
 
                 String[] resultFolderNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
+                //String[] resultFolderNames = {"CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
                 //String[] testClassNamesAndDataSplits = {"CS 197", "CS 133"};
                 final String testClassDataDir = "sdcard/PresentData/researchMode";
 
@@ -403,8 +394,9 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
                     Log.i(TAG, "Running test for " + resultFolderNames[i] + "...");
                     details = resultFolderNames[i].split(" ");
-                    dataFolderDir = testClassDataDir + "/" + details[0] + " " + details[1] + " Classroom Data/testFaceDetect";
-                    resultsFolderDir = testClassDataDir + "/greenBoxes" + details[4];
+                    dataFolderDir = testClassDataDir + "/" + details[0] + details[1] + "TestFaceDetect";
+                    //dataFolderDir = testClassDataDir + "/" + details[0] + " " + details[1] + " Classroom Data/testFaceDetect";
+                    resultsFolderDir = testClassDataDir + "/greenBoxes" + details[0] + details[1] + details[4];
                     dataFolder = new File(dataFolderDir);
                     resultsFolder = new File(resultsFolderDir);
 
@@ -587,290 +579,302 @@ public class FaceDetectTask extends AsyncTask<Void, Void, Void> {
 
 
             } else if (usageType == CREATEDATASET_USAGE) {
-
-                Log.i(TAG, "Now in CREATEDATASET Usage ");
-                //String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133-_-1"};
-                String[] resultFolderNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
-                //String[] classNamesAndDateParsing = {"CS 197-_-1"};
-                //String[] classNamesAndDateParsing = {"CS 133-_-1"};
-                String researchModeDir = "sdcard/PresentData/researchMode";
-
-                File[] images;
-                FilenameFilter imgFilter = new FilenameFilter() {
-                    public boolean accept(File dir, String name) {
-                        //name = name.toLowerCase();
-                        return name.endsWith(".jpg");
-                    }
-                };
-
-
-                String modelDir = "sdcard/PresentData/recognizerModels";
-                String classesDir = "sdcard/PresentData/Classes";
-
-                Size dSize = new Size(64, 64);
-                int predictedLabel;
-                String studentName;
-                String[] temp;
-
-                String sourceClassDataDir;
-                String resultDataDir;
-                String dateFolderDir;
-
-                File tempF;
-                String date;
-                String className;
-                String[] details;
-                String dateDelimiter;
-                int dateIndex;
-                Mat mColorCrop;
-                Mat mGrayCrop;
-
-                //Date parsing variables for CS 133:
-                String OLD_FORMAT = "MMM_dd_yyyy";
-                String NEW_FORMAT = "yyyyMMdd";
-                Date d;
-                SimpleDateFormat sdf;
-
-                //Date counter for date folder name:
-                String prevDate;
-                int dateCounter;
-                int imgCounterPerDate = 0;
-
-
-                for(int i = 0; i < resultFolderNames.length; i++) {
-
-                    //details = classNamesAndDateParsing[i].split("-");
-                    details = resultFolderNames[i].split(" ");
-                    className = details[0] + " " + details[1];
-                    sourceClassDataDir = researchModeDir +"/" + className + " Classroom Data";
-                    resultDataDir = sourceClassDataDir + " " + details[4];
-                    images = new File(sourceClassDataDir).listFiles(imgFilter);
-                    Arrays.sort(images);
-
-//                    dateDelimiter = details[1];
-//                    dateIndex = Integer.parseInt(details[2]);
-                    dateDelimiter = "_";
-                    dateIndex = 1;
-
-                    prevDate = "null";
-                    dateCounter = 0;
-
-
-                    tempF = new File(resultDataDir);
-                    if(tempF.exists()){
-                       DirectoryDeleter.deleteDir(tempF);
-                    }
-                    tempF.mkdirs();
-
-                    Log.i(TAG, "Handling class " + className + "...");
-
-                    try {
-                        //Initialize face detector:
-
-                        if(details[4].startsWith("Haar20")) {
-                            haarCascadeXML = "haarcascade_frontalface_alt.xml";
-                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
-                        } else {
-                            haarCascadeXML = "haarcascade_frontalface_default.xml";
-                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
-                        }
-                        cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
-                        cascadeFile = new File(cascadeDir, haarCascadeXML);
-
-
-                        os = new FileOutputStream(cascadeFile);
-
-
-                        buffer = new byte[4096];
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            os.write(buffer, 0, bytesRead);
-                        }
-                        is.close();
-                        os.close();
-                        Log.i(TAG, "cascadeFile.getAbsolutePath: " + cascadeFile.getAbsolutePath());
-                        Log.i(TAG, "Does the file above exist: " + (new File(cascadeFile.getAbsolutePath())).exists());
-
-                        faceDetector = new CascadeClassifier(cascadeFile.getAbsolutePath());
-                        cascadeDir.delete();
-                    } catch (Exception e){
-                        e.printStackTrace();
-                    }
-
-//                    //Rename CS 133 folders to proper date format
-//                    if(className.equals("CS 133")) {
-//                        for (File im : images) {
-//                            date = im.getName().split(dateDelimiter)[dateIndex];
-//                            Log.i(TAG, "Date before parsing: " + date);
-//                            sdf = new SimpleDateFormat(OLD_FORMAT);
-//                            d = sdf.parse(date);
-//                            sdf.applyPattern(NEW_FORMAT);
-//                            date = sdf.format(d);
-//                            Log.i(TAG, "Date after parsing: " + date);
+                  Log.i(TAG, "Now in CREATEDATASET Usage ");
+//                Log.i(TAG, "Now in CREATEDATASET Usage ");
 //
-//                            tempF = new File(im.getAbsolutePath());
-//                            tempF.renameTo(new File(sourceClassDataDir + "/IMG_" + date + "_" + im.getName().split(" ")[1]));
-//                        }
+//                //String[] classNamesAndDateParsing = {"CS 197-_-1", "CS 133-_-1"};
+//                String[] resultFolderNames = {"CS 197 Classroom Data Haar20HE", "CS 133 Classroom Data Haar20HE", "CS 197 Classroom Data Haar20", "CS 133 Classroom Data Haar20", "CS 197 Classroom Data HaarHE", "CS 133 Classroom Data HaarHE", "CS 197 Classroom Data Haar", "CS 133 Classroom Data Haar"};
+//                //String[] classNamesAndDateParsing = {"CS 197-_-1"};
+//                //String[] classNamesAndDateParsing = {"CS 133-_-1"};
+//                String researchModeDir = "sdcard/PresentData/researchMode";
+//
+//                File[] images;
+//                FilenameFilter imgFilter = new FilenameFilter() {
+//                    public boolean accept(File dir, String name) {
+//                        //name = name.toLowerCase();
+//                        return name.endsWith(".jpg");
 //                    }
+//                };
+//
+//
+//                String modelDir = "sdcard/PresentData/recognizerModels";
+//                String classesDir = "sdcard/PresentData/Classes";
+//
+//                Size dSize = new Size(64, 64);
+//                int predictedLabel;
+//                String studentName;
+//                String[] temp;
+//
+//                String sourceClassDataDir;
+//                String resultDataDir;
+//                String dateFolderDir;
+//
+//                File tempF;
+//                String date;
+//                String className;
+//                String[] details;
+//                String dateDelimiter;
+//                int dateIndex;
+//                Mat mColorCrop;
+//                Mat mGrayCrop;
+//
+//                //Date parsing variables for CS 133:
+//                String OLD_FORMAT = "MMM_dd_yyyy";
+//                String NEW_FORMAT = "yyyyMMdd";
+//                Date d;
+//                SimpleDateFormat sdf;
+//
+//                //Date counter for date folder name:
+//                String prevDate;
+//                int dateCounter;
+//                int imgCounterPerDate = 0;
+//
+//
+//                for(int i = 0; i < resultFolderNames.length; i++) {
+//
+//                    //details = classNamesAndDateParsing[i].split("-");
+//                    details = resultFolderNames[i].split(" ");
+//                    className = details[0] + " " + details[1];
+//                    sourceClassDataDir = researchModeDir +"/" + className + " Classroom Data";
+//                    resultDataDir = sourceClassDataDir + " " + details[4];
 //                    images = new File(sourceClassDataDir).listFiles(imgFilter);
-
-                    //Initializing Face Recognition:
-                    Log.i(TAG, "Loading SVM...");
-                    opencv_core.FileStorage fs = new opencv_core.FileStorage(modelDir + "/svmModel_" + className + "_allHE.xml", opencv_core.FileStorage.READ);
-                    opencv_ml.SVM sfr = opencv_ml.SVM.create();
-                    sfr.read(fs.root());
-                    fs.release();
-
-                    fs = new opencv_core.FileStorage(modelDir + "/pca_" + className + "_allHE.xml", opencv_core.FileStorage.READ);
-                    opencv_core.PCA pca = new opencv_core.PCA();
-                    pca.read(fs.root());
-                    fs.release();
-
-                    Log.i(TAG, "CreateDataSet: Face Recog Initialization complete.");
-
-                    //Read class list:
-                    BufferedReader br;
-                    HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
-                    HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
-                    String line;
-
-                    String classDir = classesDir + "/" + className;
-
-                    try {
-                        br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
-                        while ((line = br.readLine()) != null) {
-                            details = line.split(",");
-                            //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
-                            attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
-                            studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
-                        }
-                        br.close();
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-
-
-                    for (File im : images) {
-                        imgCount++;
-
-                        date = im.getName().split(dateDelimiter)[dateIndex];
-
-//                        //If class is CS 133, convert the date to correct format
-//                        if(className.equals("CS 133")) {
-//                            Log.i(TAG, "Date before parsing: " + date);
-//                            sdf = new SimpleDateFormat(OLD_FORMAT);
-//                            d = sdf.parse(date);
-//                            sdf.applyPattern(NEW_FORMAT);
-//                            date = sdf.format(d);
-//                            Log.i(TAG, "Date after parsing: " + date);
+//                    Arrays.sort(images);
+//
+////                    dateDelimiter = details[1];
+////                    dateIndex = Integer.parseInt(details[2]);
+//                    dateDelimiter = "_";
+//                    dateIndex = 1;
+//
+//                    prevDate = "null";
+//                    dateCounter = 0;
+//
+//
+//                    tempF = new File(resultDataDir);
+//                    if(tempF.exists()){
+//                       DirectoryDeleter.deleteDir(tempF);
+//                    }
+//                    tempF.mkdirs();
+//
+//                    Log.i(TAG, "Handling class " + className + "...");
+//
+//                    try {
+//                        //Initialize face detector:
+//
+//                        if(details[4].startsWith("Haar20")) {
+//                            haarCascadeXML = "haarcascade_frontalface_alt.xml";
+//                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
+//                        } else {
+//                            haarCascadeXML = "haarcascade_frontalface_default.xml";
+//                            is = c.getResources().openRawResource(R.raw.haarcascade_frontalface_default);
 //                        }
-
-                        imgCounterPerDate++;
-                        //Date counter:
-                        if(!prevDate.equals(date)){
-                            dateCounter++;
-                            prevDate = date;
-                            imgCounterPerDate = 1;
-
-                            dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date+ "_" + imgCounterPerDate;
-                            tempF = new File(dateFolderDir);
-                            tempF.mkdirs();
-                        } else {
-                            dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date + "_" + imgCounterPerDate;
-                            tempF.renameTo(new File(dateFolderDir));
-                            tempF = new File(dateFolderDir);
-                        }
-
-                        Log.i(TAG, "In class " + className + " detecting image from date " + date + "...");
-
-                        mColor = imread(im.getAbsolutePath());
-                        mGray = new Mat();
-                        cvtColor(mColor, mGray, CV_BGR2GRAY);
-                        if(details[4].endsWith("HE")) {
-                            equalizeHist(mGray, mGray);
-                        }
-
-                        faces = new RectVector();
-
-                        //Detect faces:
-                        Log.i(TAG, "Detecting img " + imgCount);
-                        timeStart = System.currentTimeMillis();
-                        faceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
-                        timeEnd = System.currentTimeMillis();
-                        timeElapsed = timeEnd - timeStart;
-
-                        mGray.deallocate();
-
-                        numFaces = (int) faces.size();
-
-                        if (numFaces > 0) {//check if faces is not empty; an empty r means no face was really detected
-
-                            Log.i(TAG, "Detection complete. Cropping...");
-                            //Crop faces:
-
-                            for (int j = 0; j < numFaces; j++) {
-                                r = faces.get(j);
-
-                                Log.i(TAG, "Recognizing j " + j);
-
-                                mColorCrop = new Mat(mColor, r);
-                                mGrayCrop = new Mat();
-                                cvtColor(mColorCrop, mGrayCrop, CV_BGR2GRAY);
-
-                                equalizeHist(mGrayCrop, mGrayCrop);
-                                //fastNlMeansDenoising(mGray,mGray);
-                                resize(mGrayCrop, mGrayCrop, dSize);
-                                mGrayCrop.reshape(1, 1).convertTo(mGrayCrop, CV_32FC1);
-
-                                predictedLabel = (int) sfr.predict(pca.project(mGrayCrop));
-
-                                Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
-
-                                if (attendanceRecord.containsKey(predictedLabel)) {
-                                    Log.i(TAG, "predictedLabel was found in the classlist.");
-                                    if (0 == attendanceRecord.get(predictedLabel)) {
-                                        attendanceRecord.put(predictedLabel, 1);
-                                        Log.i(TAG, "predictedLabel attendance was marked.");
-                                    }
-
-                                    //Before saving the crop, check which secondaryID is still available:
-                                    secondaryID = 0;
-                                    do {
-                                        temp = studentNumsAndNames.get(predictedLabel).split(",");
-                                        studentName = temp[1] + "," + temp[2];
-                                        f = new File(dateFolderDir + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
-                                        secondaryID++;
-                                    } while (f.exists());
-
-                                    imwrite(f.getAbsolutePath(), mColorCrop);
-
-                                    Log.i(TAG, "Crop saved.");
-                                } else if (0 == predictedLabel) {
-                                    Log.i(TAG, "Non face found.");
-
-                                    //Before saving the crop, check which secondaryID is still available:
-                                    secondaryID = 0;
-                                    do {
-                                        f = new File(dateFolderDir + "/0_nonFace_" + secondaryID + ".jpg");
-                                        secondaryID++;
-                                    } while (f.exists());
-
-                                    imwrite(f.getAbsolutePath(), mColorCrop);
-
-                                }
-
-                                mColorCrop.deallocate();
-                                mGrayCrop.deallocate();
-                            }
-                        } else {
-                            numFaces = 0;
-                        }
-                        mColor.deallocate();
-
-                        faceCount += numFaces;
-                    }
-                }
-                td.setThreadsToDie();
-                Log.i(TAG, "CreateDataSet complete.");
+//                        cascadeDir = c.getDir("cascade", Context.MODE_PRIVATE);
+//                        cascadeFile = new File(cascadeDir, haarCascadeXML);
+//
+//
+//                        os = new FileOutputStream(cascadeFile);
+//
+//
+//                        buffer = new byte[4096];
+//                        while ((bytesRead = is.read(buffer)) != -1) {
+//                            os.write(buffer, 0, bytesRead);
+//                        }
+//                        is.close();
+//                        os.close();
+//                        Log.i(TAG, "cascadeFile.getAbsolutePath: " + cascadeFile.getAbsolutePath());
+//                        Log.i(TAG, "Does the file above exist: " + (new File(cascadeFile.getAbsolutePath())).exists());
+//
+//                        faceDetector = new CascadeClassifier(cascadeFile.getAbsolutePath());
+//                        cascadeDir.delete();
+//                    } catch (Exception e){
+//                        e.printStackTrace();
+//                    }
+//
+////                    //Rename CS 133 folders to proper date format
+////                    if(className.equals("CS 133")) {
+////                        for (File im : images) {
+////                            date = im.getName().split(dateDelimiter)[dateIndex];
+////                            Log.i(TAG, "Date before parsing: " + date);
+////                            sdf = new SimpleDateFormat(OLD_FORMAT);
+////                            d = sdf.parse(date);
+////                            sdf.applyPattern(NEW_FORMAT);
+////                            date = sdf.format(d);
+////                            Log.i(TAG, "Date after parsing: " + date);
+////
+////                            tempF = new File(im.getAbsolutePath());
+////                            tempF.renameTo(new File(sourceClassDataDir + "/IMG_" + date + "_" + im.getName().split(" ")[1]));
+////                        }
+////                    }
+////                    images = new File(sourceClassDataDir).listFiles(imgFilter);
+//
+//                    /*//Initializing Face Recognition:
+//                    Log.i(TAG, "Loading SVM...");
+//                    opencv_core.FileStorage fs = new opencv_core.FileStorage(modelDir + "/svmModel_" + className + "_allHE.xml", opencv_core.FileStorage.READ);
+//                    opencv_ml.SVM sfr = opencv_ml.SVM.create();
+//                    sfr.read(fs.root());
+//                    fs.release();
+//
+//                    fs = new opencv_core.FileStorage(modelDir + "/pca_" + className + "_allHE.xml", opencv_core.FileStorage.READ);
+//                    opencv_core.PCA pca = new opencv_core.PCA();
+//                    pca.read(fs.root());
+//                    fs.release();*/
+//
+//                    Log.i(TAG, "CreateDataSet: Face Recog Initialization complete.");
+//
+//                    //Read class list:
+//                    BufferedReader br;
+//                    HashMap<Integer, Integer> attendanceRecord = new HashMap<Integer, Integer>(); //This ArrayList is parallel with the attendance ArrayList
+//                    HashMap<Integer, String> studentNumsAndNames = new HashMap<Integer, String>(); //Also parallel with the two ArrayLists above
+//                    String line;
+//
+//                    String classDir = classesDir + "/" + className;
+//
+//                    try {
+//                        br = new BufferedReader(new FileReader(classDir + "/" + className + "_studentList.txt"));
+//                        while ((line = br.readLine()) != null) {
+//                            details = line.split(",");
+//                            //a line in the studentList has the syntax: <id>,<student number>,<lastname>,<firstname>
+//                            attendanceRecord.put(Integer.parseInt(details[0]), 0); //(id, attendance)
+//                            studentNumsAndNames.put(Integer.parseInt(details[0]), details[1] + "," + details[2] + "," + details[3]); //(id, studentnum+lastname+firstname)
+//                        }
+//                        br.close();
+//                    }catch(Exception e){
+//                        e.printStackTrace();
+//                    }
+//
+//
+//                    for (File im : images) {
+//                        imgCount++;
+//
+//                        date = im.getName().split(dateDelimiter)[dateIndex];
+//
+////                        //If class is CS 133, convert the date to correct format
+////                        if(className.equals("CS 133")) {
+////                            Log.i(TAG, "Date before parsing: " + date);
+////                            sdf = new SimpleDateFormat(OLD_FORMAT);
+////                            d = sdf.parse(date);
+////                            sdf.applyPattern(NEW_FORMAT);
+////                            date = sdf.format(d);
+////                            Log.i(TAG, "Date after parsing: " + date);
+////                        }
+//
+//                        imgCounterPerDate++;
+//                        //Date counter:
+//                        if(!prevDate.equals(date)){
+//                            dateCounter++;
+//                            prevDate = date;
+//                            imgCounterPerDate = 1;
+//
+//                            dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date+ "_" + imgCounterPerDate;
+//                            tempF = new File(dateFolderDir);
+//                            tempF.mkdirs();
+//                        } else {
+//                            dateFolderDir = resultDataDir + "/" + dateCounter + "_" + date + "_" + imgCounterPerDate;
+//                            tempF.renameTo(new File(dateFolderDir));
+//                            tempF = new File(dateFolderDir);
+//                        }
+//
+//                        Log.i(TAG, "In class " + className + " detecting image from date " + date + "...");
+//
+//                        mColor = imread(im.getAbsolutePath());
+//                        mGray = new Mat();
+//                        cvtColor(mColor, mGray, CV_BGR2GRAY);
+//                        if(details[4].endsWith("HE")) {
+//                            equalizeHist(mGray, mGray);
+//                        }
+//
+//                        faces = new RectVector();
+//
+//                        //Detect faces:
+//                        Log.i(TAG, "Detecting img " + imgCount);
+//                        timeStart = System.currentTimeMillis();
+//                        faceDetector.detectMultiScale(mGray, faces, scaleFactor, minNeighbors, flags, minSize, maxSize);
+//                        timeEnd = System.currentTimeMillis();
+//                        timeElapsed = timeEnd - timeStart;
+//
+//                        mGray.deallocate();
+//
+//                        numFaces = (int) faces.size();
+//
+//                        if (numFaces > 0) {//check if faces is not empty; an empty r means no face was really detected
+//
+//                            Log.i(TAG, "Detection complete. Cropping...");
+//                            //Crop faces:
+//
+//                            for (int j = 0; j < numFaces; j++) {
+//                                r = faces.get(j);
+//
+//                                Log.i(TAG, "Recognizing j " + j);
+//
+//                                mColorCrop = new Mat(mColor, r);
+//
+//                                secondaryID = 0;
+//                                do {
+//                                    f = new File(dateFolderDir + "/unlabeled_" + secondaryID + ".jpg");
+//                                    secondaryID++;
+//                                } while (f.exists());
+//
+//                                imwrite(f.getAbsolutePath(), mColorCrop);
+//
+////
+////                                mGrayCrop = new Mat();
+////                                cvtColor(mColorCrop, mGrayCrop, CV_BGR2GRAY);
+////
+////                                equalizeHist(mGrayCrop, mGrayCrop);
+////                                //fastNlMeansDenoising(mGray,mGray);
+////                                resize(mGrayCrop, mGrayCrop, dSize);
+////                                mGrayCrop.reshape(1, 1).convertTo(mGrayCrop, CV_32FC1);
+////
+////                                predictedLabel = (int) sfr.predict(pca.project(mGrayCrop));
+////
+////                                Log.i(TAG, "Recognition complete. predictedLabel = " + predictedLabel);
+////
+////                                if (attendanceRecord.containsKey(predictedLabel)) {
+////                                    Log.i(TAG, "predictedLabel was found in the classlist.");
+////                                    if (0 == attendanceRecord.get(predictedLabel)) {
+////                                        attendanceRecord.put(predictedLabel, 1);
+////                                        Log.i(TAG, "predictedLabel attendance was marked.");
+////                                    }
+////
+////                                    //Before saving the crop, check which secondaryID is still available:
+////                                    secondaryID = 0;
+////                                    do {
+////                                        temp = studentNumsAndNames.get(predictedLabel).split(",");
+////                                        studentName = temp[1] + "," + temp[2];
+////                                        f = new File(dateFolderDir + "/" + predictedLabel + "_" + studentName + "_" + secondaryID + ".jpg");
+////                                        secondaryID++;
+////                                    } while (f.exists());
+////
+////                                    imwrite(f.getAbsolutePath(), mColorCrop);
+////
+////                                    Log.i(TAG, "Crop saved.");
+////                                } else if (0 == predictedLabel) {
+////                                    Log.i(TAG, "Non face found.");
+////
+////                                    //Before saving the crop, check which secondaryID is still available:
+////                                    secondaryID = 0;
+////                                    do {
+////                                        f = new File(dateFolderDir + "/0_nonFace_" + secondaryID + ".jpg");
+////                                        secondaryID++;
+////                                    } while (f.exists());
+////
+////                                    imwrite(f.getAbsolutePath(), mColorCrop);
+////
+////                                }
+//
+//                                mColorCrop.deallocate();
+//                                //mGrayCrop.deallocate();
+//                            }
+//                        } else {
+//                            numFaces = 0;
+//                        }
+//
+//                        mColor.deallocate();
+//
+//                        faceCount += numFaces;
+//                    }
+//                }
+//                td.setThreadsToDie();
+//                Log.i(TAG, "CreateDataSet complete.");
             }
 
         } catch (Exception e) {

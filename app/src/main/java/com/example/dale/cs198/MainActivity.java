@@ -59,11 +59,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.i(TAG, "onCreate state na");
 
-        File folder = new File(researchDir);
+        //File folder = new File(researchDir);
 
-        if(folder.exists()==false){
-            folder.mkdir();
-        }
+//        if(folder.exists()==false){
+//            folder.mkdir();
+//        }
 
         //PUT ALL LISTENERS HERE FOR ALL WIDGETS OF ACTIVITY
         Button camButton = (Button) findViewById(R.id.camButton);
@@ -216,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Log.i(TAG, "onStart state na");
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
@@ -233,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_relabelAndGather) {
@@ -258,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
             testFaceRecog();
         }
 
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
 
         //git test
         //To infinity and beyond
@@ -425,6 +426,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testFaceDetect(){
+
         Log.i(TAG, "Now in testFaceDetect.");
 
         TaskData td = new TaskData();
@@ -507,6 +509,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "onStop");
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         //notifyAll();
     }
 
